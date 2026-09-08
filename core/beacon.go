@@ -140,7 +140,12 @@ func (b *BeaconService) listenLoop() {
 		// Automatically initiate cryptographic handshake with newly discovered LAN peer!
 		go func(ep string) {
 			fmt.Printf("[LAN Discovery] Peer detectado en %s! Iniciando handshake automático...\n", ep)
-			_, _, _ = b.node.Handshake(ep)
+			peerID, rtt, err := b.node.Handshake(ep)
+			if err != nil {
+				fmt.Printf("[LAN Discovery] Handshake con %s pendiente/error: %v\n", ep, err)
+			} else {
+				fmt.Printf("[OK]   ¡Handshake completado con %s! Peer ID: %s (RTT: %v)\n", ep, peerID.String()[:16]+"...", rtt)
+			}
 		}(candidateEp)
 	}
 }

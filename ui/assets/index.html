@@ -1596,15 +1596,20 @@
         }
         peerList.innerHTML = '';
         peers.forEach(p => {
+          const id = p.id || p.ID || '';
+          const endpoints = p.endpoints || p.Endpoints || [];
+          const latency = p.latency_ms ?? p.LatencyMs ?? 0;
+          const degree = p.degree ?? p.Degree ?? 0;
+
           const div = document.createElement('div');
-          div.className = 'peer-item' + (p.ID === selectedPeerID ? ' selected' : '');
-          div.onclick = () => selectPeer(p.ID, p.Endpoints[0] || '');
+          div.className = 'peer-item' + (id === selectedPeerID ? ' selected' : '');
+          div.onclick = () => selectPeer(id, endpoints[0] || '');
           div.innerHTML = `
             <div class="peer-item-name">
-              <span>${p.ID.substring(0, 10)}...</span>
-              <span style="color:var(--accent-cyan); font-size:0.75rem;">${p.LatencyMs} ms</span>
+              <span>${id.substring(0, 10)}...</span>
+              <span style="color:var(--accent-cyan); font-size:0.75rem;">${latency} ms</span>
             </div>
-            <div class="peer-item-sub">Grado: ${p.Degree} | ${p.Endpoints.join(', ') || 'Overlay'}</div>
+            <div class="peer-item-sub">Grado: ${degree} | ${endpoints.join(', ') || 'Overlay'}</div>
           `;
           peerList.appendChild(div);
         });
@@ -1711,7 +1716,10 @@
       fetch('/api/peers').then(r => r.json()).then(peers => {
         if (!peers) return;
         peers.forEach((p, idx) => {
-          const deg = Math.max(1, Math.min(12, p.Degree));
+          const id = p.id || p.ID || '';
+          const degVal = p.degree ?? p.Degree ?? 1;
+          const latVal = p.latency_ms ?? p.LatencyMs ?? 0;
+          const deg = Math.max(1, Math.min(12, degVal));
           const r = (maxR / 12) * deg;
           const angle = (idx * (360 / Math.max(1, peers.length))) * (Math.PI / 180);
           const px = cx + r * Math.cos(angle);
@@ -1723,7 +1731,7 @@
           dot.setAttribute('r', 6);
           dot.setAttribute('fill', '#00f2fe');
           dot.setAttribute('cursor', 'pointer');
-          dot.onclick = () => alert('Peer ID: ' + p.ID + '\nGrado: ' + p.Degree + '\nLatencia: ' + p.LatencyMs + ' ms');
+          dot.onclick = () => alert('Peer ID: ' + id + '\nGrado: ' + degVal + '\nLatencia: ' + latVal + ' ms');
           svg.appendChild(dot);
         });
       });
@@ -1759,7 +1767,7 @@
     window.onload = () => {
       loadInfo();
       connectWS();
-      setInterval(loadPeers, 5000);
+      setInterval(loadPeers, 2000);
     };
   </script>
 </body>

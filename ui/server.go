@@ -138,19 +138,31 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	peers := s.node.SmallWorld.FindClosestPeers(s.node.Identity, 50)
 	type PeerDTO struct {
-		ID        string   `json:"id"`
-		Endpoints []string `json:"endpoints"`
-		Degree    int      `json:"degree"`
-		LatencyMs int64    `json:"latency_ms"`
+		ID           string   `json:"id"`
+		Endpoints    []string `json:"endpoints"`
+		Degree       int      `json:"degree"`
+		LatencyMs    int64    `json:"latency_ms"`
+		IDCap        string   `json:"ID"`
+		EndpointsCap []string `json:"Endpoints"`
+		DegreeCap    int      `json:"Degree"`
+		LatencyMsCap int64    `json:"LatencyMs"`
 	}
 
 	var list []PeerDTO
 	for _, p := range peers {
+		lat := p.Latency.Milliseconds()
+		if lat <= 0 {
+			lat = 1
+		}
 		list = append(list, PeerDTO{
-			ID:        p.Identity.String(),
-			Endpoints: p.Endpoints,
-			Degree:    p.Degree,
-			LatencyMs: p.Latency.Milliseconds(),
+			ID:           p.Identity.String(),
+			Endpoints:    p.Endpoints,
+			Degree:       p.Degree,
+			LatencyMs:    lat,
+			IDCap:        p.Identity.String(),
+			EndpointsCap: p.Endpoints,
+			DegreeCap:    p.Degree,
+			LatencyMsCap: lat,
 		})
 	}
 	_ = json.NewEncoder(w).Encode(list)

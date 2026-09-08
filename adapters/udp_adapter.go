@@ -118,6 +118,7 @@ func (a *UDPAdapter) Send(c *core.Container, endpoints []string) error {
 	}
 	
 	var lastErr error
+	sentCount := 0
 	for _, ep := range endpoints {
 		addr, err := a.resolveCached(ep)
 		if err != nil {
@@ -126,11 +127,16 @@ func (a *UDPAdapter) Send(c *core.Container, endpoints []string) error {
 		}
 		
 		_, err = conn.WriteToUDP(data, addr)
-		if err != nil {
+		if err == nil {
+			sentCount++
+		} else {
 			lastErr = err
 		}
 	}
 	
+	if sentCount > 0 {
+		return nil
+	}
 	return lastErr
 }
 
