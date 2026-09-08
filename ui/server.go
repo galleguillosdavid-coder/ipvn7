@@ -25,15 +25,17 @@ var upgrader = websocket.Upgrader{
 }
 
 type Server struct {
-	node      *core.Node
-	cascade   *core.CascadeNode
-	tunnel    *core.TunnelService
-	rds       *core.RemoteDesktopService
-	vpnProxy  *core.SOCKS5Proxy
-	mcpServer *core.MCPServer
-	port      int
-	wsClients map[*websocket.Conn]bool
-	mu        sync.Mutex
+	node       *core.Node
+	cascade    *core.CascadeNode
+	tunnel     *core.TunnelService
+	rds        *core.RemoteDesktopService
+	vpnProxy   *core.SOCKS5Proxy
+	mcpServer  *core.MCPServer
+	supervisor *core.SelfHealingSupervisor
+	port       int
+	wsClients  map[*websocket.Conn]bool
+	sseClients map[chan []byte]bool
+	mu         sync.Mutex
 }
 
 type SendMessageReq struct {
@@ -49,13 +51,27 @@ func NewServer(node *core.Node, cascade *core.CascadeNode, port int) *Server {
 	}
 	ts := core.NewTunnelService(node)
 	s := &Server{
-		node:      node,
-		cascade:   cascade,
-		tunnel:    ts,
-		rds:       core.NewRemoteDesktopService(),
-		mcpServer: core.NewMCPServer(node, ts),
-		port:      port,
-		wsClients: make(map[*websocket.Conn]bool),
+		node:       node,
+		cascade:    cascade,
+		tunnel:     ts,
+		rds:        core.NewRemoteDesktopService(),
+		mcpServer:  core.NewMCPServer(node, ts),
+		supervisor: core.NewSelfHealingSupervisor(node, 30*time.Second),
+		port:       port,
+		wsClients:  make(map[*websocket.Conn]bool),
+		sseClients: make(map[chan []byte]bool),
+	}
+
+	if s.supervisor != nil {
+		s.supervisor.OnAction(func(action string, details map[string]interface{}) {
+			s.broadcastEvent(map[string]interface{}{
+				"type":    "self_healing_action",
+				"action":  action,
+				"details": details,
+				"time":    time.Now().Format("15:04:05"),
+			})
+		})
+		s.supervisor.Start()
 	}
 
 	if s.mcpServer != nil {
@@ -127,6 +143,8 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/openapi.json", s.handleOpenAPI)
 	mux.HandleFunc("/metrics", s.handleMetrics)
 	mux.HandleFunc("/api/mcp", s.handleMCP)
+	mux.HandleFunc("/api/events", s.handleEvents)
+	mux.HandleFunc("/api/self-healing/status", s.handleSelfHealingStatus)
 	mux.HandleFunc("/ws", s.handleWS)
 	mux.HandleFunc("/ws/desktop", s.handleDesktopWS)
 
@@ -399,6 +417,10 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) broadcastWS(msg interface{}) {
+	s.broadcastEvent(msg)
+}
+
+func (s *Server) broadcastEvent(msg interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -410,6 +432,69 @@ func (s *Server) broadcastWS(msg interface{}) {
 	for client := range s.wsClients {
 		_ = client.WriteMessage(websocket.TextMessage, data)
 	}
+
+	for ch := range s.sseClients {
+		select {
+		case ch <- data:
+		default:
+		}
+	}
+}
+
+func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	clientChan := make(chan []byte, 64)
+	s.mu.Lock()
+	s.sseClients[clientChan] = true
+	s.mu.Unlock()
+
+	defer func() {
+		s.mu.Lock()
+		delete(s.sseClients, clientChan)
+		s.mu.Unlock()
+	}()
+
+	initMsg, _ := json.Marshal(map[string]interface{}{
+		"type":    "connected",
+		"node_id": s.node.Identity.String(),
+		"time":    time.Now().Format(time.RFC3339),
+	})
+	fmt.Fprintf(w, "data: %s\n\n", initMsg)
+	flusher.Flush()
+
+	notify := r.Context().Done()
+	for {
+		select {
+		case <-notify:
+			return
+		case msg, ok := <-clientChan:
+			if !ok {
+				return
+			}
+			fmt.Fprintf(w, "data: %s\n\n", msg)
+			flusher.Flush()
+		}
+	}
+}
+
+func (s *Server) handleSelfHealingStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if s.supervisor == nil {
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{"status": "disabled"})
+		return
+	}
+	stats := s.supervisor.CheckAndHeal()
+	_ = json.NewEncoder(w).Encode(stats)
 }
 
 type MeshNode struct {

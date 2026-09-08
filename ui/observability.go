@@ -93,6 +93,18 @@ func (s *Server) handleOpenAPI(w http.ResponseWriter, r *http.Request) {
 					"description": "Procesa llamadas a herramientas y consultas de IA mediante protocolo MCP.",
 				},
 			},
+			"/api/events": map[string]interface{}{
+				"get": map[string]interface{}{
+					"summary":     "Server-Sent Events (SSE) Stream",
+					"description": "Flujo unidireccional continuo de eventos en tiempo real para agentes IA y dashboards.",
+				},
+			},
+			"/api/self-healing/status": map[string]interface{}{
+				"get": map[string]interface{}{
+					"summary":     "Estado de Autocuración de Malla",
+					"description": "Retorna métricas de auditoría Small-World, anillos vacíos y acciones de reparación.",
+				},
+			},
 			"/metrics": map[string]interface{}{
 				"get": map[string]interface{}{
 					"summary":     "Métricas en formato Prometheus",
@@ -127,6 +139,12 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 	s.mu.Unlock()
 
+	var healActions uint64
+	var degradedRings int
+	if s.supervisor != nil {
+		healActions, degradedRings, _ = s.supervisor.Stats()
+	}
+
 	ts := time.Now().Unix()
 
 	out := fmt.Sprintf(
@@ -142,6 +160,12 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 			"# HELP ipv7_vpn_running Status of local SOCKS5 proxy (1 running, 0 stopped)\n"+
 			"# TYPE ipv7_vpn_running gauge\n"+
 			"ipv7_vpn_running %d %d\n\n"+
+			"# HELP ipv7_self_healing_actions_total Total autonomous topology repairs executed\n"+
+			"# TYPE ipv7_self_healing_actions_total counter\n"+
+			"ipv7_self_healing_actions_total %d %d\n\n"+
+			"# HELP ipv7_degraded_rings_count Number of unpopulated small-world distance rings\n"+
+			"# TYPE ipv7_degraded_rings_count gauge\n"+
+			"ipv7_degraded_rings_count %d %d\n\n"+
 			"# HELP ipv7_node_uptime_seconds Process uptime\n"+
 			"# TYPE ipv7_node_uptime_seconds counter\n"+
 			"ipv7_node_uptime_seconds %d\n",
@@ -149,6 +173,8 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		cascadeCount, ts,
 		activeTunnels, ts,
 		vpnRunning, ts,
+		healActions, ts,
+		degradedRings, ts,
 		ts,
 	)
 

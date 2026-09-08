@@ -40,6 +40,12 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 | Iniciativa | Área | Impacto | Esfuerzo | Estado Actual | Ubicación en Código |
 |---|---|---|---|---|---|
 | **Servidor MCP Nativo (7 Tools)** | IA | Muy Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/mcp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp.go) / `-mcp` / `/api/mcp` |
+| **Handshake Noise_XX con PFS** | Seguridad | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`core/noise.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/noise.go) / Cripto Efímera |
+| **Optimización sync.Pool en E2EE** | Rendimiento | Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/e2ee.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/e2ee.go) / ChaCha20 Buffers |
+| **Supervisor de Autocuración** | Resiliencia | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`core/self_healing.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/self_healing.go) / Auditoría 12 Anillos |
+| **Streaming SSE para Agentes IA** | IA / Telemetría | Alto | Bajo | ✅ **IMPLEMENTADO** | [`ui/server.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) / `/api/events` |
+| **Pipeline CI Local (Costo Cero)** | DevOps | Alto | Bajo | ✅ **IMPLEMENTADO** | [`scripts/ci_local.ps1`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/ci_local.ps1) / Win & Linux |
+| **Docker Multi-Stage (<25MB)** | DevOps | Medio | Bajo | ✅ **IMPLEMENTADO** | [`Dockerfile`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/Dockerfile) / Scratch/Alpine |
 | **Logs estructurados con `slog`** | IA / DevOps | Alto | Muy Bajo | ✅ **IMPLEMENTADO** | [`core/logger.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/logger.go) / `-log-json` |
 | **OpenAPI 3.1 & Prometheus** | IA / DevOps | Alto | Muy Bajo | ✅ **IMPLEMENTADO** | [`ui/observability.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) / `/api/openapi.json` / `/metrics` |
 | **Filtro Anti-Replay Sliding Window** | Seguridad | Alto | Bajo | ✅ **IMPLEMENTADO** | [`adapters/udp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/udp.go) / Secuencia 64 bits |
@@ -49,7 +55,6 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 | **Transferencia Drag & Drop en Web UI** | UX | Alto | Medio | ✅ **IMPLEMENTADO** | [`ui/assets/index.html`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/assets/index.html) |
 | **Multiplexación QUIC Nativa en Túneles** | Rendimiento | Muy Alto | Alto | ⏳ En Roadmap | [`core/tunnel.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/tunnel.go) |
 | **Códec H.264 para Escritorio Remoto** | Rendimiento | Alto | Alto | ⏳ En Roadmap | [`core/remotedesktop_windows.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop_windows.go) |
-| **Handshake Noise_XX con PFS** | Seguridad | Muy Alto | Alto | ⏳ En Roadmap | [`core/handshake.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/handshake.go) |
 | **TUI interactiva (Bubbletea)** | UX | Medio | Medio | ⏳ En Roadmap | `cmd/chat/` |
 | **Systray en segundo plano** | UX | Medio | Bajo | ⏳ En Roadmap | `cmd/node/` |
 

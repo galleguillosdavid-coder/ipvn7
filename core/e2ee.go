@@ -7,9 +7,27 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/hkdf"
+)
+
+var (
+	// keyPool reutiliza buffers de 32 bytes para derivaciones simétricas HKDF
+	keyPool = sync.Pool{
+		New: func() interface{} {
+			b := make([]byte, chacha20poly1305.KeySize)
+			return &b
+		},
+	}
+	// noncePool reutiliza buffers de 12 bytes para nonces ChaCha20-Poly1305
+	noncePool = sync.Pool{
+		New: func() interface{} {
+			b := make([]byte, chacha20poly1305.NonceSize)
+			return &b
+		},
+	}
 )
 
 // GenerateE2EEKeyPair creates a Curve25519 (X25519) keypair for End-to-End Encryption
@@ -55,9 +73,12 @@ func EncryptE2EE(recipientPubKey []byte, plaintext []byte) ([]byte, error) {
 		return nil, fmt.Errorf("ecdh computation failed: %w", err)
 	}
 
-	// 3. Derive 32-byte symmetric key via HKDF-SHA256
+	// 3. Derive 32-byte symmetric key via HKDF-SHA256 (reusing pooled buffer)
+	keyPtr := keyPool.Get().(*[]byte)
+	defer keyPool.Put(keyPtr)
+	symmetricKey := *keyPtr
+
 	hkdfReader := hkdf.New(sha256.New, sharedSecret, nil, []byte("ipv7-e2ee-chacha20poly1305"))
-	symmetricKey := make([]byte, chacha20poly1305.KeySize)
 	if _, err := io.ReadFull(hkdfReader, symmetricKey); err != nil {
 		return nil, fmt.Errorf("hkdf key derivation failed: %w", err)
 	}
@@ -68,8 +89,11 @@ func EncryptE2EE(recipientPubKey []byte, plaintext []byte) ([]byte, error) {
 		return nil, fmt.Errorf("failed to create aead cipher: %w", err)
 	}
 
-	// 5. Generate unique 12-byte nonce
-	nonce := make([]byte, aead.NonceSize())
+	// 5. Generate unique 12-byte nonce (reusing pooled buffer)
+	noncePtr := noncePool.Get().(*[]byte)
+	defer noncePool.Put(noncePtr)
+	nonce := *noncePtr
+
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, fmt.Errorf("failed to generate nonce: %w", err)
 	}
@@ -110,9 +134,12 @@ func DecryptE2EE(recipientPrivKey *ecdh.PrivateKey, envelope []byte) ([]byte, er
 		return nil, fmt.Errorf("ecdh computation failed: %w", err)
 	}
 
-	// Derive symmetric key via HKDF
+	// Derive symmetric key via HKDF (reusing pooled buffer)
+	keyPtr := keyPool.Get().(*[]byte)
+	defer keyPool.Put(keyPtr)
+	symmetricKey := *keyPtr
+
 	hkdfReader := hkdf.New(sha256.New, sharedSecret, nil, []byte("ipv7-e2ee-chacha20poly1305"))
-	symmetricKey := make([]byte, chacha20poly1305.KeySize)
 	if _, err := io.ReadFull(hkdfReader, symmetricKey); err != nil {
 		return nil, fmt.Errorf("hkdf key derivation failed: %w", err)
 	}
