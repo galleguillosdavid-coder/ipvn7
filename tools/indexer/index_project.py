@@ -154,7 +154,8 @@ def main():
         f"- [docs/WSL_SUPERVISION.md](file:///{PROJECT_ROOT.as_posix()}/docs/WSL_SUPERVISION.md): Guía operativa de supervisión en WSL2.",
         f"- [docs/KUZU_MESH_GRAPH.md](file:///{PROJECT_ROOT.as_posix()}/docs/KUZU_MESH_GRAPH.md): Modelado en Kùzu y consultas Cypher.",
         f"- [docs/MUNDO_PEQUENO_ROUTING.md](file:///{PROJECT_ROOT.as_posix()}/docs/MUNDO_PEQUENO_ROUTING.md): Enrutamiento logarítmico acotado a 12 grados.",
-        f"- [genesis.md](file:///{PROJECT_ROOT.as_posix()}/genesis.md): Plan génesis de arquitectura del proyecto.",
+        f"- [docs/genesis.md](file:///{PROJECT_ROOT.as_posix()}/docs/genesis.md): Plan génesis de arquitectura del proyecto.",
+        f"- [docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///{PROJECT_ROOT.as_posix()}/docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.",
         ""
     ])
 

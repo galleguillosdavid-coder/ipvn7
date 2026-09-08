@@ -11,11 +11,11 @@ Write-Host "       PRUEBA DE MALLA P2P CRUZADA: WINDOWS <-> WSL2 LINUX       " -
 Write-Host "==================================================================" -ForegroundColor Cyan
 
 # 1. Check or build Windows binary
-$WinNode = Join-Path $ProjectRoot "ipv7-node.exe"
+$WinNode = Join-Path $ProjectRoot "release\ipv7.exe"
 if (-not (Test-Path $WinNode)) {
-    Write-Host "[*] Compilando ipv7-node.exe para Windows..." -ForegroundColor Yellow
+    Write-Host "[*] Compilando release\ipv7.exe para Windows..." -ForegroundColor Yellow
     Push-Location $ProjectRoot
-    go build -o ipv7-node.exe ./cmd/node
+    go build -o release\ipv7.exe ./cmd/node
     Pop-Location
 }
 

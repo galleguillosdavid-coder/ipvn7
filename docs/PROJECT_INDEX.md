@@ -476,4 +476,5 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - [docs/WSL_SUPERVISION.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/WSL_SUPERVISION.md): Guía operativa de supervisión en WSL2.
 - [docs/KUZU_MESH_GRAPH.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/KUZU_MESH_GRAPH.md): Modelado en Kùzu y consultas Cypher.
 - [docs/MUNDO_PEQUENO_ROUTING.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/MUNDO_PEQUENO_ROUTING.md): Enrutamiento logarítmico acotado a 12 grados.
-- [genesis.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/genesis.md): Plan génesis de arquitectura del proyecto.
+- [docs/genesis.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/genesis.md): Plan génesis de arquitectura del proyecto.
+- [docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.
