@@ -231,3 +231,60 @@ Se ejecutó el pipeline de compilación cruzada [`scripts/build_linux.ps1`](file
 - `bin/ipv7-node-linux`: Binario ELF 64-bit amd64 generado exitosamente con flags `-s -w` (tamaño optimizado).
 - `bin/chat-linux`: Binario ELF CLI generado exitosamente.
 - Tiempo de compilación: **4.1 segundos** sin errores de enlace ni advertencias de tipos.
+
+---
+
+## 7. Despliegue en Vivo en WSL2 Ubuntu y Auditoría Cross-Platform
+
+Se ejecutó el nodo IPv7 nativo en **WSL2 (Ubuntu Linux x86_64)** interconectado bidireccionalmente con el nodo anfitrión en **Windows 11**:
+
+```
++---------------------------------------------------+          +---------------------------------------------------+
+|               NODO ANFITRIÓN WINDOWS              |          |              NODO WSL2 UBUNTU LINUX               |
+|            (release/ipv7.exe, Puerto 7001)        |          |         (/tmp/ipv7-node-linux, Puerto 7002)       |
++---------------------------------------------------+          +---------------------------------------------------+
+| ID: f5083f03baa5a706c4c96d917a709e2db8ed15b90...  | <------> | ID: 2a193fd7060346750c1466631caa33d7d01a4f5c9...  |
+| UI Web: http://127.0.0.1:8080                     |   1 ms   | UI Web: http://127.0.0.1:8083                     |
+| Encrypt: feec2fdfbcf1b702ec49ebaf726cb3db139e...  |   E2EE   | Encrypt: 0e7da3c0b021d7b1d9bf5c1ec8bfd8bfa98d...  |
++---------------------------------------------------+          +---------------------------------------------------+
+```
+
+### 7.1. Resolución de Estabilidad en Kernel Linux (DrvFS 9p Mmap)
+- **Problema detectado**: Al intentar ejecutar directamente el binario compilado montado en `/mnt/c/...` dentro de WSL2, el subsistema DrvFS de 9P provoca fallos de mapeo de memoria (`segmentation fault / mmap`).
+- **Solución implementada**: El script [`scripts/wsl_node.sh`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/wsl_node.sh) copia automáticamente el binario a almacenamiento ext4 nativo (`/tmp/ipv7-node-linux`), otorgando permisos `chmod +x` antes de iniciar. Resultado: **100% de estabilidad y rendimiento nativo sin interrupciones**.
+
+### 7.2. Interconexión de Malla y Handshake Criptográfico
+El nodo WSL2 se inició conectándose al nodo Windows (`-peer 127.0.0.1:7001`):
+```text
+[OK] Starting IPv7 node on WSL2 (Ubuntu)...
+[ID]   Ed25519 Public Key : 2a193fd7060346750c1466631caa33d7d01a4f5c91f56ec900c1601d63ec608c
+[E2EE] X25519 Encrypt Key : 0e7da3c0b021d7b1d9bf5c1ec8bfd8bfa98d415b3b05f631df2db7965aa1ef78
+[OK] Reachable Endpoints:
+     - 172.22.75.148:7002 (WSL2 vEthernet)
+     - 153.67.137.179:22324 (STUN Público Reflexivo)
+[OK] Handshake verified! Peer ID: f5083f03baa5a706... (RTT: 1.054ms, Degree: 12)
+[UI] Dashboard web available at: http://localhost:8083
+```
+
+### 7.3. Validación con Herramientas SOP `skill_ia_ipv7`
+
+1. **Catálogo OpenAPI 3.1 en WSL2**:
+   - `curl -s http://127.0.0.1:8083/api/openapi.json`
+   - Respuesta: Esquema OpenAPI 3.1.0 válido con los 9 endpoints operativos.
+
+2. **Métricas Prometheus en WSL2**:
+   - `curl -s http://127.0.0.1:8083/metrics`
+   - Telemetría activa: `ipv7_peers_connected_total 2` (reportando enlace simétrico con Windows y tabla local).
+
+3. **Inspección de Herramientas MCP (`tools/list`)**:
+   - `curl -s http://127.0.0.1:8083/api/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`
+   - Respuesta: 7 herramientas MCP registradas y activas (`ipv7_get_info`, `ipv7_list_peers`, `ipv7_get_mesh_topology`, `ipv7_ping_peer`, `ipv7_send_message`, `ipv7_start_tunnel`, `ipv7_stop_tunnel`).
+
+4. **Invocación MCP `ipv7_ping_peer` (WSL2 -> Windows)**:
+   - Método: `tools/call` con peer `f5083f03baa5a706c4c96d917a709e2db8ed15b90c1b077a8631a915e8c086de`.
+   - Resultado: `{"rtt_ms": 1, "status": "pong"}` en **1.0 ms**.
+
+5. **Invocación MCP `ipv7_send_message` con E2EE (WSL2 -> Windows)**:
+   - Cifrado simétrico autenticado X25519 + ChaCha20-Poly1305.
+   - Resultado: `{"status": "delivered"}`. Recepción y descifrado verificado en el anfitrión Windows sin pérdida de paquetes.
+

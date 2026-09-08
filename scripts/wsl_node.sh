@@ -17,16 +17,18 @@ if [ ! -f "${BIN_PATH}" ]; then
     exit 1
 fi
 
-chmod +x "${BIN_PATH}"
+LOCAL_BIN="/tmp/ipv7-node-linux"
+cp -f "${BIN_PATH}" "${LOCAL_BIN}"
+chmod +x "${LOCAL_BIN}"
 
 echo "=================================================================="
 echo "    Iniciando IPv7 Node en WSL2 (Linux: $(uname -s) $(uname -m))  "
 echo "=================================================================="
 echo "[+] Directorio: ${PROJECT_ROOT}"
-echo "[+] Binario:    ${BIN_PATH}"
+echo "[+] Binario:    ${LOCAL_BIN}"
 echo "[+] Log file:   ${LOG_FILE}"
 echo "[+] Argumentos: $@"
 echo "=================================================================="
 
 # Ejecutar y duplicar la salida tanto en terminal como en log con marca de tiempo
-"${BIN_PATH}" "$@" 2>&1 | tee -a "${LOG_FILE}"
+"${LOCAL_BIN}" "$@" 2>&1 | tee -a "${LOG_FILE}"

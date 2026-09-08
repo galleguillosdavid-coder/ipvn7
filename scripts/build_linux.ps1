@@ -23,7 +23,7 @@ $NodeOut = Join-Path $BinDir "ipv7-node-linux"
 Write-Host "[1/2] Compilando cmd/node -> $NodeOut" -ForegroundColor Yellow
 Push-Location $ProjectRoot
 try {
-    go build -ldflags="-s -w" -o $NodeOut ./cmd/node
+    go build -o $NodeOut ./cmd/node
     if ($LASTEXITCODE -ne 0) {
         throw "Fallo la compilacion de cmd/node"
     }

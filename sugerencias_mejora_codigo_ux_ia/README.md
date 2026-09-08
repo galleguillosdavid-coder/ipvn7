@@ -39,9 +39,11 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 
 | Iniciativa | Área | Impacto | Esfuerzo | Estado Actual | Ubicación en Código |
 |---|---|---|---|---|---|
-| **Servidor MCP Nativo** | IA | Muy Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/mcp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp.go) / `-mcp` / `/api/mcp` |
+| **Servidor MCP Nativo (7 Tools)** | IA | Muy Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/mcp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp.go) / `-mcp` / `/api/mcp` |
 | **Logs estructurados con `slog`** | IA / DevOps | Alto | Muy Bajo | ✅ **IMPLEMENTADO** | [`core/logger.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/logger.go) / `-log-json` |
 | **OpenAPI 3.1 & Prometheus** | IA / DevOps | Alto | Muy Bajo | ✅ **IMPLEMENTADO** | [`ui/observability.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) / `/api/openapi.json` / `/metrics` |
+| **Filtro Anti-Replay Sliding Window** | Seguridad | Alto | Bajo | ✅ **IMPLEMENTADO** | [`adapters/udp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/udp.go) / Secuencia 64 bits |
+| **Orquestador WSL2 Multi-Nodo** | Multiplataforma | Alto | Medio | ✅ **IMPLEMENTADO** | [`scripts/wsl_node.sh`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/wsl_node.sh) / DrvFS bypass |
 | **Apertura de puertos UPnP IGD** | UX | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`adapters/upnp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/upnp.go) / `-upnp` |
 | **Persistencia de Identidad en disco** | UX / Core | Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/keystore.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/keystore.go) / `-key persistent` |
 | **Transferencia Drag & Drop en Web UI** | UX | Alto | Medio | ✅ **IMPLEMENTADO** | [`ui/assets/index.html`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/assets/index.html) |

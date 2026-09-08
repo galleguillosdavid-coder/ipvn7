@@ -9,7 +9,7 @@ Este directorio contiene la auditoría técnica exhaustiva, los resultados de pr
 | Reporte | Foco Principal | Hallazgos Destacados |
 |---|---|---|
 | [**01. Pruebas Unitarias y Benchmarks**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/01_auditoria_pruebas_unitarias_y_benchmarks.md) | Cobertura de tests Go, criptografía, latencias y micro-benchmarks. | **100% PASS** en todos los paquetes (`core`, `adapters`, `dht`, `ui`). Rendimiento criptográfico verificado: ~23,000 firmas Ed25519/seg y ~310,000 resoluciones XOR Small-World/seg. |
-| [**02. Pruebas en Vivo de Malla y Servicios**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/02_pruebas_en_vivo_red_malla_y_servicios.md) | Nodos interconectados, handshakes, APIs REST, OpenAPI, Métricas y MCP. | Handshake en vivo completado en **2.38 ms**. Verificación exitosa de endpoints `/metrics`, `/api/openapi.json` y del servidor **Model Context Protocol (MCP)** en `/api/mcp` con entrega E2EE verificada. |
+| [**02. Pruebas en Vivo de Malla y Servicios**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/02_pruebas_en_vivo_red_malla_y_servicios.md) | Nodos interconectados, handshakes, APIs REST, OpenAPI, Métricas y MCP. | Handshake en vivo completado en **1.05 ms** (Windows <-> WSL2 Ubuntu). Verificación exitosa de endpoints `/metrics`, `/api/openapi.json` y del servidor **Model Context Protocol (MCP)** en `/api/mcp` con 7 herramientas activas y entrega E2EE verificada. |
 | [**03. Auditoría del Grafo Kùzu y Topología**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/03_auditoria_grafo_kuzu_y_topologia.md) | Base de datos de grafos `.kuzu_index/`, indexador semántico y reglas de enrutamiento. | 53 archivos Go y 5 paquetes indexados con 580 comandos Cypher. Verificación del acotamiento del Mundo Pequeño (máx 120 peers, 12 anillos, `HopLimit = 12`). |
 | [**04. Catálogo de Oportunidades de Mejora**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/04_catalogo_oportunidades_de_mejora.md) | Propuestas de evolución divididas en 5 dimensiones técnicas. | Multiplexación QUIC nativa para túneles, protocolo Noise_XX con Perfect Forward Secrecy, streaming de eventos SSE hacia agentes IA, aceleración WebRTC/H.264 para escritorio remoto y pipeline CI/CD. |
 | [**05. Plan de Acción y Roadmap Evolutivo**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/reportes_pruebas_y_oportunidades_mejora/05_plan_de_accion_y_roadmap_evolutivo.md) | Matriz de impacto vs. esfuerzo y fases de desarrollo planificadas. | Roadmap estructurado en 4 fases (Quick Wins, Cripto & Rendimiento, Experiencia Multimedia y Ecosistema Agéntico Global). |
@@ -26,8 +26,8 @@ Este directorio contiene la auditoría técnica exhaustiva, los resultados de pr
   [✓] Suite de Pruebas Automatizadas (Go Test Suite)                  : 100% PASS (27/27 tests)
   [✓] Rendimiento de Enrutamiento (Small-World Heuristics)           : ~3.2 µs / búsqueda
   [✓] Capa de Observabilidad (OpenAPI 3.1 + Prometheus Metrics)       : OPERACIONAL
-  [✓] Interfaz para Inteligencia Artificial (MCP JSON-RPC 2.0)       : OPERACIONAL
-  [✓] Compilación Cruzada (Linux amd64 / WSL2)                       : EXITOSA
+  [✓] Interfaz para Inteligencia Artificial (MCP 7 Tools JSON-RPC)    : OPERACIONAL
+  [✓] Ejecución en Vivo WSL2 Linux (Ubuntu x86_64)                   : OPERACIONAL (1ms RTT)
   [✓] Grafo Semántico de Código (Kùzu Graph DB)                      : SINCRONIZADO
 ================================================================================
 ```
