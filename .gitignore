@@ -38,6 +38,8 @@ tools/kuzu/*.tar.gz
 __pycache__/
 *.pyc
 
-# OS
-Thumbs.db
-.DS_Store
+# Local test scripts & configs
+*.rdp
+tools/test_psremoting.ps1
+tools/test_udp.py
+
