@@ -149,12 +149,6 @@ func (b *BeaconService) broadcastLoop() {
 	ticker := time.NewTicker(BeaconInterval)
 	defer ticker.Stop()
 
-	// Broadcast address for general subnet and local broadcast
-	dstAddr := &net.UDPAddr{
-		IP:   net.IPv4(255, 255, 255, 255),
-		Port: b.listenPort,
-	}
-
 	for {
 		select {
 		case <-b.stopCh:
@@ -171,8 +165,51 @@ func (b *BeaconService) broadcastLoop() {
 				continue
 			}
 
-			// Send to broadcast address
-			_, _ = b.conn.WriteToUDP(data, dstAddr)
+			// Send to generic broadcast AND each active interface's directed broadcast (e.g. 192.168.1.255)
+			targets := getBroadcastAddresses(b.listenPort)
+			for _, target := range targets {
+				_, _ = b.conn.WriteToUDP(data, target)
+			}
 		}
 	}
+}
+
+func getBroadcastAddresses(port int) []*net.UDPAddr {
+	var addrs []*net.UDPAddr
+	addrs = append(addrs, &net.UDPAddr{IP: net.IPv4(255, 255, 255, 255), Port: port})
+
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return addrs
+	}
+
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addrsList, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, a := range addrsList {
+			ipNet, ok := a.(*net.IPNet)
+			if !ok || ipNet.IP.To4() == nil {
+				continue
+			}
+			ip4 := ipNet.IP.To4()
+			mask := ipNet.Mask
+			if len(mask) != 4 {
+				continue
+			}
+			// Compute directed broadcast address: IP | ^Mask
+			bcast := net.IPv4(
+				ip4[0]|^mask[0],
+				ip4[1]|^mask[1],
+				ip4[2]|^mask[2],
+				ip4[3]|^mask[3],
+			)
+			addrs = append(addrs, &net.UDPAddr{IP: bcast, Port: port})
+		}
+	}
+	return addrs
 }
