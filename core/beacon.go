@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -16,8 +17,9 @@ const (
 
 // BeaconPacket contains metadata broadcasted across the local subnet
 type BeaconPacket struct {
-	Identity string   `json:"id"`
-	Port     int      `json:"port"`
+	Identity  string   `json:"id"`
+	EncPubKey string   `json:"enc_key,omitempty"`
+	Port      int      `json:"port"`
 	Endpoints []string `json:"endpoints"`
 }
 
@@ -124,6 +126,15 @@ func (b *BeaconService) listenLoop() {
 			continue
 		}
 
+		// Cache peer's X25519 encryption key if present
+		if pkt.EncPubKey != "" {
+			if encBytes, err := hex.DecodeString(pkt.EncPubKey); err == nil && len(encBytes) == 32 {
+				if peerID, err := NewIdentityFromHex(pkt.Identity); err == nil {
+					b.node.SetPeerEncKey(peerID, encBytes)
+				}
+			}
+		}
+
 		// Candidate endpoint: remote IP + advertised node port
 		candidateEp := fmt.Sprintf("%s:%d", remoteAddr.IP.String(), pkt.Port)
 
@@ -159,8 +170,13 @@ func (b *BeaconService) broadcastLoop() {
 		case <-b.stopCh:
 			return
 		case <-ticker.C:
+			encKeyHex := ""
+			if b.node.EncPubKey != nil {
+				encKeyHex = hex.EncodeToString(b.node.EncPubKey.Bytes())
+			}
 			pkt := BeaconPacket{
 				Identity:  b.node.Identity.String(),
+				EncPubKey: encKeyHex,
 				Port:      b.targetPort,
 				Endpoints: b.node.Endpoints(),
 			}

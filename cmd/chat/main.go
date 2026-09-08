@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"ipv7/adapters"
 	"ipv7/core"
@@ -98,7 +99,17 @@ func main() {
 		if len(shortID) > 12 {
 			shortID = shortID[:12] + "..."
 		}
-		fmt.Printf("\n[%s] [FROM %s]: %s\n> ", ts, shortID, string(payload))
+
+		text := string(payload)
+		encTag := ""
+		if decrypted, err := node.DecryptMessage(payload); err == nil {
+			text = string(decrypted)
+			encTag = " [🔒 E2EE]"
+		} else if !utf8.Valid(payload) {
+			text = fmt.Sprintf("[Mensaje binario cifrado no descifrable: %d bytes]", len(payload))
+		}
+
+		fmt.Printf("\n[%s] [FROM %s%s]: %s\n> ", ts, shortID, encTag, text)
 
 		// Auto-register peer for easy reply
 		if currentPeerID == nil {
@@ -156,13 +167,26 @@ func main() {
 			continue
 		}
 
-		// Send message
-		err := node.SendMessage(currentPeerID, []byte(line))
+		// Send message with automatic E2EE if peer key is known
+		recipEncKey := node.GetPeerEncKey(currentPeerID)
+		var err error
+		isEnc := false
+		if len(recipEncKey) == 32 {
+			err = node.SendEncryptedMessage(currentPeerID, recipEncKey, []byte(line))
+			isEnc = true
+		} else {
+			err = node.SendMessage(currentPeerID, []byte(line))
+		}
+
 		if err != nil {
 			fmt.Printf("[Error] Failed to send: %v\n", err)
 		} else {
 			ts := time.Now().Format("15:04:05")
-			fmt.Printf("[%s] [SENT]: %s\n", ts, line)
+			encTag := ""
+			if isEnc {
+				encTag = " [🔒 E2EE]"
+			}
+			fmt.Printf("[%s] [SENT%s]: %s\n", ts, encTag, line)
 		}
 		fmt.Print("> ")
 	}

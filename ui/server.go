@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"ipv7/core"
 
@@ -58,6 +59,8 @@ func NewServer(node *core.Node, cascade *core.CascadeNode, port int) *Server {
 		if decrypted, err := node.DecryptMessage(payload); err == nil {
 			text = string(decrypted)
 			wasEncrypted = true
+		} else if !utf8.Valid(payload) {
+			text = fmt.Sprintf("[Mensaje binario no legible: %d bytes]", len(payload))
 		}
 
 		s.broadcastWS(map[string]interface{}{
@@ -198,9 +201,26 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 
 	payload := []byte(req.Message)
 	if req.Encrypted {
-		// Derive or use recipient's X25519 key
-		_, recipX25519, _ := core.DeriveX25519FromSeed(pubBytes)
-		err = s.node.SendEncryptedMessage(targetID, recipX25519.Bytes(), payload)
+		// Lookup recipient's authentic X25519 key
+		recipEncKey := s.node.GetPeerEncKey(targetID)
+		if len(recipEncKey) != 32 {
+			// If not yet cached, attempt handshake with peer to acquire authentic X25519 key
+			eps := s.node.GetPeerEndpoints(targetID)
+			if len(eps) == 0 && req.Endpoint != "" {
+				eps = []string{req.Endpoint}
+			}
+			if len(eps) > 0 {
+				_, _, _ = s.node.Handshake(eps[0])
+				recipEncKey = s.node.GetPeerEncKey(targetID)
+			}
+		}
+
+		if len(recipEncKey) == 32 {
+			err = s.node.SendEncryptedMessage(targetID, recipEncKey, payload)
+		} else {
+			// Fallback: send authenticated plaintext if peer X25519 key is unavailable
+			err = s.node.SendMessage(targetID, payload)
+		}
 	} else {
 		err = s.node.SendMessage(targetID, payload)
 	}

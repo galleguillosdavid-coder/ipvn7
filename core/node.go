@@ -30,6 +30,7 @@ type Node struct {
 
 	// peerTable maps Identity string (hex pubkey) -> list of known physical endpoints (ip:port)
 	peerTable      map[string][]string
+	peerEncKeys    map[string][]byte
 	localEndpoints []string
 	mu             sync.RWMutex
 
@@ -61,6 +62,7 @@ func NewNode(identity *Ed25519Identity, privateKey ed25519.PrivateKey) *Node {
 		EncPubKey:         encPub,
 		SmallWorld:        NewSmallWorldTable(identity, DefaultMaxDegrees, DefaultPeersPerDegree),
 		peerTable:         make(map[string][]string),
+		peerEncKeys:       make(map[string][]byte),
 		stopCh:            make(chan struct{}),
 		handlers:          make([]MessageHandler, 0),
 		pendingHandshakes: make(map[uint64]chan *HandshakePayload),
@@ -107,6 +109,27 @@ func (n *Node) GetPeerEndpoints(peerID Identity) []string {
 	result := make([]string, len(eps))
 	copy(result, eps)
 	return result
+}
+
+// SetPeerEncKey caches the 32-byte X25519 encryption public key for a peer identity
+func (n *Node) SetPeerEncKey(peerID Identity, pubKey []byte) {
+	if len(pubKey) != 32 {
+		return
+	}
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.peerEncKeys[peerID.String()] = append([]byte(nil), pubKey...)
+}
+
+// GetPeerEncKey returns the 32-byte X25519 encryption public key for a peer, or nil if unknown
+func (n *Node) GetPeerEncKey(peerID Identity) []byte {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	key, ok := n.peerEncKeys[peerID.String()]
+	if !ok {
+		return nil
+	}
+	return append([]byte(nil), key...)
 }
 
 // SetEndpoints sets the node's own discovered reachable endpoints
@@ -292,6 +315,9 @@ func (n *Node) Handshake(endpoint string) (*Ed25519Identity, time.Duration, erro
 			}
 		}
 		n.AddPeerWithLatency(peerID, eps, rtt)
+		if len(resp.X25519Pub) == 32 {
+			n.SetPeerEncKey(peerID, resp.X25519Pub)
+		}
 		return peerID, rtt, nil
 
 	case <-time.After(3 * time.Second):
@@ -418,6 +444,9 @@ func (n *Node) adapterListenLoop(a Adapter) {
 					if len(hp.Endpoints) > 0 {
 						n.AddPeerWithLatency(senderID, hp.Endpoints, time.Millisecond)
 					}
+					if len(hp.X25519Pub) == 32 {
+						n.SetPeerEncKey(senderID, hp.X25519Pub)
+					}
 
 					// 1. Reply with Handshake Response
 					var x25519Bytes []byte
@@ -452,6 +481,9 @@ func (n *Node) adapterListenLoop(a Adapter) {
 				} else if hp.Type == ControlHandshakeResp {
 					if len(hp.Endpoints) > 0 {
 						n.AddPeerWithLatency(senderID, hp.Endpoints, time.Millisecond)
+					}
+					if len(hp.X25519Pub) == 32 {
+						n.SetPeerEncKey(senderID, hp.X25519Pub)
 					}
 					n.handshakeMu.Lock()
 					ch, exists := n.pendingHandshakes[hp.Nonce]

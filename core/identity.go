@@ -29,6 +29,15 @@ func NewIdentityFromBytes(pubKey []byte) (*Ed25519Identity, error) {
 	return &Ed25519Identity{PublicKey: pubKey}, nil
 }
 
+// NewIdentityFromHex creates an Identity from a hex-encoded public key
+func NewIdentityFromHex(hexStr string) (*Ed25519Identity, error) {
+	b, err := hex.DecodeString(hexStr)
+	if err != nil {
+		return nil, err
+	}
+	return NewIdentityFromBytes(b)
+}
+
 func (id *Ed25519Identity) String() string {
 	return hex.EncodeToString(id.PublicKey)
 }
