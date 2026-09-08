@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"crypto/sha256"
 	_ "embed"
 	"encoding/hex"
 	"encoding/json"
@@ -11,6 +12,7 @@ import (
 
 	"ipv7/core"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/gorilla/websocket"
 )
 
@@ -92,7 +94,13 @@ func (s *Server) Start() error {
 
 	mux.HandleFunc("/api/info", s.handleInfo)
 	mux.HandleFunc("/api/peers", s.handlePeers)
+	mux.HandleFunc("/api/mesh", s.handleMesh)
+	mux.HandleFunc("/api/mesh/export-cypher", s.handleMeshCypher)
+	mux.HandleFunc("/api/kuzu/query", s.handleKuzuQuery)
+	mux.HandleFunc("/api/kuzu/network-graph", s.handleKuzuNetworkGraph)
+	mux.HandleFunc("/api/kuzu/code-graph", s.handleKuzuCodeGraph)
 	mux.HandleFunc("/api/send", s.handleSend)
+	mux.HandleFunc("/api/ping", s.handlePing)
 	mux.HandleFunc("/api/broadcast-stream", s.handleBroadcastStream)
 	mux.HandleFunc("/ws", s.handleWS)
 
@@ -194,19 +202,121 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]string{"status": "sent"})
 }
 
+type BroadcastStreamReq struct {
+	StreamID string `json:"stream_id"`
+	Payload  string `json:"payload"`
+}
+
+type StreamTelemetryFrame struct {
+	Timestamp int64  `json:"timestamp" cbor:"1,keyasint"`
+	Origin    string `json:"origin" cbor:"2,keyasint"`
+	Sequence  uint64 `json:"seq" cbor:"3,keyasint"`
+	SHA256    string `json:"sha256" cbor:"4,keyasint"`
+	Payload   []byte `json:"payload" cbor:"5,keyasint"`
+}
+
 func (s *Server) handleBroadcastStream(w http.ResponseWriter, r *http.Request) {
 	if s.cascade == nil {
 		http.Error(w, "Cascade node not enabled", http.StatusBadRequest)
 		return
 	}
 
-	data := []byte(fmt.Sprintf("STREAM_FRAME_%d", time.Now().UnixNano()))
-	err := s.cascade.Broadcast("live-ui-stream", uint64(time.Now().Unix()), data)
+	streamID := "live-ui-stream"
+	var rawData []byte
+
+	if r.Method == http.MethodPost && r.Body != nil {
+		var req BroadcastStreamReq
+		if err := json.NewDecoder(r.Body).Decode(&req); err == nil && req.Payload != "" {
+			if req.StreamID != "" {
+				streamID = req.StreamID
+			}
+			rawData = []byte(req.Payload)
+		}
+	}
+
+	if len(rawData) == 0 {
+		rawData = []byte(fmt.Sprintf("telemetry_epoch_%d", time.Now().UnixNano()))
+	}
+
+	hash := sha256.Sum256(rawData)
+	seq := uint64(time.Now().UnixNano())
+
+	frame := StreamTelemetryFrame{
+		Timestamp: time.Now().Unix(),
+		Origin:    s.node.Identity.String(),
+		Sequence:  seq,
+		SHA256:    hex.EncodeToString(hash[:]),
+		Payload:   rawData,
+	}
+
+	encoded, err := cbor.Marshal(frame)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_ = json.NewEncoder(w).Encode(map[string]string{"status": "broadcasted"})
+
+	err = s.cascade.Broadcast(streamID, seq, encoded)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "broadcasted",
+		"stream_id": streamID,
+		"seq":       seq,
+		"sha256":    frame.SHA256,
+		"bytes":     len(encoded),
+	})
+}
+
+type PingReq struct {
+	TargetID string `json:"target_id"`
+}
+
+func (s *Server) handlePing(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req PingReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	pubBytes, err := hex.DecodeString(req.TargetID)
+	if err != nil || len(pubBytes) != 32 {
+		http.Error(w, "Invalid target identity (must be 32-byte hex)", http.StatusBadRequest)
+		return
+	}
+
+	targetID, err := core.NewIdentityFromBytes(pubBytes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rtt, err := s.node.PingPeer(targetID)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusGatewayTimeout)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"target":  req.TargetID,
+			"error":   err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"target":  req.TargetID,
+		"rtt_ms":  rtt.Milliseconds(),
+		"success": true,
+	})
 }
 
 func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
@@ -245,4 +355,115 @@ func (s *Server) broadcastWS(msg interface{}) {
 	for client := range s.wsClients {
 		_ = client.WriteMessage(websocket.TextMessage, data)
 	}
+}
+
+type MeshNode struct {
+	ID        string   `json:"id"`
+	ShortID   string   `json:"short_id"`
+	Label     string   `json:"label"`
+	IsLocal   bool     `json:"is_local"`
+	Endpoints []string `json:"endpoints"`
+	Degree    int      `json:"degree"`
+	E2EE      bool     `json:"e2ee"`
+}
+
+type MeshLink struct {
+	Source    string `json:"source"`
+	Target    string `json:"target"`
+	Adapter   string `json:"adapter"`
+	LatencyMs int64  `json:"latency_ms"`
+	Encrypted bool   `json:"encrypted"`
+}
+
+type MeshGraphResponse struct {
+	LocalID string     `json:"local_id"`
+	Nodes   []MeshNode `json:"nodes"`
+	Links   []MeshLink `json:"links"`
+}
+
+func (s *Server) handleMesh(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	peers := s.node.SmallWorld.FindClosestPeers(s.node.Identity, 100)
+
+	localIDStr := s.node.Identity.String()
+	shortLocal := localIDStr
+	if len(shortLocal) > 8 {
+		shortLocal = shortLocal[:8] + "..."
+	}
+
+	nodes := []MeshNode{
+		{
+			ID:        localIDStr,
+			ShortID:   shortLocal,
+			Label:     "Nodo Local",
+			IsLocal:   true,
+			Endpoints: []string{fmt.Sprintf("127.0.0.1:%d", s.port)},
+			Degree:    s.node.SmallWorld.CalculateDegree(s.node.Identity),
+			E2EE:      s.node.EncPubKey != nil,
+		},
+	}
+
+	var links []MeshLink
+	for _, p := range peers {
+		pIDStr := p.Identity.String()
+		shortPeer := pIDStr
+		if len(shortPeer) > 8 {
+			shortPeer = shortPeer[:8] + "..."
+		}
+
+		nodes = append(nodes, MeshNode{
+			ID:        pIDStr,
+			ShortID:   shortPeer,
+			Label:     fmt.Sprintf("Peer (D=%d)", p.Degree),
+			IsLocal:   false,
+			Endpoints: p.Endpoints,
+			Degree:    p.Degree,
+			E2EE:      true,
+		})
+
+		lat := p.Latency.Milliseconds()
+		if lat <= 0 {
+			lat = 1
+		}
+
+		links = append(links, MeshLink{
+			Source:    localIDStr,
+			Target:    pIDStr,
+			Adapter:   "QUIC/UDP",
+			LatencyMs: lat,
+			Encrypted: true,
+		})
+	}
+
+	_ = json.NewEncoder(w).Encode(MeshGraphResponse{
+		LocalID: localIDStr,
+		Nodes:   nodes,
+		Links:   links,
+	})
+}
+
+func (s *Server) handleMeshCypher(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	peers := s.node.SmallWorld.FindClosestPeers(s.node.Identity, 100)
+	localIDStr := s.node.Identity.String()
+
+	var cypher string
+	cypher += fmt.Sprintf("MERGE (p:Peer {id: '%s', endpoint: '127.0.0.1:%d', is_local: true});\n", localIDStr, s.port)
+
+	for _, p := range peers {
+		pIDStr := p.Identity.String()
+		ep := "unknown"
+		if len(p.Endpoints) > 0 {
+			ep = p.Endpoints[0]
+		}
+		lat := p.Latency.Milliseconds()
+		if lat <= 0 {
+			lat = 1
+		}
+
+		cypher += fmt.Sprintf("MERGE (p:Peer {id: '%s', endpoint: '%s', is_local: false});\n", pIDStr, ep)
+		cypher += fmt.Sprintf("MATCH (a:Peer {id: '%s'}), (b:Peer {id: '%s'}) MERGE (a)-[:CONNECTED_TO {adapter: 'QUIC/UDP', latency_ms: %d, encrypted: true}]->(b);\n", localIDStr, pIDStr, lat)
+	}
+
+	_, _ = w.Write([]byte(cypher))
 }

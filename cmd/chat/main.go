@@ -54,6 +54,7 @@ func main() {
 
 	_ = udpAdapter.DiscoverEndpoints(*stunServer)
 	endpoints := udpAdapter.Endpoints()
+	node.SetEndpoints(endpoints)
 	fmt.Println("[OK]  Reachable Endpoints:")
 	for _, ep := range endpoints {
 		fmt.Printf("      - %s\n", ep)
@@ -76,12 +77,18 @@ func main() {
 			}
 		}
 		if currentPeerID == nil {
-			// Ephemeral target identity if unknown
-			dummyKey := make([]byte, 32)
-			currentPeerID, _ = core.NewIdentityFromBytes(dummyKey)
+			fmt.Printf("[...] Handshake criptográfico con %s...\n", *peerAddr)
+			discoveredID, rtt, err := node.Handshake(*peerAddr)
+			if err == nil {
+				currentPeerID = discoveredID
+				fmt.Printf("[+] Handshake verificado con %s! (ID: %s, RTT: %v)\n", *peerAddr, currentPeerID.String()[:12]+"...", rtt)
+			} else {
+				fmt.Printf("[!] Handshake inicial pendiente con %s: %v\n", *peerAddr, err)
+			}
+		} else {
+			node.AddPeer(currentPeerID, []string{*peerAddr})
+			fmt.Printf("[+] Linked peer: %s at %s\n", currentPeerID.String()[:12]+"...", *peerAddr)
 		}
-		node.AddPeer(currentPeerID, []string{*peerAddr})
-		fmt.Printf("[+] Linked peer: %s at %s\n", currentPeerID.String()[:12]+"...", *peerAddr)
 	}
 
 	// 5. Incoming message handler
@@ -125,12 +132,20 @@ func main() {
 					}
 				}
 				if peerKey == nil {
-					dummyKey := make([]byte, 32)
-					peerKey, _ = core.NewIdentityFromBytes(dummyKey)
+					fmt.Printf("[...] Handshake con %s...\n", addr)
+					discoveredID, rtt, err := node.Handshake(addr)
+					if err == nil {
+						peerKey = discoveredID
+						fmt.Printf("[+] Autenticado con %s! (ID: %s, RTT: %v)\n> ", addr, peerKey.String()[:12]+"...", rtt)
+					} else {
+						fmt.Printf("[!] Handshake falló con %s: %v\n> ", addr, err)
+						continue
+					}
+				} else {
+					node.AddPeer(peerKey, []string{addr})
+					fmt.Printf("[+] Conectado a %s (%s)\n> ", addr, peerKey.String()[:12]+"...")
 				}
 				currentPeerID = peerKey
-				node.AddPeer(currentPeerID, []string{addr})
-				fmt.Printf("[+] Connected to peer endpoint: %s\n> ", addr)
 			}
 			continue
 		}

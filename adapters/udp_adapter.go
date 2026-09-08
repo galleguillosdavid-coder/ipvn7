@@ -17,8 +17,18 @@ type UDPAdapter struct {
 	receive   chan *core.Container
 	endpoints []string
 	
+	addrCache map[string]*net.UDPAddr
+	cacheMu   sync.RWMutex
+	
 	mu        sync.Mutex
 	running   bool
+}
+
+var udpBufPool = sync.Pool{
+	New: func() interface{} {
+		b := make([]byte, 65535)
+		return &b
+	},
 }
 
 func NewUDPAdapter(listenAddr string) (*UDPAdapter, error) {
@@ -28,8 +38,9 @@ func NewUDPAdapter(listenAddr string) (*UDPAdapter, error) {
 	}
 	
 	return &UDPAdapter{
-		addr:    addr,
-		receive: make(chan *core.Container, 100),
+		addr:      addr,
+		receive:   make(chan *core.Container, 1000),
+		addrCache: make(map[string]*net.UDPAddr),
 	}, nil
 }
 
@@ -68,6 +79,25 @@ func (a *UDPAdapter) Stop() error {
 	return nil
 }
 
+func (a *UDPAdapter) resolveCached(ep string) (*net.UDPAddr, error) {
+	a.cacheMu.RLock()
+	addr, exists := a.addrCache[ep]
+	a.cacheMu.RUnlock()
+	if exists {
+		return addr, nil
+	}
+
+	resolved, err := net.ResolveUDPAddr("udp", ep)
+	if err != nil {
+		return nil, err
+	}
+
+	a.cacheMu.Lock()
+	a.addrCache[ep] = resolved
+	a.cacheMu.Unlock()
+	return resolved, nil
+}
+
 func (a *UDPAdapter) Send(c *core.Container, endpoints []string) error {
 	a.mu.Lock()
 	conn := a.conn
@@ -89,7 +119,7 @@ func (a *UDPAdapter) Send(c *core.Container, endpoints []string) error {
 	
 	var lastErr error
 	for _, ep := range endpoints {
-		addr, err := net.ResolveUDPAddr("udp", ep)
+		addr, err := a.resolveCached(ep)
 		if err != nil {
 			lastErr = err
 			continue
@@ -154,7 +184,9 @@ func (a *UDPAdapter) DiscoverEndpoints(stunServer string) error {
 }
 
 func (a *UDPAdapter) listenLoop() {
-	buf := make([]byte, 65535)
+	bufPtr := udpBufPool.Get().(*[]byte)
+	buf := *bufPtr
+	defer udpBufPool.Put(bufPtr)
 	
 	for {
 		a.mu.Lock()

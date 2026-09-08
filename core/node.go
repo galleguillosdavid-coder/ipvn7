@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
+	"time"
 )
 
 // MessageHandler is a callback invoked when a valid verified message arrives for this node
@@ -27,12 +29,25 @@ type Node struct {
 	SmallWorld *SmallWorldTable
 
 	// peerTable maps Identity string (hex pubkey) -> list of known physical endpoints (ip:port)
-	peerTable map[string][]string
-	mu        sync.RWMutex
+	peerTable      map[string][]string
+	localEndpoints []string
+	mu             sync.RWMutex
 
-	handler MessageHandler
-	running bool
-	stopCh  chan struct{}
+	// Atomic throughput & packet metrics
+	totalSent     atomic.Uint64
+	totalReceived atomic.Uint64
+	bytesSent     atomic.Uint64
+	bytesReceived atomic.Uint64
+
+	// handlers holds multiple concurrent message listeners
+	handlers []MessageHandler
+	running  bool
+	stopCh   chan struct{}
+
+	// Pending handshakes and pings mapped by nonce
+	pendingHandshakes map[uint64]chan *HandshakePayload
+	pendingPings      map[uint64]chan time.Time
+	handshakeMu       sync.Mutex
 }
 
 // NewNode initializes a new IPv7 Node with its cryptographic identity and derived E2EE key
@@ -40,13 +55,16 @@ func NewNode(identity *Ed25519Identity, privateKey ed25519.PrivateKey) *Node {
 	encPriv, encPub, _ := DeriveX25519FromSeed(privateKey.Seed())
 
 	return &Node{
-		Identity:   identity,
-		privateKey: privateKey,
-		EncPrivKey: encPriv,
-		EncPubKey:  encPub,
-		SmallWorld: NewSmallWorldTable(identity, DefaultMaxDegrees, DefaultPeersPerDegree),
-		peerTable:  make(map[string][]string),
-		stopCh:     make(chan struct{}),
+		Identity:          identity,
+		privateKey:        privateKey,
+		EncPrivKey:        encPriv,
+		EncPubKey:         encPub,
+		SmallWorld:        NewSmallWorldTable(identity, DefaultMaxDegrees, DefaultPeersPerDegree),
+		peerTable:         make(map[string][]string),
+		stopCh:            make(chan struct{}),
+		handlers:          make([]MessageHandler, 0),
+		pendingHandshakes: make(map[uint64]chan *HandshakePayload),
+		pendingPings:      make(map[uint64]chan time.Time),
 	}
 }
 
@@ -57,20 +75,25 @@ func (n *Node) AddAdapter(adapter Adapter) {
 	n.adapters = append(n.adapters, adapter)
 }
 
-// OnMessage registers the listener callback for incoming payload
+// OnMessage registers a listener callback for incoming payload without overwriting previous listeners
 func (n *Node) OnMessage(handler MessageHandler) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	n.handler = handler
+	n.handlers = append(n.handlers, handler)
 }
 
 // AddPeer registers known endpoints for a peer's identity and records it in the SmallWorld table
 func (n *Node) AddPeer(peerID Identity, endpoints []string) {
+	n.AddPeerWithLatency(peerID, endpoints, 0)
+}
+
+// AddPeerWithLatency registers a peer with its measured RTT latency
+func (n *Node) AddPeerWithLatency(peerID Identity, endpoints []string, latency time.Duration) {
 	n.mu.Lock()
 	n.peerTable[peerID.String()] = endpoints
 	n.mu.Unlock()
 
-	n.SmallWorld.AddPeer(peerID, endpoints, 0)
+	n.SmallWorld.AddPeer(peerID, endpoints, latency)
 }
 
 // GetPeerEndpoints returns known endpoints for a peer
@@ -84,6 +107,28 @@ func (n *Node) GetPeerEndpoints(peerID Identity) []string {
 	result := make([]string, len(eps))
 	copy(result, eps)
 	return result
+}
+
+// SetEndpoints sets the node's own discovered reachable endpoints
+func (n *Node) SetEndpoints(eps []string) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.localEndpoints = make([]string, len(eps))
+	copy(n.localEndpoints, eps)
+}
+
+// Endpoints returns a copy of the node's reachable endpoints
+func (n *Node) Endpoints() []string {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	res := make([]string, len(n.localEndpoints))
+	copy(res, n.localEndpoints)
+	return res
+}
+
+// Stats returns atomic metrics for packets and bytes transferred
+func (n *Node) Stats() (sent, recv, bSent, bRecv uint64) {
+	return n.totalSent.Load(), n.totalReceived.Load(), n.bytesSent.Load(), n.bytesReceived.Load()
 }
 
 // Start boots up all registered adapters and begins listening for containers
@@ -129,7 +174,7 @@ func (n *Node) Stop() error {
 // SendMessage sends an authenticated data payload to a target peer identity
 func (n *Node) SendMessage(target Identity, payload []byte) error {
 	endpoints := n.GetPeerEndpoints(target)
-	
+
 	// Small-World greedy resolution: if destination not directly connected, find closest next-hop peer
 	if len(endpoints) == 0 {
 		closest := n.SmallWorld.FindClosestPeers(target, 1)
@@ -175,6 +220,148 @@ func (n *Node) DecryptMessage(envelope []byte) ([]byte, error) {
 	return DecryptE2EE(n.EncPrivKey, envelope)
 }
 
+// Handshake initiates a two-way cryptographic identity exchange with a physical endpoint (ip:port).
+// It discovers the peer's authentic Ed25519 public key, X25519 encryption key, and measures real RTT.
+func (n *Node) Handshake(endpoint string) (*Ed25519Identity, time.Duration, error) {
+	nonce := GenerateNonce()
+	respCh := make(chan *HandshakePayload, 1)
+
+	n.handshakeMu.Lock()
+	n.pendingHandshakes[nonce] = respCh
+	n.handshakeMu.Unlock()
+
+	defer func() {
+		n.handshakeMu.Lock()
+		delete(n.pendingHandshakes, nonce)
+		n.handshakeMu.Unlock()
+	}()
+
+	var x25519Bytes []byte
+	if n.EncPubKey != nil {
+		x25519Bytes = n.EncPubKey.Bytes()
+	}
+
+	start := time.Now()
+	reqPayload := &HandshakePayload{
+		Type:       ControlHandshakeReq,
+		Ed25519Pub: n.Identity.Bytes(),
+		X25519Pub:  x25519Bytes,
+		Endpoints:  n.Endpoints(),
+		Timestamp:  start.UnixNano(),
+		Nonce:      nonce,
+	}
+
+	data, err := EncodeHandshake(reqPayload)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	c := &Container{
+		SenderPubKey: n.Identity.Bytes(),
+		SessionID:    "handshake",
+		Payload:      data,
+		HopLimit:     DefaultHopLimit,
+	}
+
+	if err := c.Sign(n.privateKey); err != nil {
+		return nil, 0, fmt.Errorf("failed to sign handshake container: %w", err)
+	}
+
+	if err := n.forwardContainer(c, []string{endpoint}); err != nil {
+		return nil, 0, fmt.Errorf("failed to transmit handshake to %s: %w", endpoint, err)
+	}
+
+	// Await authenticated response
+	select {
+	case resp := <-respCh:
+		rtt := time.Since(start)
+		if rtt <= 0 {
+			rtt = time.Millisecond
+		}
+
+		peerID, err := NewIdentityFromBytes(resp.Ed25519Pub)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid peer identity in handshake response: %w", err)
+		}
+
+		// Register peer with real identity, endpoints and measured RTT
+		eps := []string{endpoint}
+		for _, ep := range resp.Endpoints {
+			if ep != endpoint {
+				eps = append(eps, ep)
+			}
+		}
+		n.AddPeerWithLatency(peerID, eps, rtt)
+		return peerID, rtt, nil
+
+	case <-time.After(3 * time.Second):
+		return nil, 0, fmt.Errorf("handshake timeout with %s", endpoint)
+	}
+}
+
+// PingPeer actively probes a known peer and returns the measured RTT latency
+func (n *Node) PingPeer(targetID Identity) (time.Duration, error) {
+	endpoints := n.GetPeerEndpoints(targetID)
+	if len(endpoints) == 0 {
+		return 0, fmt.Errorf("no known endpoint for %s", targetID.String())
+	}
+
+	nonce := GenerateNonce()
+	respCh := make(chan time.Time, 1)
+
+	n.handshakeMu.Lock()
+	n.pendingPings[nonce] = respCh
+	n.handshakeMu.Unlock()
+
+	defer func() {
+		n.handshakeMu.Lock()
+		delete(n.pendingPings, nonce)
+		n.handshakeMu.Unlock()
+	}()
+
+	start := time.Now()
+	pingPayload := &PingPayload{
+		Type:      ControlPing,
+		Nonce:     nonce,
+		Timestamp: start.UnixNano(),
+	}
+
+	data, err := EncodePing(pingPayload)
+	if err != nil {
+		return 0, err
+	}
+
+	c := &Container{
+		SenderPubKey:   n.Identity.Bytes(),
+		ReceiverPubKey: targetID.Bytes(),
+		SessionID:      "ping",
+		Payload:        data,
+		HopLimit:       DefaultHopLimit,
+	}
+
+	if err := c.Sign(n.privateKey); err != nil {
+		return 0, err
+	}
+
+	if err := n.forwardContainer(c, endpoints); err != nil {
+		return 0, err
+	}
+
+	select {
+	case respTime := <-respCh:
+		rtt := respTime.Sub(start)
+		if rtt <= 0 {
+			rtt = time.Millisecond
+		}
+		// Update peer latency in SmallWorld table
+		n.AddPeerWithLatency(targetID, endpoints, rtt)
+		return rtt, nil
+
+	case <-time.After(3 * time.Second):
+		return 0, fmt.Errorf("ping timeout for %s", targetID.String())
+	}
+}
+
 func (n *Node) forwardContainer(c *Container, endpoints []string) error {
 	n.mu.RLock()
 	adapters := make([]Adapter, len(n.adapters))
@@ -189,6 +376,8 @@ func (n *Node) forwardContainer(c *Container, endpoints []string) error {
 	for _, a := range adapters {
 		err := a.Send(c, endpoints)
 		if err == nil {
+			n.totalSent.Add(1)
+			n.bytesSent.Add(uint64(len(c.Payload)))
 			return nil
 		}
 		lastErr = err
@@ -209,24 +398,124 @@ func (n *Node) adapterListenLoop(a Adapter) {
 				continue
 			}
 
-			// Verify end-to-end signature
+			// Verify end-to-end Ed25519 signature
 			if !c.Verify() {
 				continue
 			}
 
-			// 1. Destination is this node (or broadcast): deliver locally!
-			if len(c.ReceiverPubKey) == 0 || bytes.Equal(c.ReceiverPubKey, n.Identity.Bytes()) {
-				senderID, err := NewIdentityFromBytes(c.SenderPubKey)
-				if err != nil {
+			n.totalReceived.Add(1)
+			n.bytesReceived.Add(uint64(len(c.Payload)))
+
+			senderID, err := NewIdentityFromBytes(c.SenderPubKey)
+			if err != nil {
+				continue
+			}
+
+			// Check if packet is a Control Handshake
+			if hp, err := DecodeHandshake(c.Payload); err == nil {
+				if hp.Type == ControlHandshakeReq {
+					// Register incoming peer's announced endpoints immediately
+					if len(hp.Endpoints) > 0 {
+						n.AddPeerWithLatency(senderID, hp.Endpoints, time.Millisecond)
+					}
+
+					// 1. Reply with Handshake Response
+					var x25519Bytes []byte
+					if n.EncPubKey != nil {
+						x25519Bytes = n.EncPubKey.Bytes()
+					}
+					respPayload := &HandshakePayload{
+						Type:       ControlHandshakeResp,
+						Ed25519Pub: n.Identity.Bytes(),
+						X25519Pub:  x25519Bytes,
+						Endpoints:  n.Endpoints(),
+						Timestamp:  time.Now().UnixNano(),
+						Nonce:      hp.Nonce,
+					}
+					if respBytes, err := EncodeHandshake(respPayload); err == nil {
+						respC := &Container{
+							SenderPubKey:   n.Identity.Bytes(),
+							ReceiverPubKey: c.SenderPubKey,
+							SessionID:      "handshake",
+							Payload:        respBytes,
+							HopLimit:       DefaultHopLimit,
+						}
+						if err := respC.Sign(n.privateKey); err == nil {
+							// Return response over the peer's endpoints
+							eps := n.GetPeerEndpoints(senderID)
+							if len(eps) > 0 {
+								_ = n.forwardContainer(respC, eps)
+							}
+						}
+					}
+					continue
+				} else if hp.Type == ControlHandshakeResp {
+					if len(hp.Endpoints) > 0 {
+						n.AddPeerWithLatency(senderID, hp.Endpoints, time.Millisecond)
+					}
+					n.handshakeMu.Lock()
+					ch, exists := n.pendingHandshakes[hp.Nonce]
+					n.handshakeMu.Unlock()
+					if exists {
+						select {
+						case ch <- hp:
+						default:
+						}
+					}
 					continue
 				}
+			}
 
+			// Check if packet is a Control Ping/Pong
+			if pp, err := DecodePing(c.Payload); err == nil {
+				if pp.Type == ControlPing {
+					// Reply with Pong
+					pong := &PingPayload{
+						Type:      ControlPong,
+						Nonce:     pp.Nonce,
+						Timestamp: pp.Timestamp,
+					}
+					if pongBytes, err := EncodePing(pong); err == nil {
+						pongC := &Container{
+							SenderPubKey:   n.Identity.Bytes(),
+							ReceiverPubKey: c.SenderPubKey,
+							SessionID:      "ping",
+							Payload:        pongBytes,
+							HopLimit:       DefaultHopLimit,
+						}
+						if err := pongC.Sign(n.privateKey); err == nil {
+							eps := n.GetPeerEndpoints(senderID)
+							if len(eps) > 0 {
+								_ = n.forwardContainer(pongC, eps)
+							}
+						}
+					}
+					continue
+				} else if pp.Type == ControlPong {
+					n.handshakeMu.Lock()
+					ch, exists := n.pendingPings[pp.Nonce]
+					n.handshakeMu.Unlock()
+					if exists {
+						select {
+						case ch <- time.Now():
+						default:
+						}
+					}
+					continue
+				}
+			}
+
+			// 1. Destination is this node (or broadcast): deliver locally to all handlers!
+			if len(c.ReceiverPubKey) == 0 || bytes.Equal(c.ReceiverPubKey, n.Identity.Bytes()) {
 				n.mu.RLock()
-				handler := n.handler
+				handlers := make([]MessageHandler, len(n.handlers))
+				copy(handlers, n.handlers)
 				n.mu.RUnlock()
 
-				if handler != nil {
-					handler(senderID, c.Payload)
+				for _, h := range handlers {
+					if h != nil {
+						h(senderID, c.Payload)
+					}
 				}
 				continue
 			}

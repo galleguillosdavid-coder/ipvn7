@@ -1,8 +1,28 @@
-# Binaries
+# General Binaries
 *.exe
 *.dll
 *.so
 *.dylib
+bin/
+ipv7-node-linux
+chat-linux
+
+# Whitelist release binaries for standalone distribution without compilers
+!release/
+!release/*.exe
+!release/*.bat
+!release/*.txt
+
+# Logs and runtime data
+logs/
+*.log
+
+# Kùzu database and indices
+.kuzu_index/
+tools/kuzu/kuzu.exe
+tools/kuzu/kuzu
+tools/kuzu/*.zip
+tools/kuzu/*.tar.gz
 
 # Test binary
 *.test
@@ -13,6 +33,10 @@
 # IDE
 .vscode/
 .idea/
+
+# Python
+__pycache__/
+*.pyc
 
 # OS
 Thumbs.db

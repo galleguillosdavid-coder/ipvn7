@@ -52,9 +52,10 @@ Implementación en **Go** del protocolo IPv7 basado en identidades criptográfic
 11. **Interfaz Gráfica / Dashboard Web (`ui/`)**:
     - Panel visual interactivo embebido en el nodo accesible en `http://localhost:8080`.
     - Chat visual seguro con botón de cifrado E2EE.
-    - **Radar del Mundo Pequeño**: visualizador de los 12 anillos de separación en tiempo real.
+    - **Topología de Red en Malla (Mesh Graph)**: Visualizador interactivo de grafo con física de partículas, mostrando nodos, adapters de transporte, latencias y exportación directa a Kùzu Cypher.
+    - **Radar del Mundo Pequeño**: Visualizador de los 12 anillos de separación logarítmica en tiempo real.
     - Monitor del árbol de streaming en cascada con botón de emisión de frames.
-    - Binario unificado: **`ipv7-node.exe`** (compilado desde `cmd/node/main.go`).
+    - Binario unificado: **`ipv7-node.exe`** (Windows) y **`bin/ipv7-node-linux`** (Linux/WSL2).
 
 ---
 
@@ -65,6 +66,64 @@ Para ejecutar todas las pruebas unitarias y de integración del proyecto:
 ```powershell
 go test -v ./...
 ```
+
+---
+
+## 🐧 Ejecución y Supervisión en WSL2 (Linux)
+
+IPv7 puede compilarse y ejecutarse en **WSL2 (Ubuntu)** con supervisión en tiempo real desde Windows:
+
+1. **Compilar binarios Linux:**
+   ```powershell
+   .\scripts\build_linux.ps1
+   ```
+
+2. **Iniciar nodo en WSL2 con logs automáticos en `logs/wsl_node.log`:**
+   ```powershell
+   .\scripts\run_wsl.ps1 -Port 7002 -UIPort 8082
+   ```
+   Abre tu navegador en Windows en **`http://localhost:8082`**.
+
+3. **Guía operativa detallada:** Consulta [docs/WSL_SUPERVISION.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/WSL_SUPERVISION.md).
+
+---
+
+## 🔀 Prueba de Malla Cruzada (Windows ↔ WSL2 Linux)
+
+Para validar la red P2P real entre el host Windows y el entorno Linux:
+
+```powershell
+.\scripts\dual_node_test.ps1
+```
+- **Nodo A (Windows):** `http://localhost:8080`
+- **Nodo B (WSL2 Linux):** `http://localhost:8082` (conectado automáticamente a Nodo A)
+
+¡Observa ambos nodos en la pestaña **🕸️ Topología de Malla** reconociéndose, intercambiando mensajes E2EE y frames en cascada!
+
+---
+
+## 📊 Base de Datos de Grafo Kùzu (Kazu) e Interfaz Visual
+
+El proyecto integra **Kùzu Graph DB** (`tools/kuzu/`) para indexar la arquitectura del código y la topología de la red:
+
+- **🖥️ Interfaz Gráfica Visual (Kùzu Studio):**
+  - **Embebido en el Nodo:** Abre cualquier nodo (`http://localhost:8080` o `http://localhost:8082` en WSL2) y ve a la pestaña **📊 Explorador Kùzu (Red & Código)** para alternar entre la vista de red P2P y la arquitectura del código, con consola Cypher interactiva.
+  - **Servidor Standalone (sin requerir nodo P2P):**
+    ```powershell
+    .\tools\kuzu_explorer\run_explorer.ps1
+    ```
+    Disponible en `http://localhost:8090`.
+
+- **Reindexar el proyecto:**
+  ```powershell
+  python .\tools\indexer\index_project.py
+  ```
+- **Consultar el grafo con Cypher CLI:**
+  ```powershell
+  .\tools\kuzu\kuzu.exe .kuzu_index\ipv7.db
+  ```
+- **Índice completo del repositorio:** Consulta [docs/PROJECT_INDEX.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/PROJECT_INDEX.md).
+- **Manual de consultas Cypher:** Consulta [docs/KUZU_MESH_GRAPH.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/KUZU_MESH_GRAPH.md).
 
 ---
 
@@ -86,11 +145,29 @@ Puedes abrir dos terminales en tu computadora:
 
 ## 🖥️ Cómo Lanzar el Nodo con Interfaz Gráfica (Web Dashboard)
 
-Para una experiencia visual completa con cifrado E2EE, radar de 12 grados y streaming en cascada:
+Para una experiencia visual completa con cifrado E2EE, visualizador de malla, radar de 12 grados y streaming en cascada:
 
 ```powershell
 .\ipv7-node.exe -port 7001 -ui 8080
 ```
 
 Luego abre tu navegador en **`http://localhost:8080`**.
-¡Podrás chatear visualmente, ver los peers en el radar orbital y monitorear el streaming en cascada en tiempo real!
+
+---
+
+## 🛡️ Auditoría de Código con Kùzu y Protocolo Criptográfico Real
+
+Se eliminaron completamente todas las claves públicas dummy y valores cableados mediante el motor de grafo **Kùzu**:
+
+- **Herramienta de Auditoría de Grafo:**
+  ```powershell
+  python .\tools\auditor.py
+  ```
+  Analiza archivos, dependencias y llamadas estructurales indexadas en Kùzu para garantizar cero buffers en blanco, stubs o claves dummy en producción.
+
+- **Handshake Autenticado Ed25519 (`core/handshake.go`):**
+  Al conectar con un peer (`-peer ip:port`), el nodo no asume identidades en cero ni claves estáticas. Envía un `ControlHandshakeReq` firmado con un nonce criptográfico y timestamp de frescura. El peer responde con `ControlHandshakeResp` firmado con su propia clave Ed25519. Al verificarse mutuamente, se registra el peer con su identidad real y su latencia RTT medida dinámicamente en la tabla de Kleinberg y en la DHT.
+
+- **Telemetría y Streaming Verificable:**
+  Los frames en cascada utilizan codificación CBOR estructurada (`StreamTelemetryFrame`) con sumas de comprobación SHA-256 e identidades criptográficas de origen en lugar de cadenas de texto estáticas.
+

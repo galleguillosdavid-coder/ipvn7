@@ -102,11 +102,12 @@ func (s *RelayServer) acceptLoop() {
 func (s *RelayServer) handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	// 1. Handshake: Read 32-byte client public key registration
-	clientPubKey := make([]byte, 32)
-	if _, err := io.ReadFull(conn, clientPubKey); err != nil {
+	// 1. Handshake: Read client public key registration
+	var clientKeyBuf [32]byte
+	if _, err := io.ReadFull(conn, clientKeyBuf[:]); err != nil {
 		return
 	}
+	clientPubKey := clientKeyBuf[:]
 
 	clientKeyHex := fmt.Sprintf("%x", clientPubKey)
 

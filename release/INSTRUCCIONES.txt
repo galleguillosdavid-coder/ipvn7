@@ -1,0 +1,48 @@
+==================================================================
+           IPv7 NEXT-GEN P2P - GUIA PARA OTRA COMPUTADORA
+==================================================================
+
+Bienvenido a IPv7. Esta version es 100% portable y autonoma:
+- NO requiere instalar Go ni ningun entorno de programacion.
+- NO requiere Git ni librerias C++ Runtime.
+- NO requiere WSL2 ni Linux.
+- Funciona directamente en cualquier Windows (Windows 10 / Windows 11).
+
+------------------------------------------------------------------
+PASO 1: EJECUTAR EN TU COMPUTADORA
+------------------------------------------------------------------
+1. Haz doble clic en "INICIAR_AQUI.bat" (o directamente en "ipv7.exe").
+2. Si Windows Firewall muestra una ventana preguntando si deseas permitir:
+   Haz clic en "Permitir acceso" (o ejecuta abrir_firewall.bat como administrador).
+3. Tu navegador se abrira automaticamente en:
+   http://localhost:8080
+
+------------------------------------------------------------------
+PASO 2: CONECTARSE AUTOMATICAMENTE CON LA OTRA COMPUTADORA
+------------------------------------------------------------------
+A) EN LA MISMA RED WI-FI O LOCAL (LAN):
+   - NO TIENES QUE ESCRIBIR NADA.
+   - Ambos nodos se descubren automaticamente en 3 a 5 segundos
+     gracias al Beacon de Auto-Descubrimiento IPv7 en red local.
+   - En la pestana "Topologia de Malla" veras aparecer a la otra
+     computadora con su latencia en ms y cifrado E2EE activo.
+   - Ve a la pestana "Chat P2P" y podras chatear de inmediato.
+
+B) EN DISTINTAS REDES O POR INTERNET:
+   - En la primera computadora, fijate en la consola o en el panel
+     Web cual es su Endpoint / IP alcanzable (ejemplo: 192.168.1.198:7001).
+   - En la otra computadora, en el panel web de IPv7, escribe esa direccion
+     en "Conectar a un Peer" y haz clic en "Conectar".
+   - Los nodos realizaran el Handshake criptografico Ed25519 y quedaran
+     conectados de forma segura con cifrado punto a punto.
+
+------------------------------------------------------------------
+SOLUCION DE DUDAS Y PROBLEMAS COMUNES
+------------------------------------------------------------------
+1. ¿El antivirus de Windows (SmartScreen) muestra "Windows protegio su PC"?
+   Haz clic en "Mas informacion" y luego en "Ejecutar de todas formas".
+   (Es un archivo recien compilado que aun no tiene reputacion de descargas).
+2. ¿Puertos ocupados?
+   IPv7 busca automaticamente puertos libres (7001, 7003, 7005... y 8080, 8081...).
+   La consola te avisara en que puerto inicio.
+==================================================================
