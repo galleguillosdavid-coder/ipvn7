@@ -709,8 +709,14 @@
             <div style="font-size:0.8rem; color:var(--text-muted); padding:1rem 0;">Cargando tabla de peers...</div>
           </div>
           <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--card-border);">
-            <input type="text" id="manualPeerID" placeholder="Clave pública hex destino..." style="margin-bottom:0.5rem; width:100%;">
-            <input type="text" id="manualPeerEp" placeholder="IP:Puerto (ej: 127.0.0.1:7002)" style="margin-bottom:0.5rem; width:100%;">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+              <span>CONECTAR POR DID</span>
+              <span style="color:var(--accent-cyan); font-size:0.65rem;">Cero IP</span>
+            </div>
+            <input type="text" id="manualPeerID" placeholder="did:ipv7:... o Clave Pública hex" style="margin-bottom:0.5rem; width:100%; font-size:0.8rem;">
+            <input type="hidden" id="manualPeerEp" value="">
+            <button class="btn-send" onclick="connectByDID()" style="width:100%; padding:0.5rem; font-size:0.8rem; font-weight:600;">⚡ Conectar por DID</button>
+            <div id="didConnectStatus" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem; display:none; line-height:1.3;"></div>
           </div>
         </div>
 
@@ -887,15 +893,40 @@
     <!-- TAB 6: ESCRITORIO REMOTO WEB -->
     <div id="tab-desktop" class="tab-pane">
       <div class="glass-card desktop-container">
+
+        <!-- ASISTENTE INTELIGENTE UX: DETECCIÓN EMISOR/RECEPTOR & COMPARTIR EN LAN -->
+        <div id="desktopHostBanner" style="background: linear-gradient(135deg, rgba(0, 242, 254, 0.08), rgba(138, 43, 226, 0.12)); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 12px; padding: 1rem 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:1.4rem;" id="desktopRoleIcon">📡</span>
+              <div>
+                <div style="font-weight:700; font-size:0.95rem; color:#fff;" id="desktopRoleTitle">Modo Emisor: Transmitiendo esta PC</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);" id="desktopRoleSubtitle">Para ver y controlar esta pantalla desde otro computador o celular en tu red local:</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <input type="text" id="desktopShareUrl" readonly value="Detectando..." style="background:rgba(0,0,0,0.4); border:1px solid var(--card-border); color:var(--accent-cyan); padding:0.4rem 0.8rem; border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; width:260px; outline:none;">
+              <button class="btn-send" id="btnCopyShareUrl" onclick="copyDesktopShareUrl()" style="padding:0.45rem 1rem; font-size:0.85rem; font-weight:600;">📋 Copiar Enlace</button>
+            </div>
+          </div>
+          <div id="desktopMirrorWarning" style="margin-top:0.75rem; padding:0.6rem 0.85rem; background:rgba(239, 68, 68, 0.12); border-left:3px solid #ef4444; border-radius:6px; font-size:0.8rem; color:#fca5a5; display:flex; align-items:center; gap:0.5rem;">
+            <span>🪞</span>
+            <span><b>Aviso de Efecto Espejo:</b> Estás visualizando la pantalla en este mismo equipo local. Para una transmisión real sin bucles, abre el enlace en tu <b>otro computador</b> y minimiza esta ventana de navegador.</span>
+          </div>
+        </div>
+
         <div class="desktop-toolbar">
-          <div style="display:flex; align-items:center; gap:1rem;">
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
             <button class="btn-send" id="btnConnectDesktop" onclick="toggleDesktopStream()">Conectar Pantalla</button>
             <label class="toggle-control">
               <input type="checkbox" id="chkAllowControl" checked onchange="updateControlState()">
               <span>Control Remoto (Mouse y Teclado)</span>
             </label>
+            <button class="btn-secondary" id="btnDesktopFullscreen" onclick="toggleDesktopFullscreen()" style="padding:0.45rem 0.85rem; font-size:0.85rem; display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); border-radius:8px; color:var(--text-main); cursor:pointer;">
+              <span id="desktopFsIcon">⛶</span> <span id="desktopFsText">Pantalla Completa</span>
+            </button>
           </div>
-          <div style="display:flex; align-items:center; gap:1.5rem; font-size:0.85rem; color:var(--text-muted);">
+          <div style="display:flex; align-items:center; gap:1.5rem; font-size:0.85rem; color:var(--text-muted); flex-wrap:wrap;">
             <div>Resolución: <span id="desktopRes" style="color:var(--accent-cyan);">Detectando...</span></div>
             <div>FPS: <span id="desktopFps" style="color:var(--accent-cyan);">0</span></div>
             <div>Estado: <span id="desktopStatus" style="color:#10b981;">Listo</span></div>
@@ -904,10 +935,11 @@
 
         <div class="desktop-viewport" id="desktopViewport">
           <canvas id="remoteCanvas" tabindex="0"></canvas>
-          <div id="desktopPlaceholder" style="color:var(--text-muted); text-align:center;">
+          <div id="desktopPlaceholder" style="color:var(--text-muted); text-align:center; padding: 2rem 1rem;">
             <div style="font-size:3rem; margin-bottom:1rem;">🖥️</div>
-            <div>Haz clic en "Conectar Pantalla" para iniciar la transmisión en tiempo real.</div>
-            <div style="font-size:0.8rem; margin-top:0.5rem; color:rgba(255,255,255,0.4);">Compatible con cualquier navegador Web (PC, Mac, Android, iOS) sin instalar programas.</div>
+            <div style="font-weight:600; font-size:1.05rem; margin-bottom:0.4rem;">Escritorio Remoto Web de Ultra-Baja Latencia</div>
+            <div>Haz clic en <b>"Conectar Pantalla"</b> para iniciar el streaming interactivo en tiempo real.</div>
+            <div style="font-size:0.8rem; margin-top:0.75rem; color:rgba(255,255,255,0.4);">Compatible con PC, Mac, Android e iOS sin instalar ningún programa cliente.</div>
           </div>
         </div>
       </div>
@@ -1772,6 +1804,9 @@
           alert('Clave pública copiada al portapapeles:\n' + myIdentity);
         };
         document.getElementById('cascadeChildrenVal').innerText = data.cascade_count + ' / 10';
+        if (typeof updateDesktopLanBanner === 'function') {
+          updateDesktopLanBanner(data);
+        }
         loadPeers();
       } catch (e) {
         console.error('Error loading node info:', e);
@@ -1811,10 +1846,50 @@
       }
     }
 
+    async function connectByDID() {
+      const input = document.getElementById('manualPeerID');
+      const status = document.getElementById('didConnectStatus');
+      let did = input.value.trim();
+      if (!did) {
+        alert('Por favor ingresa el DID o Clave Pública del destinatario.');
+        return;
+      }
+      did = did.replace(/^did:ipv7:/, '');
+      if (status) {
+        status.style.display = 'block';
+        status.style.color = 'var(--accent-cyan)';
+        status.innerText = '🔍 Resolviendo rutas WAN por DID...';
+      }
+      try {
+        const res = await fetch(`/api/peers/resolve?did=${encodeURIComponent(did)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (status) {
+            status.style.color = '#10b981';
+            status.innerText = `✅ Ruta viva: ${data.endpoint} (RTT: ${data.rtt_ms}ms)`;
+          }
+          selectPeer(did, data.endpoint);
+        } else {
+          if (status) {
+            status.style.color = '#eab308';
+            status.innerText = '⚠️ Aún no visible en WAN. Enrutando por Small-World...';
+          }
+          selectPeer(did, '');
+        }
+      } catch (e) {
+        if (status) {
+          status.style.color = '#ef4444';
+          status.innerText = 'Error: ' + e.message;
+        }
+        selectPeer(did, '');
+      }
+    }
+
     function selectPeer(id, ep) {
+      id = id.replace(/^did:ipv7:/, '').trim();
       selectedPeerID = id;
-      document.getElementById('chatTargetTitle').innerText = 'Destino: ' + id.substring(0, 16) + '...';
-      document.getElementById('chatTargetSub').innerText = 'ID completa: ' + id;
+      document.getElementById('chatTargetTitle').innerText = 'Destino DID: ' + id.substring(0, 16) + '...';
+      document.getElementById('chatTargetSub').innerText = 'did:ipv7:' + id;
       document.getElementById('manualPeerID').value = id;
       if (ep) document.getElementById('manualPeerEp').value = ep;
       loadPeers();
@@ -1825,11 +1900,12 @@
       const text = input.value.trim();
       if (!text) return;
 
-      const recipient = document.getElementById('manualPeerID').value.trim() || selectedPeerID;
+      let recipient = document.getElementById('manualPeerID').value.trim() || selectedPeerID;
+      recipient = recipient.replace(/^did:ipv7:/, '').trim();
       const endpoint = document.getElementById('manualPeerEp').value.trim();
 
       if (!recipient) {
-        alert('Por favor selecciona o ingresa la clave pública del destinatario.');
+        alert('Por favor selecciona o ingresa el DID / clave pública del destinatario.');
         return;
       }
 
@@ -2111,6 +2187,7 @@
         desktopCtx = desktopCanvas.getContext('2d');
         setupDesktopInputListeners();
       }
+      updateDesktopLanBanner();
     }
 
     function toggleDesktopStream() {
@@ -2253,6 +2330,88 @@
         if (!isDesktopStreaming || !allowRemoteControl || !desktopWS || document.activeElement !== desktopCanvas) return;
         desktopWS.send(JSON.stringify({ type: 'keyup', key: e.key, code: e.code }));
       });
+    }
+
+    function copyDesktopShareUrl() {
+      const shareInput = document.getElementById('desktopShareUrl');
+      const btn = document.getElementById('btnCopyShareUrl');
+      if (!shareInput) return;
+      navigator.clipboard.writeText(shareInput.value).then(() => {
+        if (btn) {
+          const orig = btn.innerText;
+          btn.innerText = '✅ ¡Copiado!';
+          btn.style.background = '#10b981';
+          setTimeout(() => {
+            btn.innerText = orig;
+            btn.style.background = '';
+          }, 2500);
+        }
+      }).catch(() => {
+        alert('Enlace para otro equipo:\n' + shareInput.value);
+      });
+    }
+
+    function toggleDesktopFullscreen() {
+      const vp = document.getElementById('desktopViewport');
+      if (!vp) return;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (vp.requestFullscreen) {
+          vp.requestFullscreen();
+        } else if (vp.webkitRequestFullscreen) {
+          vp.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const txt = document.getElementById('desktopFsText');
+      const ico = document.getElementById('desktopFsIcon');
+      if (txt) txt.innerText = isFs ? 'Salir de Pantalla Completa' : 'Pantalla Completa';
+      if (ico) ico.innerText = isFs ? '✕' : '⛶';
+    }
+
+    let cachedLanInfo = null;
+    function updateDesktopLanBanner(info) {
+      if (info) cachedLanInfo = info;
+      const data = cachedLanInfo;
+
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '::1';
+      const warning = document.getElementById('desktopMirrorWarning');
+      const roleTitle = document.getElementById('desktopRoleTitle');
+      const roleSub = document.getElementById('desktopRoleSubtitle');
+      const roleIcon = document.getElementById('desktopRoleIcon');
+      const shareInput = document.getElementById('desktopShareUrl');
+
+      let lanHost = location.hostname;
+      if (data && data.lan_ip && data.lan_ip !== '127.0.0.1') {
+        lanHost = data.lan_ip;
+      }
+      const port = (data && data.port) ? data.port : (location.port || 8080);
+      const targetUrl = `http://${lanHost}:${port}/#tab-desktop`;
+
+      if (shareInput) shareInput.value = targetUrl;
+
+      if (isLocal) {
+        if (roleIcon) roleIcon.innerText = '📡';
+        if (roleTitle) roleTitle.innerText = 'Modo Emisor: Transmitiendo esta PC';
+        if (roleSub) roleSub.innerText = 'Para ver y controlar esta pantalla desde otro computador o celular en tu red local:';
+        if (warning) warning.style.display = 'flex';
+      } else {
+        if (roleIcon) roleIcon.innerText = '👁️';
+        if (roleTitle) roleTitle.innerText = 'Modo Receptor: Conectado a PC Remota';
+        if (roleSub) roleSub.innerText = `Visualizando la pantalla remota del host (${location.hostname})`;
+        if (warning) warning.style.display = 'none';
+      }
     }
 
     // ==========================================

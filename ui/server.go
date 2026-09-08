@@ -6,7 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 	"unicode/utf8"
@@ -25,17 +27,18 @@ var upgrader = websocket.Upgrader{
 }
 
 type Server struct {
-	node       *core.Node
-	cascade    *core.CascadeNode
-	tunnel     *core.TunnelService
-	rds        *core.RemoteDesktopService
-	vpnProxy   *core.SOCKS5Proxy
-	mcpServer  *core.MCPServer
-	supervisor *core.SelfHealingSupervisor
-	port       int
-	wsClients  map[*websocket.Conn]bool
-	sseClients map[chan []byte]bool
-	mu         sync.Mutex
+	node        *core.Node
+	cascade     *core.CascadeNode
+	tunnel      *core.TunnelService
+	rds         *core.RemoteDesktopService
+	vpnProxy    *core.SOCKS5Proxy
+	mcpServer   *core.MCPServer
+	supervisor  *core.SelfHealingSupervisor
+	fbDiscovery *core.FirebaseDiscovery
+	port        int
+	wsClients   map[*websocket.Conn]bool
+	sseClients  map[chan []byte]bool
+	mu          sync.Mutex
 }
 
 type SendMessageReq struct {
@@ -118,6 +121,12 @@ func NewServer(node *core.Node, cascade *core.CascadeNode, port int) *Server {
 	return s
 }
 
+func (s *Server) SetFirebaseDiscovery(fb *core.FirebaseDiscovery) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.fbDiscovery = fb
+}
+
 func (s *Server) Start() error {
 	mux := http.NewServeMux()
 
@@ -128,6 +137,7 @@ func (s *Server) Start() error {
 
 	mux.HandleFunc("/api/info", s.handleInfo)
 	mux.HandleFunc("/api/peers", s.handlePeers)
+	mux.HandleFunc("/api/peers/resolve", s.handleResolveDID)
 	mux.HandleFunc("/api/mesh", s.handleMesh)
 	mux.HandleFunc("/api/mesh/export-cypher", s.handleMeshCypher)
 	mux.HandleFunc("/api/kuzu/query", s.handleKuzuQuery)
@@ -148,8 +158,8 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/ws", s.handleWS)
 	mux.HandleFunc("/ws/desktop", s.handleDesktopWS)
 
-	addr := fmt.Sprintf("127.0.0.1:%d", s.port)
-	fmt.Printf("[UI]  Dashboard web available at: http://%s\n", addr)
+	addr := fmt.Sprintf("0.0.0.0:%d", s.port)
+	fmt.Printf("[UI]  Dashboard web available at: http://localhost:%d (and LAN: http://0.0.0.0:%d)\n", s.port, s.port)
 
 	go func() {
 		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
@@ -159,6 +169,19 @@ func (s *Server) Start() error {
 	return nil
 }
 
+func getOutboundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "127.0.0.1"
+	}
+	defer conn.Close()
+	localAddr, ok := conn.LocalAddr().(*net.UDPAddr)
+	if !ok {
+		return "127.0.0.1"
+	}
+	return localAddr.IP.String()
+}
+
 func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var encKeyHex string
@@ -166,11 +189,15 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		encKeyHex = hex.EncodeToString(s.node.EncPubKey.Bytes())
 	}
 
+	lanIP := getOutboundIP()
 	info := map[string]interface{}{
 		"identity":      s.node.Identity.String(),
 		"e2ee_pubkey":   encKeyHex,
 		"peers_count":   s.node.SmallWorld.TotalPeers(),
 		"cascade_count": 0,
+		"lan_ip":        lanIP,
+		"port":          s.port,
+		"lan_url":       fmt.Sprintf("http://%s:%d", lanIP, s.port),
 	}
 	if s.cascade != nil {
 		info["cascade_count"] = s.cascade.ChildrenCount()
@@ -224,7 +251,10 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pubBytes, err := hex.DecodeString(req.RecipientID)
+	recipDID := strings.TrimPrefix(req.RecipientID, "did:ipv7:")
+	recipDID = strings.TrimSpace(recipDID)
+
+	pubBytes, err := hex.DecodeString(recipDID)
 	if err != nil || len(pubBytes) != 32 {
 		http.Error(w, "Invalid recipient identity (must be 32-byte hex)", http.StatusBadRequest)
 		return
@@ -238,6 +268,23 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 
 	if req.Endpoint != "" {
 		s.node.AddPeer(targetID, []string{req.Endpoint})
+	}
+
+	// Auto-resolve endpoints from Firebase if node has no known endpoints for this DID
+	if len(s.node.GetPeerEndpoints(targetID)) == 0 && req.Endpoint == "" {
+		s.mu.Lock()
+		fb := s.fbDiscovery
+		s.mu.Unlock()
+		if fb != nil {
+			if rec, rErr := fb.ResolveDID(recipDID); rErr == nil && rec != nil && len(rec.Endpoints) > 0 {
+				s.node.AddPeer(targetID, rec.Endpoints)
+				if rec.EncKey != "" {
+					if encBytes, kErr := hex.DecodeString(rec.EncKey); kErr == nil && len(encBytes) == 32 {
+						s.node.SetPeerEncKey(targetID, encBytes)
+					}
+				}
+			}
+		}
 	}
 
 	payload := []byte(req.Message)
@@ -266,6 +313,34 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 		err = s.node.SendMessage(targetID, payload)
 	}
 
+	// If sending failed, peer may have roamed to another Wi-Fi. Attempt on-demand DID refresh and retry!
+	if err != nil {
+		s.mu.Lock()
+		fb := s.fbDiscovery
+		s.mu.Unlock()
+		if fb != nil {
+			if rec, rErr := fb.ResolveDID(recipDID); rErr == nil && rec != nil && len(rec.Endpoints) > 0 {
+				s.node.AddPeer(targetID, rec.Endpoints)
+				if rec.EncKey != "" {
+					if encBytes, kErr := hex.DecodeString(rec.EncKey); kErr == nil && len(encBytes) == 32 {
+						s.node.SetPeerEncKey(targetID, encBytes)
+					}
+				}
+				// Retry with fresh roamed endpoints
+				if req.Encrypted {
+					recipEncKey := s.node.GetPeerEncKey(targetID)
+					if len(recipEncKey) == 32 {
+						err = s.node.SendEncryptedMessage(targetID, recipEncKey, payload)
+					} else {
+						err = s.node.SendMessage(targetID, payload)
+					}
+				} else {
+					err = s.node.SendMessage(targetID, payload)
+				}
+			}
+		}
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -273,6 +348,76 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]string{"status": "sent"})
+}
+
+func (s *Server) handleResolveDID(w http.ResponseWriter, r *http.Request) {
+	did := strings.TrimSpace(r.URL.Query().Get("did"))
+	did = strings.TrimPrefix(did, "did:ipv7:")
+	if did == "" {
+		http.Error(w, "did parameter required", http.StatusBadRequest)
+		return
+	}
+
+	pubBytes, err := hex.DecodeString(did)
+	if err != nil || len(pubBytes) != 32 {
+		http.Error(w, "Invalid DID format (must be 32-byte hex)", http.StatusBadRequest)
+		return
+	}
+
+	targetID, err := core.NewIdentityFromBytes(pubBytes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	s.mu.Lock()
+	fb := s.fbDiscovery
+	s.mu.Unlock()
+
+	var endpoints []string
+	if fb != nil {
+		if rec, err := fb.ResolveDID(did); err == nil && rec != nil {
+			endpoints = rec.Endpoints
+			if rec.EncKey != "" {
+				if encBytes, kErr := hex.DecodeString(rec.EncKey); kErr == nil && len(encBytes) == 32 {
+					s.node.SetPeerEncKey(targetID, encBytes)
+				}
+			}
+		}
+	}
+
+	if len(endpoints) == 0 {
+		endpoints = s.node.GetPeerEndpoints(targetID)
+	}
+
+	if len(endpoints) == 0 {
+		http.Error(w, fmt.Sprintf("No active routes found across WAN for DID %s", did), http.StatusNotFound)
+		return
+	}
+
+	var connectedEp string
+	var rttMs int64 = 1
+	for _, ep := range endpoints {
+		if _, rtt, err := s.node.Handshake(ep); err == nil {
+			connectedEp = ep
+			rttMs = rtt.Milliseconds()
+			break
+		}
+	}
+
+	if connectedEp == "" {
+		s.node.AddPeer(targetID, endpoints)
+		connectedEp = endpoints[0]
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":   true,
+		"did":       did,
+		"endpoint":  connectedEp,
+		"endpoints": endpoints,
+		"rtt_ms":    rttMs,
+	})
 }
 
 type BroadcastStreamReq struct {

@@ -9,6 +9,7 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 1. [**01. Mejoras de Experiencia de Usuario (UX)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/01_mejoras_experiencia_usuario_ux.md)
    - Dashboard Web Reactivo con grafos 3D y Canvas interactivo.
    - Transferencia de archivos Drag & Drop con progreso visual.
+   - Asistente de Escritorio Remoto con detección Loopback y enlace LAN de 1 clic.
    - Gestor visual de túneles P2P y selector de nodo de salida VPN.
    - Terminal TUI interactiva (Text User Interface) con `charmbracelet/bubbletea`.
    - Bandeja del sistema (Systray) para ejecución en segundo plano.
@@ -54,6 +55,8 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 | **Apertura de puertos UPnP IGD** | UX | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`adapters/upnp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/upnp.go) / `-upnp` |
 | **Persistencia de Identidad en disco** | UX / Core | Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/keystore.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/keystore.go) / `-key persistent` |
 | **Transferencia Drag & Drop en Web UI** | UX | Alto | Medio | ✅ **IMPLEMENTADO** | [`ui/assets/index.html`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/assets/index.html) |
+| **Escritorio Remoto LAN & Fullscreen UX** | UX | Muy Alto | Muy Bajo | ✅ **IMPLEMENTADO** | [`ui/assets/index.html`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/assets/index.html) / Detección Loopback / 1-Click LAN |
+| **Enrutamiento DID-First & Roaming WAN** | Red / UX | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`core/node.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/node.go) / [`core/discovery_firebase.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/discovery_firebase.go) / Cero IP |
 | **Multiplexación QUIC Nativa en Túneles** | Rendimiento | Muy Alto | Alto | ⏳ En Roadmap | [`core/tunnel.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/tunnel.go) |
 | **Códec H.264 para Escritorio Remoto** | Rendimiento | Alto | Alto | ⏳ En Roadmap | [`core/remotedesktop_windows.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop_windows.go) |
 | **TUI interactiva (Bubbletea)** | UX | Medio | Medio | ⏳ En Roadmap | `cmd/chat/` |

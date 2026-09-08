@@ -49,6 +49,9 @@ type Node struct {
 	pendingHandshakes map[uint64]chan *HandshakePayload
 	pendingPings      map[uint64]chan time.Time
 	handshakeMu       sync.Mutex
+
+	// Dynamic DID resolver for on-demand identity-to-route lookup
+	didResolver func(did string) ([]string, []byte, error)
 }
 
 // NewNode initializes a new IPv7 Node with its cryptographic identity and derived E2EE key
@@ -194,9 +197,32 @@ func (n *Node) Stop() error {
 	return nil
 }
 
+// SetDIDResolver assigns a dynamic resolver callback to resolve peer DIDs to live endpoints on demand
+func (n *Node) SetDIDResolver(resolver func(did string) ([]string, []byte, error)) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.didResolver = resolver
+}
+
 // SendMessage sends an authenticated data payload to a target peer identity
 func (n *Node) SendMessage(target Identity, payload []byte) error {
 	endpoints := n.GetPeerEndpoints(target)
+
+	// If destination not directly known, attempt on-demand DID resolution
+	if len(endpoints) == 0 {
+		n.mu.RLock()
+		resolver := n.didResolver
+		n.mu.RUnlock()
+		if resolver != nil {
+			if eps, encKey, err := resolver(target.String()); err == nil && len(eps) > 0 {
+				n.AddPeer(target, eps)
+				if len(encKey) == 32 {
+					n.SetPeerEncKey(target, encKey)
+				}
+				endpoints = eps
+			}
+		}
+	}
 
 	// Small-World greedy resolution: if destination not directly connected, find closest next-hop peer
 	if len(endpoints) == 0 {

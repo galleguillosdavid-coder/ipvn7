@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/ed25519"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"net"
@@ -70,7 +71,7 @@ func main() {
 	actualUIPort := *uiPort
 	if *uiPort > 0 {
 		for i := 0; i < 20; i++ {
-			l, testErr := net.Listen("tcp4", fmt.Sprintf("127.0.0.1:%d", actualUIPort))
+			l, testErr := net.Listen("tcp4", fmt.Sprintf("0.0.0.0:%d", actualUIPort))
 			if testErr == nil {
 				_ = l.Close()
 				break
@@ -186,9 +187,30 @@ func main() {
 	}
 
 	// 7.1. Global WAN Peer Discovery via Firebase Realtime Database
+	var fbDiscovery *core.FirebaseDiscovery
 	if *firebaseURL != "" && *firebaseURL != "none" {
 		fmt.Printf("[Rendezvous] Starting global zero-config peer discovery via Firebase...\n")
-		fbDiscovery := core.NewFirebaseDiscovery(*firebaseURL, node, *port)
+		fbDiscovery = core.NewFirebaseDiscovery(*firebaseURL, node, *port)
+
+		// Dynamic Endpoint Refresher: re-probes local interfaces + STUN on each announce (seamless Wi-Fi roaming)
+		fbDiscovery.SetEndpointRefresher(func() []string {
+			_ = udpAdapter.DiscoverEndpoints(*stunServer)
+			return udpAdapter.Endpoints()
+		})
+
+		// DID Resolver: resolves peer DIDs to fresh live endpoints on demand
+		node.SetDIDResolver(func(targetDID string) ([]string, []byte, error) {
+			rec, err := fbDiscovery.ResolveDID(targetDID)
+			if err != nil {
+				return nil, nil, err
+			}
+			var encKey []byte
+			if rec.EncKey != "" {
+				encKey, _ = hex.DecodeString(rec.EncKey)
+			}
+			return rec.Endpoints, encKey, nil
+		})
+
 		fbDiscovery.Start()
 		defer fbDiscovery.Stop()
 	}
@@ -225,6 +247,9 @@ func main() {
 	// 8. Start Web GUI Dashboard
 	if *uiPort > 0 {
 		uiServer := ui.NewServer(node, cascade, *uiPort)
+		if fbDiscovery != nil {
+			uiServer.SetFirebaseDiscovery(fbDiscovery)
+		}
 		if err := uiServer.Start(); err != nil {
 			fmt.Printf("Warning: failed to start Web UI: %v\n", err)
 		} else if *autoOpen {

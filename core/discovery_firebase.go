@@ -38,6 +38,7 @@ type FirebaseDiscovery struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
 	discovered map[string]time.Time
+	refresher  func() []string
 	mu         sync.Mutex
 	running    bool
 }
@@ -159,8 +160,25 @@ func (f *FirebaseDiscovery) AnnounceAndDiscover() {
 	}
 }
 
+// SetEndpointRefresher registers a callback that re-probes local interfaces and STUN to handle network changes
+func (f *FirebaseDiscovery) SetEndpointRefresher(fn func() []string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.refresher = fn
+}
+
 // Announce registers or updates the local node in Firebase Realtime Database
 func (f *FirebaseDiscovery) Announce() error {
+	f.mu.Lock()
+	refresher := f.refresher
+	f.mu.Unlock()
+
+	if refresher != nil {
+		if fresh := refresher(); len(fresh) > 0 {
+			f.node.SetEndpoints(fresh)
+		}
+	}
+
 	encKeyHex := ""
 	if f.node.EncPubKey != nil {
 		encKeyHex = hex.EncodeToString(f.node.EncPubKey.Bytes())
@@ -254,4 +272,35 @@ func (f *FirebaseDiscovery) Deregister() {
 	if err == nil && resp != nil {
 		_ = resp.Body.Close()
 	}
+}
+
+// ResolveDID queries Firebase Realtime DB directly for a specific peer identity or DID
+func (f *FirebaseDiscovery) ResolveDID(targetID string) (*FirebasePeerRecord, error) {
+	targetID = strings.TrimPrefix(targetID, "did:ipv7:")
+	targetID = strings.TrimSpace(targetID)
+
+	url := fmt.Sprintf("%s/peers/%s.json", f.baseURL, targetID)
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := f.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
+	}
+
+	var rec FirebasePeerRecord
+	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
+		return nil, err
+	}
+	if rec.ID == "" {
+		return nil, fmt.Errorf("peer %s record is empty or offline", targetID)
+	}
+	return &rec, nil
 }
