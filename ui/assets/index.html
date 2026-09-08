@@ -593,6 +593,78 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
+    /* REMOTE DESKTOP TAB */
+    .desktop-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .desktop-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+    }
+    .desktop-viewport {
+      position: relative;
+      width: 100%;
+      height: 640px;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+    #remoteCanvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      cursor: default;
+      outline: none;
+    }
+    #remoteCanvas.controllable {
+      cursor: crosshair;
+    }
+    .toggle-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* TUNNEL & VPN TAB */
+    .tunnel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .tunnel-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .tunnel-card h4 {
+      margin: 0;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -618,6 +690,8 @@
   <main>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat Seguro E2EE</button>
+      <button class="tab-btn" onclick="switchTab('desktop')">🖥️ Escritorio Remoto Web</button>
+      <button class="tab-btn" onclick="switchTab('tunnel')">⚡ Túneles P2P & VPN</button>
       <button class="tab-btn" onclick="switchTab('mesh')">🕸️ Topología de Malla</button>
       <button class="tab-btn" onclick="switchTab('kuzu')">📊 Explorador Kùzu (Red & Código)</button>
       <button class="tab-btn" onclick="switchTab('radar')">🌐 Radar Mundo Pequeño (12 Grados)</button>
@@ -805,6 +879,103 @@
         </div>
       </div>
     </div>
+
+    <!-- TAB 6: ESCRITORIO REMOTO WEB -->
+    <div id="tab-desktop" class="tab-pane">
+      <div class="glass-card desktop-container">
+        <div class="desktop-toolbar">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <button class="btn-send" id="btnConnectDesktop" onclick="toggleDesktopStream()">Conectar Pantalla</button>
+            <label class="toggle-control">
+              <input type="checkbox" id="chkAllowControl" checked onchange="updateControlState()">
+              <span>Control Remoto (Mouse y Teclado)</span>
+            </label>
+          </div>
+          <div style="display:flex; align-items:center; gap:1.5rem; font-size:0.85rem; color:var(--text-muted);">
+            <div>Resolución: <span id="desktopRes" style="color:var(--accent-cyan);">Detectando...</span></div>
+            <div>FPS: <span id="desktopFps" style="color:var(--accent-cyan);">0</span></div>
+            <div>Estado: <span id="desktopStatus" style="color:#10b981;">Listo</span></div>
+          </div>
+        </div>
+
+        <div class="desktop-viewport" id="desktopViewport">
+          <canvas id="remoteCanvas" tabindex="0"></canvas>
+          <div id="desktopPlaceholder" style="color:var(--text-muted); text-align:center;">
+            <div style="font-size:3rem; margin-bottom:1rem;">🖥️</div>
+            <div>Haz clic en "Conectar Pantalla" para iniciar la transmisión en tiempo real.</div>
+            <div style="font-size:0.8rem; margin-top:0.5rem; color:rgba(255,255,255,0.4);">Compatible con cualquier navegador Web (PC, Mac, Android, iOS) sin instalar programas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: TÚNELES P2P & VPN -->
+    <div id="tab-tunnel" class="tab-pane">
+      <div class="glass-card">
+        <h3 style="margin-bottom:0.5rem;">Túneles P2P & Red Privada (User-Space)</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+          Mapea puertos de servicios nativos (como Windows RDP o SSH) y navega de forma privada sin necesidad de drivers de kernel ni permisos de administrador.
+        </p>
+
+        <div class="tunnel-grid">
+          <!-- CARD 1: RDP TUNNEL -->
+          <div class="tunnel-card">
+            <h4>🚀 Túnel Windows RDP (Escritorio Remoto Nativo)</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+              Abre un canal P2P cifrado directo hacia el puerto RDP (3389) del par seleccionado.
+            </p>
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">Peer Destino (ID o Endpoint)</label>
+              <input type="text" id="rdpPeerID" placeholder="ID de par conectado..." style="width:100%; margin-top:0.25rem;">
+            </div>
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">Puerto Local Mapeado</label>
+              <input type="number" id="rdpLocalPort" value="13389" style="width:100%; margin-top:0.25rem;">
+            </div>
+            <button class="btn-send" onclick="startRDPTunnel()">Crear Túnel RDP</button>
+            <div id="rdpTunnelStatus" style="font-size:0.8rem; color:var(--text-muted);">Estado: Inactivo</div>
+          </div>
+
+          <!-- CARD 2: CUSTOM PORT TUNNEL -->
+          <div class="tunnel-card">
+            <h4>⚡ Túnel de Puerto Personalizado</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+              Reenvía cualquier puerto TCP (SSH, HTTP, base de datos) a través de IPv7.
+            </p>
+            <div style="display:flex; gap:0.5rem;">
+              <div style="flex:1;">
+                <label style="font-size:0.8rem; color:var(--text-muted);">Puerto Local</label>
+                <input type="number" id="customLocalPort" placeholder="ej: 2222" style="width:100%; margin-top:0.25rem;">
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:0.8rem; color:var(--text-muted);">Puerto Remoto</label>
+                <input type="number" id="customTargetPort" placeholder="ej: 22" style="width:100%; margin-top:0.25rem;">
+              </div>
+            </div>
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">Peer Destino</label>
+              <input type="text" id="customPeerID" placeholder="ID pública del par..." style="width:100%; margin-top:0.25rem;">
+            </div>
+            <button class="btn-send" onclick="startCustomTunnel()">Iniciar Túnel</button>
+            <div id="customTunnelStatus" style="font-size:0.8rem; color:var(--text-muted);">Estado: Inactivo</div>
+          </div>
+
+          <!-- CARD 3: SOCKS5 VPN -->
+          <div class="tunnel-card">
+            <h4>🛡️ VPN Universal (SOCKS5 Proxy)</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+              Activa un proxy local compatible con navegadores, juegos y clientes para enrutar tráfico privado en espacio de usuario.
+            </p>
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">Puerto Proxy Local</label>
+              <input type="number" id="vpnPort" value="1080" style="width:100%; margin-top:0.25rem;">
+            </div>
+            <button class="btn-send" onclick="toggleSOCKS5VPN()">Iniciar Proxy SOCKS5</button>
+            <div id="vpnStatus" style="font-size:0.8rem; color:var(--text-muted);">Estado: Inactivo (Puerto 1080)</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -818,6 +989,8 @@
       event.target.classList.add('active');
       document.getElementById('tab-' + name).classList.add('active');
       if (name === 'radar') renderRadar();
+      if (name === 'desktop') initDesktop();
+      if (name === 'tunnel') refreshTunnelList();
       if (name === 'mesh') {
         initMeshCanvas();
         fetchMeshTopology();
@@ -1761,7 +1934,265 @@
         }
       };
 
-      ws.onclose = () => setTimeout(connectWS, 2000);
+    // ==========================================
+    // ESCRITORIO REMOTO WEB (HTML5 + WEBSOCKET)
+    // ==========================================
+    let desktopWS = null;
+    let desktopCanvas = null;
+    let desktopCtx = null;
+    let isDesktopStreaming = false;
+    let frameCount = 0;
+    let lastFpsTime = Date.now();
+    let allowRemoteControl = true;
+
+    function initDesktop() {
+      desktopCanvas = document.getElementById('remoteCanvas');
+      if (desktopCanvas) {
+        desktopCtx = desktopCanvas.getContext('2d');
+        setupDesktopInputListeners();
+      }
+    }
+
+    function toggleDesktopStream() {
+      if (isDesktopStreaming) {
+        disconnectDesktopWS();
+      } else {
+        connectDesktopWS();
+      }
+    }
+
+    function connectDesktopWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      desktopWS = new WebSocket(proto + '//' + location.host + '/ws/desktop');
+      desktopWS.binaryType = 'blob';
+
+      const btn = document.getElementById('btnConnectDesktop');
+      const status = document.getElementById('desktopStatus');
+      const placeholder = document.getElementById('desktopPlaceholder');
+
+      desktopWS.onopen = () => {
+        isDesktopStreaming = true;
+        btn.innerText = 'Desconectar';
+        btn.style.background = '#ef4444';
+        status.innerText = 'Transmitiendo en vivo';
+        status.style.color = '#10b981';
+        if (placeholder) placeholder.style.display = 'none';
+        desktopCanvas.style.display = 'block';
+      };
+
+      desktopWS.onmessage = (event) => {
+        if (typeof event.data === 'string') {
+          const meta = JSON.parse(event.data);
+          if (meta.type === 'init') {
+            desktopCanvas.width = meta.width;
+            desktopCanvas.height = meta.height;
+            document.getElementById('desktopRes').innerText = `${meta.width}x${meta.height}`;
+          }
+        } else if (event.data instanceof Blob) {
+          const img = new Image();
+          img.onload = () => {
+            if (!desktopCanvas.width) {
+              desktopCanvas.width = img.width;
+              desktopCanvas.height = img.height;
+            }
+            desktopCtx.drawImage(img, 0, 0, desktopCanvas.width, desktopCanvas.height);
+            URL.revokeObjectURL(img.src);
+
+            frameCount++;
+            const now = Date.now();
+            if (now - lastFpsTime >= 1000) {
+              document.getElementById('desktopFps').innerText = frameCount;
+              frameCount = 0;
+              lastFpsTime = now;
+            }
+          };
+          img.src = URL.createObjectURL(event.data);
+        }
+      };
+
+      desktopWS.onclose = () => {
+        disconnectDesktopWS();
+      };
+    }
+
+    function disconnectDesktopWS() {
+      isDesktopStreaming = false;
+      if (desktopWS) {
+        desktopWS.close();
+        desktopWS = null;
+      }
+      const btn = document.getElementById('btnConnectDesktop');
+      if (btn) {
+        btn.innerText = 'Conectar Pantalla';
+        btn.style.background = 'var(--accent-gradient)';
+      }
+      const status = document.getElementById('desktopStatus');
+      if (status) {
+        status.innerText = 'Desconectado';
+        status.style.color = 'var(--text-muted)';
+      }
+      const placeholder = document.getElementById('desktopPlaceholder');
+      if (placeholder) placeholder.style.display = 'block';
+      if (desktopCanvas) desktopCanvas.style.display = 'none';
+    }
+
+    function updateControlState() {
+      allowRemoteControl = document.getElementById('chkAllowControl').checked;
+      if (desktopCanvas) {
+        if (allowRemoteControl) desktopCanvas.classList.add('controllable');
+        else desktopCanvas.classList.remove('controllable');
+      }
+    }
+
+    function setupDesktopInputListeners() {
+      if (!desktopCanvas) return;
+
+      const getNormalizedCoords = (e) => {
+        const rect = desktopCanvas.getBoundingClientRect();
+        return {
+          x: Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+          y: Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height))
+        };
+      };
+
+      desktopCanvas.addEventListener('mousemove', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS) return;
+        const coords = getNormalizedCoords(e);
+        desktopWS.send(JSON.stringify({ type: 'mousemove', x: coords.x, y: coords.y }));
+      });
+
+      desktopCanvas.addEventListener('mousedown', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS) return;
+        e.preventDefault();
+        desktopCanvas.focus();
+        const coords = getNormalizedCoords(e);
+        desktopWS.send(JSON.stringify({ type: 'mousedown', x: coords.x, y: coords.y, button: e.button }));
+      });
+
+      desktopCanvas.addEventListener('mouseup', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS) return;
+        e.preventDefault();
+        const coords = getNormalizedCoords(e);
+        desktopWS.send(JSON.stringify({ type: 'mouseup', x: coords.x, y: coords.y, button: e.button }));
+      });
+
+      desktopCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      desktopCanvas.addEventListener('wheel', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS) return;
+        e.preventDefault();
+        desktopWS.send(JSON.stringify({ type: 'wheel', deltaY: e.deltaY }));
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS || document.activeElement !== desktopCanvas) return;
+        desktopWS.send(JSON.stringify({ type: 'keydown', key: e.key, code: e.code }));
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (!isDesktopStreaming || !allowRemoteControl || !desktopWS || document.activeElement !== desktopCanvas) return;
+        desktopWS.send(JSON.stringify({ type: 'keyup', key: e.key, code: e.code }));
+      });
+    }
+
+    // ==========================================
+    // TÚNELES P2P & VPN SOCKS5
+    // ==========================================
+    async function startRDPTunnel() {
+      const peer = document.getElementById('rdpPeerID').value.trim() || selectedPeerID;
+      const localPort = parseInt(document.getElementById('rdpLocalPort').value, 10) || 13389;
+      const status = document.getElementById('rdpTunnelStatus');
+
+      if (!peer) {
+        alert('Selecciona o ingresa la ID del peer con Windows RDP.');
+        return;
+      }
+
+      status.innerText = 'Iniciando túnel P2P...';
+      try {
+        const res = await fetch('/api/tunnel/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ local_port: localPort, peer_id: peer, target_port: 3389 })
+        });
+        if (res.ok) {
+          status.innerHTML = `<span style="color:#10b981;">✅ Activo: Conéctate con RDP a <b>localhost:${localPort}</b></span>`;
+          refreshTunnelList();
+        } else {
+          const err = await res.text();
+          status.innerText = 'Error: ' + err;
+        }
+      } catch (e) {
+        status.innerText = 'Error de conexión: ' + e;
+      }
+    }
+
+    async function startCustomTunnel() {
+      const localPort = parseInt(document.getElementById('customLocalPort').value, 10);
+      const targetPort = parseInt(document.getElementById('customTargetPort').value, 10);
+      const peer = document.getElementById('customPeerID').value.trim() || selectedPeerID;
+      const status = document.getElementById('customTunnelStatus');
+
+      if (!peer || !localPort || !targetPort) {
+        alert('Por favor completa todos los campos (puerto local, remoto y peer).');
+        return;
+      }
+
+      status.innerText = 'Iniciando túnel...';
+      try {
+        const res = await fetch('/api/tunnel/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ local_port: localPort, peer_id: peer, target_port: targetPort })
+        });
+        if (res.ok) {
+          status.innerHTML = `<span style="color:#10b981;">✅ Túnel activo: 127.0.0.1:${localPort} ➔ Remoto:${targetPort}</span>`;
+          refreshTunnelList();
+        } else {
+          const err = await res.text();
+          status.innerText = 'Error: ' + err;
+        }
+      } catch (e) {
+        status.innerText = 'Error: ' + e;
+      }
+    }
+
+    async function toggleSOCKS5VPN() {
+      const port = parseInt(document.getElementById('vpnPort').value, 10) || 1080;
+      const status = document.getElementById('vpnStatus');
+
+      try {
+        const res = await fetch('/api/vpn/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ port: port })
+        });
+        if (res.ok) {
+          status.innerHTML = `<span style="color:#10b981;">🛡️ SOCKS5 Proxy activo en <b>127.0.0.1:${port}</b></span>`;
+        } else {
+          const err = await res.text();
+          status.innerText = 'Error activando VPN: ' + err;
+        }
+      } catch (e) {
+        status.innerText = 'Error: ' + e;
+      }
+    }
+
+    async function refreshTunnelList() {
+      try {
+        const res = await fetch('/api/tunnel/list');
+        if (res.ok) {
+          const data = await res.json();
+          if (selectedPeerID) {
+            const rdpInput = document.getElementById('rdpPeerID');
+            if (rdpInput && !rdpInput.value) rdpInput.value = selectedPeerID;
+            const customInput = document.getElementById('customPeerID');
+            if (customInput && !customInput.value) customInput.value = selectedPeerID;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     window.onload = () => {

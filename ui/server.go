@@ -27,6 +27,9 @@ var upgrader = websocket.Upgrader{
 type Server struct {
 	node      *core.Node
 	cascade   *core.CascadeNode
+	tunnel    *core.TunnelService
+	rds       *core.RemoteDesktopService
+	vpnProxy  *core.SOCKS5Proxy
 	port      int
 	wsClients map[*websocket.Conn]bool
 	mu        sync.Mutex
@@ -46,6 +49,8 @@ func NewServer(node *core.Node, cascade *core.CascadeNode, port int) *Server {
 	s := &Server{
 		node:      node,
 		cascade:   cascade,
+		tunnel:    core.NewTunnelService(node),
+		rds:       core.NewRemoteDesktopService(),
 		port:      port,
 		wsClients: make(map[*websocket.Conn]bool),
 	}
@@ -105,7 +110,12 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/send", s.handleSend)
 	mux.HandleFunc("/api/ping", s.handlePing)
 	mux.HandleFunc("/api/broadcast-stream", s.handleBroadcastStream)
+	mux.HandleFunc("/api/tunnel/start", s.handleTunnelStart)
+	mux.HandleFunc("/api/tunnel/list", s.handleTunnelList)
+	mux.HandleFunc("/api/vpn/start", s.handleVPNStart)
+	mux.HandleFunc("/api/vpn/status", s.handleVPNStatus)
 	mux.HandleFunc("/ws", s.handleWS)
+	mux.HandleFunc("/ws/desktop", s.handleDesktopWS)
 
 	addr := fmt.Sprintf("127.0.0.1:%d", s.port)
 	fmt.Printf("[UI]  Dashboard web available at: http://%s\n", addr)
@@ -498,4 +508,155 @@ func (s *Server) handleMeshCypher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, _ = w.Write([]byte(cypher))
+}
+
+func (s *Server) handleDesktopWS(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+
+	// Send initial display info
+	wPx, hPx := s.rds.GetResolution()
+	_ = conn.WriteJSON(map[string]interface{}{
+		"type":   "init",
+		"width":  wPx,
+		"height": hPx,
+	})
+
+	// 1. Read input events from client
+	go func() {
+		for {
+			var evt core.RemoteInputEvent
+			if err := conn.ReadJSON(&evt); err != nil {
+				return
+			}
+			_ = s.rds.InjectInput(&evt)
+		}
+	}()
+
+	// 2. Stream JPEG frames at 15 FPS
+	frameCh := make(chan []byte, 5)
+	go s.rds.StartStreaming(15, frameCh, stopCh)
+
+	for {
+		select {
+		case <-stopCh:
+			return
+		case frame, ok := <-frameCh:
+			if !ok {
+				return
+			}
+			if err := conn.WriteMessage(websocket.BinaryMessage, frame); err != nil {
+				return
+			}
+		}
+	}
+}
+
+type StartTunnelReq struct {
+	LocalPort  int    `json:"local_port"`
+	PeerID     string `json:"peer_id"`
+	TargetPort int    `json:"target_port"`
+}
+
+func (s *Server) handleTunnelStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req StartTunnelReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.LocalPort <= 0 || req.TargetPort <= 0 {
+		http.Error(w, "Invalid ports", http.StatusBadRequest)
+		return
+	}
+
+	pubBytes, err := hex.DecodeString(req.PeerID)
+	if err != nil || len(pubBytes) != 32 {
+		http.Error(w, "Invalid peer identity", http.StatusBadRequest)
+		return
+	}
+
+	targetID, err := core.NewIdentityFromBytes(pubBytes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := s.tunnel.ForwardPort(req.LocalPort, targetID, req.TargetPort); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "active",
+		"local_port":  req.LocalPort,
+		"target_port": req.TargetPort,
+		"peer_id":     req.PeerID,
+	})
+}
+
+func (s *Server) handleTunnelList(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ports := s.tunnel.ActiveForwarders()
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"active_ports": ports,
+	})
+}
+
+type StartVPNReq struct {
+	Port int `json:"port"`
+}
+
+func (s *Server) handleVPNStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req StartVPNReq
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	if req.Port <= 0 {
+		req.Port = 1080
+	}
+
+	s.mu.Lock()
+	if s.vpnProxy == nil {
+		s.vpnProxy = core.NewSOCKS5Proxy(fmt.Sprintf("127.0.0.1:%d", req.Port), s.tunnel)
+		if err := s.vpnProxy.Start(); err != nil {
+			s.mu.Unlock()
+			http.Error(w, fmt.Sprintf("Failed to start SOCKS5: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+	s.mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "running",
+		"port":   req.Port,
+		"type":   "SOCKS5 Universal User-Space VPN",
+	})
+}
+
+func (s *Server) handleVPNStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	s.mu.Lock()
+	running := s.vpnProxy != nil
+	s.mu.Unlock()
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"running": running,
+		"port":    1080,
+	})
 }
