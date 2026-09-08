@@ -58,3 +58,16 @@ RETURN f.name, s.name, s.kind;
 MATCH (p:Peer)-[r:CONNECTED_TO]->(m:Peer)
 RETURN p.id, r.adapter, r.latency_ms, m.id;
 ```
+
+## 🧠 Suite Completa de Habilidades para IA y Documentación
+
+Para operaciones autónomas avanzadas, consulta los módulos especializados:
+- **Suite Integral de IA**: [skill_ia_ipv7/](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/SKILL.md)
+  - [System Prompt de IA Especializada](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/system_prompt_ia.md)
+  - [Referencia Formal de APIs REST & WebSockets](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/api_reference_ai.md)
+  - [Catálogo de Consultas Cypher para Kùzu](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/kuzu_cypher_agent_guide.md)
+  - [JSON Schemas para Function Calling / Tools](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/function_calling_schemas.json)
+  - [SOP de Diagnósticos Automatizados](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/workflows_diagnostico_ia.md)
+- **Manual Operativo Humano**: [manual_operativo_humano/](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/manual_operativo_humano/README.md)
+- **Sugerencias de Código, UX e IA**: [sugerencias_mejora_codigo_ux_ia/](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/README.md)
+

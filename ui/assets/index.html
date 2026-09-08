@@ -676,13 +676,15 @@
       <div class="brand-title">P2P Decentralized Network</div>
     </div>
     <div class="node-status">
-      <div class="status-pill">
-        <div class="status-dot"></div>
-        <span>Malla P2P Activa</span>
+      <div class="status-pill" id="wsStatusPill">
+        <div class="status-dot" id="wsStatusDot"></div>
+        <span id="wsStatusText">Malla P2P Activa</span>
       </div>
       <div class="my-id-card" id="myIdBadge" title="Clic para copiar">
         ID: <span id="myIdShort">Cargando...</span>
       </div>
+      <a href="/api/openapi.json" target="_blank" class="mesh-btn" style="text-decoration:none; font-size:0.75rem; padding:0.35rem 0.6rem; color:var(--accent-cyan); border-color:rgba(0,242,254,0.3);">📜 OpenAPI</a>
+      <a href="/metrics" target="_blank" class="mesh-btn" style="text-decoration:none; font-size:0.75rem; padding:0.35rem 0.6rem; color:var(--text-muted); border-color:var(--card-border);">📈 Métricas</a>
     </div>
   </header>
 
@@ -731,8 +733,10 @@
             </div>
           </div>
 
-          <div class="chat-input-area">
-            <input type="text" id="msgInput" placeholder="Escribe un mensaje seguro..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <div class="chat-input-area" id="chatInputArea">
+            <input type="file" id="chatFileInput" style="display:none" onchange="handleFileSelected(event)">
+            <button class="mesh-btn" title="Adjuntar Archivo" onclick="document.getElementById('chatFileInput').click()" style="padding:0.6rem 0.8rem; background:rgba(0,242,254,0.08); border-color:var(--accent-cyan); font-size:1rem;">📎</button>
+            <input type="text" id="msgInput" placeholder="Escribe un mensaje seguro o arrastra un archivo aquí..." onkeydown="if(event.key==='Enter') sendMessage()">
             <button class="btn-send" onclick="sendMessage()">Enviar</button>
           </div>
         </div>
@@ -1841,8 +1845,27 @@
       const feed = document.getElementById('messagesFeed');
       const bubble = document.createElement('div');
       bubble.className = 'msg-bubble ' + (isOutgoing ? 'msg-outgoing' : 'msg-incoming');
+
+      let contentHtml = '';
+      if (text.startsWith('[ARCHIVO:') && text.includes('data:')) {
+        const parts = text.split('\n');
+        const header = parts[0];
+        const dataUrl = parts.slice(1).join('\n').trim();
+        const fileName = (header.match(/\[ARCHIVO:\s*(.*?)\s*\(/) || [])[1] || 'archivo_ipv7';
+        if (dataUrl.startsWith('data:image/')) {
+          contentHtml = `<div style="font-weight:600;margin-bottom:0.4rem;font-size:0.85rem;">📁 ${escapeHtml(header)}</div>
+                         <img src="${dataUrl}" style="max-width:280px; max-height:220px; border-radius:8px; display:block; margin-bottom:0.6rem; border:1px solid rgba(255,255,255,0.1);"/>
+                         <a href="${dataUrl}" download="${escapeHtml(fileName)}" class="mesh-btn" style="display:inline-block;padding:0.35rem 0.75rem;font-size:0.75rem;text-decoration:none;">⬇️ Descargar Imagen</a>`;
+        } else {
+          contentHtml = `<div style="font-weight:600;margin-bottom:0.4rem;font-size:0.85rem;">📁 ${escapeHtml(header)}</div>
+                         <a href="${dataUrl}" download="${escapeHtml(fileName)}" class="mesh-btn" style="display:inline-block;padding:0.4rem 0.8rem;font-size:0.75rem;text-decoration:none;background:rgba(0,242,254,0.1);">⬇️ Descargar Archivo</a>`;
+        }
+      } else {
+        contentHtml = `<div>${escapeHtml(text)}</div>`;
+      }
+
       bubble.innerHTML = `
-        <div>${escapeHtml(text)}</div>
+        ${contentHtml}
         <div class="msg-meta">
           <span>${sender}</span>
           ${isE2EE ? '<span style="color:var(--accent-cyan)">🔒 E2EE</span>' : ''}
@@ -1851,6 +1874,53 @@
       `;
       feed.appendChild(bubble);
       feed.scrollTop = feed.scrollHeight;
+    }
+
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        uploadAndSendFile(file);
+      }
+    }
+
+    function uploadAndSendFile(file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Para esta demo web el límite por archivo es de 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const dataUrl = e.target.result;
+        const msg = `[ARCHIVO: ${file.name} (${(file.size/1024).toFixed(1)} KB)]\n${dataUrl}`;
+        document.getElementById('msgInput').value = msg;
+        await sendMessage();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function initChatDragDrop() {
+      const dropZone = document.querySelector('.chat-window');
+      if (!dropZone) return;
+      ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.style.border = '2px dashed var(--accent-cyan)';
+        });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.style.border = '';
+        });
+      });
+      dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+          uploadAndSendFile(files[0]);
+        }
+      });
     }
 
     async function broadcastTestStream() {
@@ -1914,29 +1984,98 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Connect WebSocket
-    function connectWS() {
-      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(proto + '//' + location.host + '/ws');
+    // Connect WebSocket con Reconexión Automática & Backoff Exponencial
+    let mainWS = null;
+    let wsReconnectAttempts = 0;
+    let wsReconnectTimer = null;
 
-      ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'incoming_message') {
-          appendMessage(msg.from.substring(0, 10) + '...', msg.text, false, msg.encrypted);
-        } else if (msg.type === 'cascade_chunk') {
-          const feed = document.getElementById('cascadeFeed');
-          const div = document.createElement('div');
-          div.style.padding = '0.35rem 0';
-          div.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
-          div.innerHTML = `<span style="color:var(--accent-cyan)">[Stream ${msg.stream_id}]</span> Frame #${msg.seq} (${msg.size} bytes) a las ${msg.time}`;
-          feed.appendChild(div);
-          feed.scrollTop = feed.scrollHeight;
+    function updateWSStatus(status, text) {
+      const dot = document.getElementById('wsStatusDot');
+      const label = document.getElementById('wsStatusText');
+      if (!dot || !label) return;
+
+      if (status === 'connected') {
+        dot.style.background = '#10b981';
+        dot.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.6)';
+        label.innerText = text || 'Malla P2P Conectada';
+      } else if (status === 'reconnecting') {
+        dot.style.background = '#f59e0b';
+        dot.style.boxShadow = '0 0 10px rgba(245, 158, 11, 0.6)';
+        label.innerText = text || 'Reconectando...';
+      } else {
+        dot.style.background = '#ef4444';
+        dot.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
+        label.innerText = text || 'Desconectado';
+      }
+    }
+
+    function connectWS() {
+      if (wsReconnectTimer) {
+        clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = null;
+      }
+
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = proto + '//' + location.host + '/ws';
+      
+      try {
+        mainWS = new WebSocket(url);
+      } catch (err) {
+        scheduleReconnect();
+        return;
+      }
+
+      mainWS.onopen = () => {
+        wsReconnectAttempts = 0;
+        updateWSStatus('connected', 'Malla P2P Conectada');
+        // Re-sincronizar datos automáticamente sin recargar la página (F5)
+        loadInfo();
+        loadPeers();
+      };
+
+      mainWS.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'incoming_message') {
+            appendMessage(msg.from.substring(0, 10) + '...', msg.text, false, msg.encrypted);
+          } else if (msg.type === 'cascade_chunk') {
+            const feed = document.getElementById('cascadeFeed');
+            if (feed) {
+              const div = document.createElement('div');
+              div.style.padding = '0.35rem 0';
+              div.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+              div.innerHTML = `<span style="color:var(--accent-cyan)">[Stream ${msg.stream_id}]</span> Frame #${msg.seq} (${msg.size} bytes) a las ${msg.time}`;
+              feed.appendChild(div);
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
+        } catch (e) {
+          console.error('Error parseando mensaje WS:', e);
         }
       };
 
-      ws.onclose = () => {
-        setTimeout(connectWS, 3000);
+      mainWS.onerror = () => {
+        updateWSStatus('reconnecting', 'Error en socket P2P');
       };
+
+      mainWS.onclose = () => {
+        scheduleReconnect();
+      };
+    }
+
+    function scheduleReconnect() {
+      wsReconnectAttempts++;
+      const baseDelay = 1000;
+      const maxDelay = 10000;
+      const delay = Math.min(baseDelay * Math.pow(1.8, wsReconnectAttempts - 1), maxDelay);
+      const seconds = Math.round(delay / 1000);
+      
+      updateWSStatus('reconnecting', `Reconectando en ${seconds}s...`);
+
+      if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+      wsReconnectTimer = setTimeout(() => {
+        connectWS();
+      }, delay);
     }
 
     // ==========================================
@@ -2204,6 +2343,7 @@
       loadInfo();
       connectWS();
       setInterval(loadPeers, 2000);
+      initChatDragDrop();
     };
   </script>
 </body>

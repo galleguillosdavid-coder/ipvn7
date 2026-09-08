@@ -30,6 +30,7 @@ type Server struct {
 	tunnel    *core.TunnelService
 	rds       *core.RemoteDesktopService
 	vpnProxy  *core.SOCKS5Proxy
+	mcpServer *core.MCPServer
 	port      int
 	wsClients map[*websocket.Conn]bool
 	mu        sync.Mutex
@@ -46,13 +47,22 @@ func NewServer(node *core.Node, cascade *core.CascadeNode, port int) *Server {
 	if port <= 0 {
 		port = 8080
 	}
+	ts := core.NewTunnelService(node)
 	s := &Server{
 		node:      node,
 		cascade:   cascade,
-		tunnel:    core.NewTunnelService(node),
+		tunnel:    ts,
 		rds:       core.NewRemoteDesktopService(),
+		mcpServer: core.NewMCPServer(node, ts),
 		port:      port,
 		wsClients: make(map[*websocket.Conn]bool),
+	}
+
+	if s.mcpServer != nil {
+		s.mcpServer.SetCypherExecutor(func(q string) (string, error) {
+			out, err := ExecuteCypher(q)
+			return string(out), err
+		})
 	}
 
 	// Register message listener on node to broadcast to UI clients
@@ -114,6 +124,9 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/tunnel/list", s.handleTunnelList)
 	mux.HandleFunc("/api/vpn/start", s.handleVPNStart)
 	mux.HandleFunc("/api/vpn/status", s.handleVPNStatus)
+	mux.HandleFunc("/api/openapi.json", s.handleOpenAPI)
+	mux.HandleFunc("/metrics", s.handleMetrics)
+	mux.HandleFunc("/api/mcp", s.handleMCP)
 	mux.HandleFunc("/ws", s.handleWS)
 	mux.HandleFunc("/ws/desktop", s.handleDesktopWS)
 

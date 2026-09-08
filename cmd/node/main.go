@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"flag"
 	"fmt"
 	"net"
@@ -33,7 +34,20 @@ func main() {
 	peerAddr := flag.String("peer", "", "Optional initial peer address to connect to (ip:port)")
 	stunServer := flag.String("stun", adapters.DefaultSTUNServer, "STUN server for public NAT traversal")
 	autoOpen := flag.Bool("open", true, "Automatically open web dashboard in default browser")
+	mcpMode := flag.Bool("mcp", false, "Run in Model Context Protocol (MCP) server mode over stdio for AI agents")
+	keyPath := flag.String("key", "", "Path to persistent Ed25519 identity key (or 'persistent' for ~/.ipv7/identity.key)")
+	logJSON := flag.Bool("log-json", false, "Emit structured logs in JSON format for automated monitoring")
+	enableUPnP := flag.Bool("upnp", true, "Attempt automatic UPnP IGD port mapping on local router")
 	flag.Parse()
+
+	// Initialize structured logger
+	core.InitLogger(*logJSON, false)
+
+	// If running in MCP mode, disable UI and autoOpen, stdout is dedicated to JSON-RPC
+	if *mcpMode {
+		*uiPort = 0
+		*autoOpen = false
+	}
 
 	// Robust Port Auto-selection: fallback to next available port if port is busy
 	actualPort := *port
@@ -46,7 +60,9 @@ func main() {
 		actualPort += 2
 	}
 	if actualPort != *port {
-		fmt.Printf("[PORT] Puerto %d ocupado; usando puerto disponible %d\n", *port, actualPort)
+		if !*mcpMode {
+			fmt.Printf("[PORT] Puerto %d ocupado; usando puerto disponible %d\n", *port, actualPort)
+		}
 		*port = actualPort
 	}
 
@@ -67,13 +83,36 @@ func main() {
 	}
 
 	// 1. Generate or load node cryptographic identity
-	id, priv, err := core.GenerateIdentity()
+	var id *core.Ed25519Identity
+	var priv ed25519.PrivateKey
+	var err error
+
+	if *keyPath != "" {
+		kp := *keyPath
+		if kp == "persistent" {
+			kp = ""
+		}
+		id, priv, err = core.LoadOrCreatePersistentIdentity(kp)
+	} else {
+		id, priv, err = core.GenerateIdentity()
+	}
+
 	if err != nil {
-		fmt.Printf("Error generating identity: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error generating identity: %v\n", err)
 		return
 	}
 
 	node := core.NewNode(id, priv)
+
+	// Attempt non-blocking UPnP port mapping
+	if *enableUPnP && !*mcpMode {
+		go func(p int) {
+			mapper := adapters.NewUPnPMapper(2 * time.Second)
+			if upnpErr := mapper.DiscoverAndForward(p, "IPv7 Node"); upnpErr == nil {
+				fmt.Printf("[UPnP] Puerto %d mapeado con éxito en el router local.\n", p)
+			}
+		}(*port)
+	}
 
 	// 2. Setup UDP Adapter
 	listenAddr := fmt.Sprintf("0.0.0.0:%d", *port)
@@ -185,6 +224,12 @@ func main() {
 				openBrowser(fmt.Sprintf("http://localhost:%d", *uiPort))
 			}()
 		}
+	}
+
+	if *mcpMode {
+		mcpServer := core.NewMCPServer(node, core.NewTunnelService(node))
+		mcpServer.ServeStdio(os.Stdin, os.Stdout)
+		return
 	}
 
 	fmt.Println("==================================================================")

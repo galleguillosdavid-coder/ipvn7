@@ -24,6 +24,9 @@ type Container struct {
 
 	// HopLimit restricts propagation depth (default: 12 degrees of separation)
 	HopLimit uint8 `cbor:"6,keyasint,omitempty"`
+
+	// Sequence number for packet ordering and anti-replay defense
+	Seq uint64 `cbor:"7,keyasint,omitempty"`
 }
 
 // cborEnc is a canonical CBOR encoder

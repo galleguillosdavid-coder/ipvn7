@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -102,6 +103,41 @@ func TestKuzuEndpoints(t *testing.T) {
 		t.Logf("Warning: /api/kuzu/network-graph returned %d", recNet.Code)
 	} else {
 		t.Logf("Network graph successfully returned")
+	}
+}
+
+func TestObservabilityEndpoints(t *testing.T) {
+	id, priv, err := core.GenerateIdentity()
+	if err != nil {
+		t.Fatalf("Failed to generate identity: %v", err)
+	}
+
+	node := core.NewNode(id, priv)
+	server := NewServer(node, nil, 0)
+
+	// 1. Test /api/openapi.json
+	reqOpenAPI := httptest.NewRequest("GET", "/api/openapi.json", nil)
+	recOpenAPI := httptest.NewRecorder()
+	server.handleOpenAPI(recOpenAPI, reqOpenAPI)
+	if recOpenAPI.Code != http.StatusOK {
+		t.Fatalf("expected 200 from /api/openapi.json, got %d", recOpenAPI.Code)
+	}
+
+	// 2. Test /metrics
+	reqMetrics := httptest.NewRequest("GET", "/metrics", nil)
+	recMetrics := httptest.NewRecorder()
+	server.handleMetrics(recMetrics, reqMetrics)
+	if recMetrics.Code != http.StatusOK {
+		t.Fatalf("expected 200 from /metrics, got %d", recMetrics.Code)
+	}
+
+	// 3. Test /api/mcp
+	mcpBody := []byte(`{"jsonrpc":"2.0","id":1,"method":"initialize"}`)
+	reqMCP := httptest.NewRequest("POST", "/api/mcp", bytes.NewReader(mcpBody))
+	recMCP := httptest.NewRecorder()
+	server.handleMCP(recMCP, reqMCP)
+	if recMCP.Code != http.StatusOK {
+		t.Fatalf("expected 200 from /api/mcp, got %d", recMCP.Code)
 	}
 }
 

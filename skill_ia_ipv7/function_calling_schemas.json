@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IPv7_AI_Tools",
+  "description": "Especificación formal de llamadas a funciones (Function Calling / Tools) para que un agente de IA opere y controle el nodo IPv7 de manera autónoma.",
+  "tools": [
+    {
+      "name": "ipv7_get_node_info",
+      "description": "Obtiene la identidad criptográfica (Ed25519), clave pública E2EE (X25519) y estadísticas operativas del nodo local.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "ipv7_list_peers",
+      "description": "Lista todos los peers conocidos registrados en la tabla de enrutamiento del Mundo Pequeño con sus endpoints y latencias.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "ipv7_get_mesh_graph",
+      "description": "Obtiene el grafo completo de la malla (Mesh Graph) con todos los nodos locales y remotos, adaptadores activos y latencias estimadas.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "ipv7_send_message",
+      "description": "Envía un mensaje de texto a través del protocolo IPv7 a una identidad remota, con opción de cifrado E2EE ChaCha20-Poly1305.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "recipient_id": {
+            "type": "string",
+            "description": "Clave pública Ed25519 en formato hexadecimal de 64 caracteres (32 bytes)."
+          },
+          "message": {
+            "type": "string",
+            "description": "Texto del mensaje a transmitir."
+          },
+          "encrypted": {
+            "type": "boolean",
+            "description": "Si es true, cifra el mensaje de extremo a extremo usando la clave X25519 del destinatario.",
+            "default": true
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Dirección física opcional 'ip:port' del destinatario para conexión directa."
+          }
+        },
+        "required": ["recipient_id", "message"]
+      }
+    },
+    {
+      "name": "ipv7_ping_peer",
+      "description": "Envía un ping criptográfico a un peer registrado y mide el tiempo de respuesta RTT (Round Trip Time).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "description": "Clave pública hexadecimal de 64 caracteres del peer objetivo."
+          }
+        },
+        "required": ["target_id"]
+      }
+    },
+    {
+      "name": "ipv7_broadcast_cascade",
+      "description": "Difunde una carga útil de datos o telemetría a través del árbol de streaming en cascada (Fan-out 10).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "stream_id": {
+            "type": "string",
+            "description": "Identificador único del stream o canal de difusión."
+          },
+          "payload": {
+            "type": "string",
+            "description": "Datos a difundir en la cascada."
+          }
+        },
+        "required": ["stream_id", "payload"]
+      }
+    },
+    {
+      "name": "ipv7_create_tunnel",
+      "description": "Establece un túnel P2P de reenvío de puertos (Port Forwarding) hacia un peer remoto.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "local_port": {
+            "type": "integer",
+            "description": "Puerto TCP local en el que escuchará el reenvío (ej. 2222)."
+          },
+          "peer_id": {
+            "type": "string",
+            "description": "Clave pública hexadecimal del peer remoto de destino."
+          },
+          "target_port": {
+            "type": "integer",
+            "description": "Puerto de destino en el peer remoto (ej. 22 para SSH, 80 para HTTP)."
+          }
+        },
+        "required": ["local_port", "peer_id", "target_port"]
+      }
+    },
+    {
+      "name": "ipv7_start_vpn",
+      "description": "Inicia el proxy universal SOCKS5 en espacio de usuario para canalizar navegación privada por la malla.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "integer",
+            "description": "Puerto TCP en el que escuchará el proxy SOCKS5 (por defecto 1080).",
+            "default": 1080
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "ipv7_query_kuzu",
+      "description": "Ejecuta una consulta en lenguaje Cypher contra la base de datos de grafo Kùzu para auditar el código o la red.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Sentencia Cypher a ejecutar (ej. 'MATCH (p:Peer) RETURN p.id, p.endpoint;')."
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ]
+}

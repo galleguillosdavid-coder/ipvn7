@@ -20,6 +20,8 @@ type UDPAdapter struct {
 	addrCache map[string]*net.UDPAddr
 	cacheMu   sync.RWMutex
 	
+	antiReplay *AntiReplayTable
+
 	mu        sync.Mutex
 	running   bool
 }
@@ -38,9 +40,10 @@ func NewUDPAdapter(listenAddr string) (*UDPAdapter, error) {
 	}
 	
 	return &UDPAdapter{
-		addr:      addr,
-		receive:   make(chan *core.Container, 1000),
-		addrCache: make(map[string]*net.UDPAddr),
+		addr:       addr,
+		receive:    make(chan *core.Container, 1000),
+		addrCache:  make(map[string]*net.UDPAddr),
+		antiReplay: NewAntiReplayTable(),
 	}, nil
 }
 
@@ -217,6 +220,13 @@ func (a *UDPAdapter) listenLoop() {
 		
 		if !c.Verify() {
 			continue // ignore invalid signatures
+		}
+		
+		// Anti-replay filter: verify sequence number is not duplicated or stale
+		if a.antiReplay != nil && c.Seq > 0 && len(c.SenderPubKey) > 0 {
+			if !a.antiReplay.CheckAndSet(string(c.SenderPubKey), c.Seq) {
+				continue // drop replayed packet
+			}
 		}
 		
 		select {

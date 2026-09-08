@@ -51,11 +51,30 @@ Implementación en **Go** del protocolo IPv7 basado en identidades criptográfic
 
 11. **Interfaz Gráfica / Dashboard Web (`ui/`)**:
     - Panel visual interactivo embebido en el nodo accesible en `http://localhost:8080`.
-    - Chat visual seguro con botón de cifrado E2EE.
+    - Chat visual seguro con botón de cifrado E2EE y **transferencia de archivos Drag & Drop**.
     - **Topología de Red en Malla (Mesh Graph)**: Visualizador interactivo de grafo con física de partículas, mostrando nodos, adapters de transporte, latencias y exportación directa a Kùzu Cypher.
     - **Radar del Mundo Pequeño**: Visualizador de los 12 anillos de separación logarítmica en tiempo real.
     - Monitor del árbol de streaming en cascada con botón de emisión de frames.
+    - Acceso directo a especificación viva **OpenAPI 3.1** (`/api/openapi.json`) y métricas **Prometheus** (`/metrics`).
     - Binario unificado: **`ipv7-node.exe`** (Windows) y **`bin/ipv7-node-linux`** (Linux/WSL2).
+
+12. **Servidor Model Context Protocol (MCP) Nativo (`core/mcp.go`)**:
+    - Servidor JSON-RPC 2.0 integrado compatible con la especificación de Anthropic.
+    - Permite a Claude Desktop, Antigravity o Cursor controlar el nodo directamente mediante `stdio` (flag `-mcp`) o vía HTTP POST en `/api/mcp`.
+
+13. **Keystore Persistente Ed25519 (`core/keystore.go`)**:
+    - Almacenamiento seguro y recarga de identidades fijas en `~/.ipv7/identity.key` mediante flag `-key persistent`.
+
+14. **Apertura Dinámica de Puertos UPnP IGD (`adapters/upnp.go`)**:
+    - Descubrimiento SSDP multicast y mapeo automático del puerto UDP en routers residenciales para reducir latencia y evitar el paso por relays.
+
+---
+
+## 📚 Documentación Integral y Recursos
+
+- [**Manual Operativo para Humanos**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/manual_operativo_humano/README.md): 5 capítulos exhaustivos con 8 casos prácticos paso a paso, diagnósticos y preguntas frecuentes.
+- [**Skill Especializada para Agentes de IA**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/SKILL.md): System prompt, especificación OpenAPI, schemas de llamadas a funciones (Function Calling) y catálogo de consultas Cypher para Kùzu.
+- [**Sugerencias de Arquitectura, UX y Código**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/README.md): Roadmap técnico, estado de implementación de fases y prototipos de código.
 
 ---
 

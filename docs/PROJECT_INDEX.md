@@ -6,11 +6,11 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 
 | Paquete | Archivos | Líneas de Código (LoC) | Propósito Principal |
 |---|---|---|---|
-| [`adapters`](#paquete-adapters) | 11 | 1502 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
-| [`core`](#paquete-core) | 22 | 3421 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
+| [`adapters`](#paquete-adapters) | 15 | 1923 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
+| [`core`](#paquete-core) | 30 | 4224 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
 | [`dht`](#paquete-dht) | 4 | 434 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
-| [`main`](#paquete-main) | 2 | 393 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
-| [`ui`](#paquete-ui) | 3 | 1216 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
+| [`main`](#paquete-main) | 2 | 438 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
+| [`ui`](#paquete-ui) | 4 | 1448 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
 
 ---
 
@@ -51,6 +51,23 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 **Funciones Clave:**
 - `TestRelayServerAndAdapter()`
 
+### 📄 [replay_filter.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/replay_filter.go) (87 LoC)
+**Tipos y Estructuras:**
+- `struct ReplayWindow`
+- `struct AntiReplayTable`
+**Funciones Clave:**
+- `CheckAndSet()`
+- `NewAntiReplayTable()`
+- `Reset()`
+
+### 📄 [replay_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/replay_test.go) (120 LoC)
+**Funciones Clave:**
+- `TestAntiReplayTablePerPeerIsolation()`
+- `TestReplayWindowDuplicatesRejected()`
+- `TestReplayWindowOutOfOrderWithinWindow()`
+- `TestReplayWindowSequential()`
+- `TestReplayWindowTooOldRejected()`
+
 ### 📄 [stun.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/stun.go) (94 LoC)
 **Funciones Clave:**
 - `DiscoverPublicEndpoint()`
@@ -66,7 +83,7 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 **Funciones Clave:**
 - `GenerateTLSConfig()`
 
-### 📄 [udp_adapter.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/udp_adapter.go) (228 LoC)
+### 📄 [udp_adapter.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/udp_adapter.go) (238 LoC)
 **Tipos y Estructuras:**
 - `struct UDPAdapter`
 **Funciones Clave:**
@@ -82,6 +99,17 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 **Funciones Clave:**
 - `TestUDPAdapter()`
 - `TestUDPAdapterMTU()`
+
+### 📄 [upnp.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/upnp.go) (185 LoC)
+**Tipos y Estructuras:**
+- `struct UPnPMapper`
+**Funciones Clave:**
+- `DiscoverAndForward()`
+- `NewUPnPMapper()`
+
+### 📄 [upnp_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/upnp_test.go) (19 LoC)
+**Funciones Clave:**
+- `TestUPnPMapperGracefulTimeout()`
 
 ### 📄 [webrtc_adapter.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/webrtc_adapter.go) (249 LoC)
 **Tipos y Estructuras:**
@@ -139,7 +167,7 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `TestCascadeMaxChildrenEnforcement()`
 - `TestCascadeStreamingMultiHop()`
 
-### 📄 [container.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/container.go) (88 LoC)
+### 📄 [container.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/container.go) (91 LoC)
 **Tipos y Estructuras:**
 - `struct Container`
 **Funciones Clave:**
@@ -201,6 +229,42 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `interface Session`
 - `interface Adapter`
 
+### 📄 [keystore.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/keystore.go) (67 LoC)
+**Funciones Clave:**
+- `DefaultKeyDir()`
+- `LoadOrCreatePersistentIdentity()`
+
+### 📄 [keystore_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/keystore_test.go) (39 LoC)
+**Funciones Clave:**
+- `TestKeystorePersistence()`
+
+### 📄 [logger.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/logger.go) (50 LoC)
+**Funciones Clave:**
+- `InitLogger()`
+- `Log()`
+
+### 📄 [logger_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/logger_test.go) (24 LoC)
+**Funciones Clave:**
+- `TestStructuredLogger()`
+
+### 📄 [mcp.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp.go) (440 LoC)
+**Tipos y Estructuras:**
+- `struct MCPRequest`
+- `struct MCPResponse`
+- `struct MCPError`
+- `struct MCPServer`
+**Funciones Clave:**
+- `Dispatch()`
+- `HandleMessage()`
+- `NewMCPServer()`
+- `ServeStdio()`
+- `SetCypherExecutor()`
+- `SetVPNProxy()`
+
+### 📄 [mcp_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp_test.go) (144 LoC)
+**Funciones Clave:**
+- `TestMCPServer()`
+
 ### 📄 [node.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/node.go) (586 LoC)
 **Tipos y Estructuras:**
 - `struct Node`
@@ -233,20 +297,28 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `TestNodeHandshakeAndE2EE()`
 - `TestNodeP2PCommunication()`
 
-### 📄 [remotedesktop.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop.go) (367 LoC)
+### 📄 [remotedesktop.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop.go) (72 LoC)
 **Tipos y Estructuras:**
 - `struct RemoteInputEvent`
 - `struct RemoteDesktopService`
 **Funciones Clave:**
-- `CaptureFrame()`
 - `GetResolution()`
-- `InjectInput()`
 - `NewRemoteDesktopService()`
 - `StartStreaming()`
+
+### 📄 [remotedesktop_other.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop_other.go) (47 LoC)
+**Funciones Clave:**
+- `CaptureFrame()`
+- `InjectInput()`
 
 ### 📄 [remotedesktop_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop_test.go) (34 LoC)
 **Funciones Clave:**
 - `TestRemoteDesktopCapture()`
+
+### 📄 [remotedesktop_windows.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop_windows.go) (284 LoC)
+**Funciones Clave:**
+- `CaptureFrame()`
+- `InjectInput()`
 
 ### 📄 [smallworld.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/smallworld.go) (224 LoC)
 **Tipos y Estructuras:**
@@ -345,7 +417,7 @@ Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/chat/main.go) (193 LoC)
 
-### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/node/main.go) (200 LoC)
+### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/node/main.go) (245 LoC)
 
 ## Paquete `ui`
 
@@ -364,7 +436,9 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - `FindKuzuDB()`
 - `SyncPeersToKuzu()`
 
-### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (662 LoC)
+### 📄 [observability.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) (183 LoC)
+
+### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (675 LoC)
 **Tipos y Estructuras:**
 - `struct Server`
 - `struct SendMessageReq`
@@ -381,9 +455,10 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - `NewServer()`
 - `Start()`
 
-### 📄 [server_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server_test.go) (107 LoC)
+### 📄 [server_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server_test.go) (143 LoC)
 **Funciones Clave:**
 - `TestKuzuEndpoints()`
+- `TestObservabilityEndpoints()`
 - `TestUIEndpoints()`
 
 ---

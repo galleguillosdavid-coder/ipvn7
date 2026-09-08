@@ -171,6 +171,8 @@ def main():
         "CREATE NODE TABLE IF NOT EXISTS Symbol (id STRING, name STRING, kind STRING, PRIMARY KEY (id));",
         "CREATE REL TABLE IF NOT EXISTS CONTAINS (FROM Package TO File);",
         "CREATE REL TABLE IF NOT EXISTS DEFINES (FROM File TO Symbol);",
+        "CREATE REL TABLE IF NOT EXISTS IMPORTS (FROM File TO Package);",
+        "CREATE REL TABLE IF NOT EXISTS DEPENDS_ON (FROM Package TO Package);",
         "CREATE NODE TABLE IF NOT EXISTS Peer (id STRING, endpoint STRING, is_local BOOLEAN, PRIMARY KEY (id));",
         "CREATE REL TABLE IF NOT EXISTS CONNECTED_TO (FROM Peer TO Peer, adapter STRING, latency_ms INT64, encrypted BOOLEAN);"
     ])
@@ -196,6 +198,15 @@ def main():
             sym_id = f"{f_path}::{fn}"
             cypher_commands.append(f"MERGE (s:Symbol {{id: '{sym_id}', name: '{fn}', kind: 'func'}});")
             cypher_commands.append(f"MATCH (fl:File {{path: '{f_path}'}}), (s:Symbol {{id: '{sym_id}'}}) MERGE (fl)-[:DEFINES]->(s);")
+
+        # Dependency relations
+        for imp in f["imports"]:
+            if imp.startswith("ipv7/"):
+                imp_pkg = imp.split("/")[-1]
+                if imp_pkg in packages:
+                    cypher_commands.append(f"MATCH (fl:File {{path: '{f_path}'}}), (p:Package {{name: '{imp_pkg}'}}) MERGE (fl)-[:IMPORTS]->(p);")
+                    if f["package"] != imp_pkg:
+                        cypher_commands.append(f"MATCH (p1:Package {{name: '{f['package']}'}}), (p2:Package {{name: '{imp_pkg}'}}) MERGE (p1)-[:DEPENDS_ON]->(p2);")
 
     # Guardar script de Cypher
     cypher_file = PROJECT_ROOT / "tools" / "indexer" / "init_kuzu_graph.cypher"
