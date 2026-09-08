@@ -40,6 +40,7 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 | Iniciativa | Área | Impacto | Esfuerzo | Estado Actual | Ubicación en Código |
 |---|---|---|---|---|---|
 | **Servidor MCP Nativo (7 Tools)** | IA | Muy Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/mcp.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/mcp.go) / `-mcp` / `/api/mcp` |
+| **Descubrimiento Global Firebase** | Red / WAN | Muy Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/discovery_firebase.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/discovery_firebase.go) / `-firebase` / Rendezvous |
 | **Handshake Noise_XX con PFS** | Seguridad | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`core/noise.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/noise.go) / Cripto Efímera |
 | **Optimización sync.Pool en E2EE** | Rendimiento | Alto | Bajo | ✅ **IMPLEMENTADO** | [`core/e2ee.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/e2ee.go) / ChaCha20 Buffers |
 | **Supervisor de Autocuración** | Resiliencia | Muy Alto | Medio | ✅ **IMPLEMENTADO** | [`core/self_healing.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core/self_healing.go) / Auditoría 12 Anillos |

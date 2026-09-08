@@ -38,6 +38,7 @@ func main() {
 	keyPath := flag.String("key", "", "Path to persistent Ed25519 identity key (or 'persistent' for ~/.ipv7/identity.key)")
 	logJSON := flag.Bool("log-json", false, "Emit structured logs in JSON format for automated monitoring")
 	enableUPnP := flag.Bool("upnp", true, "Attempt automatic UPnP IGD port mapping on local router")
+	firebaseURL := flag.String("firebase", "https://vpni7-d5a78-default-rtdb.firebaseio.com", "Firebase Realtime DB URL for zero-config global peer discovery (or 'none' to disable)")
 	flag.Parse()
 
 	// Initialize structured logger
@@ -182,6 +183,14 @@ func main() {
 	}
 	if len(endpoints) > 0 {
 		_, _ = dhtService.Publish(endpoints, 1*time.Hour)
+	}
+
+	// 7.1. Global WAN Peer Discovery via Firebase Realtime Database
+	if *firebaseURL != "" && *firebaseURL != "none" {
+		fmt.Printf("[Rendezvous] Starting global zero-config peer discovery via Firebase...\n")
+		fbDiscovery := core.NewFirebaseDiscovery(*firebaseURL, node, *port)
+		fbDiscovery.Start()
+		defer fbDiscovery.Stop()
 	}
 
 	// Connect to initial peer via cryptographic handshake if given

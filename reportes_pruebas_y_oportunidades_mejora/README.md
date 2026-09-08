@@ -23,7 +23,8 @@ Este directorio contiene la auditoría técnica exhaustiva, los resultados de pr
                     IPv7 SYSTEM HEALTH SCORECARD (AUDIT 2026)                   
 ================================================================================
   [✓] Criptografía de Nueva Generación (Ed25519 + Noise_XX PFS + sync.Pool) : 100% EXCELENTE
-  [✓] Suite de Pruebas Automatizadas (Go Test Suite)                       : 100% PASS (45/45 tests)
+  [✓] Suite de Pruebas Automatizadas (Go Test Suite)                       : 100% PASS (46/46 tests)
+  [✓] Descubrimiento Global WAN Cero-Config (Firebase Realtime DB)         : OPERACIONAL
   [✓] Rendimiento de Enrutamiento (Small-World Heuristics)                : ~3.2 µs / búsqueda
   [✓] Capa de Observabilidad (OpenAPI 3.1 + Prometheus + SSE Events)      : OPERACIONAL
   [✓] Supervisor Autónomo de Red (Self-Healing Mesh)                       : OPERACIONAL
