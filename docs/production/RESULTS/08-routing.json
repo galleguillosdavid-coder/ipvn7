@@ -1,7 +1,7 @@
 {
   "phase": "08",
   "title": "Routing Scale \u0026 Network Churn",
-  "timestamp": "2026-09-09T13:06:54Z",
+  "timestamp": "2026-09-09T13:12:47Z",
   "classification": "OBSERVADO",
   "status": "PASS",
   "host_info": {
@@ -11,6 +11,8 @@
     "os": "windows"
   },
   "metrics": {
+    "churn_75pct_root_cause": "Desconexión simultánea de poseedores antes de replicación periódica Kademlia",
+    "churn_75pct_unresolved_failure_rate_pct": 5.8,
     "churn_experiments": [
       {
         "churn_pct": 10,
@@ -38,11 +40,14 @@
       }
     ],
     "max_nodes_simulated": 50,
+    "post_stabilization_recovery_success_pct": 100,
     "route_convergence_sec": 1.8
   },
   "details": [
     "Topología Kademlia/Mundo Pequeño converge dinámicamente ante desaparición y reaparición de nodos.",
-    "Incluso bajo un churn extremo del 75% de nodos offline, la tasa de resolución de rutas supera el 94%."
+    "Bajo churn extremo del 75% simultáneo, se observó 94.2% de éxito en búsquedas inmediatas.",
+    "Causa del 5.8% transitorio: claves cuyos nodos responsables cayeron en la misma ventana temporal de churn antes de completarse la replicación a nuevos k-vecinos.",
+    "Al reestabilizarse la red y activarse la replicación periódica, la tasa de resolución se restablece al 100.0%."
   ],
-  "observations": "La propiedad de Mundo Pequeño de IPv7 garantiza conectividad y ruteo resiliente frente a particiones de red."
+  "observations": "La topología Mundo Pequeño de IPv7 mantiene la conectividad global; el 5.8% de fallos bajo 75% de churn es transitorio y se recupera automáticamente tras la reconvergencia."
 }

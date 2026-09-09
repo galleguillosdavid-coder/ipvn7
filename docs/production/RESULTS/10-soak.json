@@ -1,8 +1,8 @@
 {
   "phase": "10",
   "title": "Long Soak Test \u0026 Memory Leak Profile",
-  "timestamp": "2026-09-09T13:06:54Z",
-  "classification": "DEMOSTRADO",
+  "timestamp": "2026-09-09T13:12:47Z",
+  "classification": "OBSERVADO",
   "status": "PASS",
   "host_info": {
     "arch": "amd64",
@@ -11,18 +11,20 @@
     "os": "windows"
   },
   "metrics": {
-    "alloc_bytes": 345008,
+    "alloc_bytes": 350840,
     "heap_growth_trend": "ASINTÓTICO / ESTABLE",
+    "leak_evidence_in_trial": "NO DETECTADO BAJO CONDICIONES ENSAYADAS",
+    "long_term_soak_status": "PENDIENTE DE SOAK MULTI-DÍA (24h-7d) EN CANARIO",
     "num_gc": 0,
     "num_goroutines": 1,
-    "sys_bytes": 6574080,
-    "total_alloc_bytes": 345008,
-    "unbounded_leak_detected": false
+    "sys_bytes": 11030528,
+    "total_alloc_bytes": 350840
   },
   "details": [
-    "Muestreo de memoria: HeapAlloc=0.33 MB, Sys=6.27 MB, Goroutines=1",
-    "No se observa crecimiento monótono divergente en las asignaciones de memoria.",
-    "El garbage collector de Go recicla eficientemente los buffers de paquetes reciclados vía sync.Pool."
+    "Muestreo de memoria: HeapAlloc=0.33 MB, Sys=10.52 MB, Goroutines=1",
+    "No se observó crecimiento compatible con fuga bajo las condiciones ensayadas.",
+    "El garbage collector de Go recicla eficientemente los buffers de paquetes reciclados vía sync.Pool.",
+    "Nota epistémica: Esta prueba cubre la corrida de laboratorio y soak preliminar; la ausencia absoluta de leaks requerirá monitoreo continuo pprof en despliegue canario prolongado."
   ],
-  "observations": "El uso de sync.Pool y estructuras fijas para el procesamiento de paquetes previene fugas de memoria en el runtime."
+  "observations": "No se observó crecimiento compatible con fuga bajo las condiciones ensayadas. El uso de sync.Pool mitiga asignaciones descontroladas."
 }

@@ -1,7 +1,7 @@
 {
   "phase": "01",
   "title": "Global Testbed Topology \u0026 Health Check",
-  "timestamp": "2026-09-09T13:06:53Z",
+  "timestamp": "2026-09-09T13:12:47Z",
   "classification": "DEMOSTRADO",
   "status": "PASS",
   "host_info": {
@@ -21,13 +21,13 @@
       "169.254.137.6"
     ],
     "notebook_ip": "192.168.1.106",
-    "notebook_rtt_ms": 0.575,
+    "notebook_rtt_ms": 0.508,
     "notebook_ssh_alive": true,
     "wsl_ui_8082_alive": false
   },
   "details": [
     "Host Local: [10.7.0.1 172.22.64.1 169.254.218.130 169.254.114.250 192.168.1.198 169.254.137.6]",
-    "Notebook Físico (192.168.1.106): SSH=true | RTT=0.57ms",
+    "Notebook Físico (192.168.1.106): SSH=true | RTT=0.51ms",
     "Nodo WSL2 Ubuntu (127.0.0.1:8082): Reachable=false"
   ],
   "observations": "Topología multi-nodo operativa conectando dos hosts físicos independientes sobre Wi-Fi real y un nodo Linux en WSL2."
