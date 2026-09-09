@@ -44,5 +44,43 @@
 
 ## Fase 2: Experimento Nuclear: Direct P2P vs. Relay DERP
 
+**Fecha de Ejecución:** 09 de Septiembre de 2026  
+**Objetivo:** Cuantificar con exactitud matemática el coste de la abstracción del protocolo cuando el camino directo peer-to-peer no está disponible (NAT simétrico estricto) y el tráfico debe ser enrutado a través de un Relay ciego tipo DERP (`adapters/relay_adapter.go`).  
+**Herramienta:** `tools/netbench/benchmark_direct_vs_relay.go`  
+**Carga:** Contenedores `core.Container` de 1.024 Bytes con firmas criptográficas Ed25519 e inspección de cabecera de clave pública de destino en el servidor relay.
+
+### Comparativa Cuantitativa Empírica
+
+```
+                 IPv7
+                  │
+        ┌─────────┴─────────┐
+        │                   │
+      DIRECT              RELAY
+        │                   │
+   199,94 Mbps          34,50 Mbps
+    0,383 ms           249,655 ms
+   23.445 pps            3.837 pps
+    0,47 MB RAM          0,99 MB RAM
+```
+
+| Métrica Dimensional | DIRECT P2P (UDP Best-Effort) | RELAY DERP (Fallback TCP Ciego) | Factor de Impacto |
+|---|---|---|---|
+| **Throughput Sostenido** | **199,94 Mbps** (~23,8 MB/s) | **34,50 Mbps** (~4,1 MB/s) | **-82,7 % penalización** |
+| **Tasa de Paquetes** | **23.445 pps** | **3.837 pps** | **6,1× reducción de frecuencia** |
+| **Latencia de Tránsito** | **0,383 ms** | **249,655 ms** | **652× incremento (buffers/TCP)** |
+| **Consumo de Memoria RAM**| **0,47 MB** | **0,99 MB** | Mínimo en ambas modalidades |
+| **Volumen Transferido (5s)** | **121,67 MB** | **20,98 MB** | 100% de entrega verificada |
+
+### Conclusiones Técnicas del Experimento
+1. **Viabilidad de Fallback Garantizada:** A pesar de que el camino directo no esté disponible, IPv7 es capaz de sostener más de **34 Mbps continuos** a través de un servidor Relay intermedio sin descifrar el tráfico (el relay solo inspecciona el `ReceiverPubKey` de 32 bytes del contenedor).
+2. **Costo de la Abstracción:** El relevo ciego reduce la tasa máxima de transmisión en un **82,7%**, debido a la sobrecarga del framing TCP (`binary.Write` de 4 bytes de longitud), el encolamiento en sockets del sistema operativo y los switches de contexto entre goroutines de lectura y reenvío.
+3. **Cero Corrupción Criptográfica:** El 100% de los contenedores reenviados por el relay pasaron la verificación criptográfica `c.Verify()` en el receptor.
+
+---
+
+## Fase 3: Resiliencia de Sesión y Ruptura Dinámica
+
 *(En preparación)*
+
 
