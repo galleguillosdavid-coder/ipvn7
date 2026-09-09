@@ -81,6 +81,34 @@
 
 ## Fase 3: Resiliencia de Sesión y Ruptura Dinámica
 
+**Fecha de Ejecución:** 09 de Septiembre de 2026  
+**Objetivo:** Evaluar la capacidad de auto-recuperación (`self-healing`) del protocolo ante la muerte súbita de procesos (`SIGKILL`), desconexión de interfaces y re-establecimiento de sesiones criptográficas E2EE en caliente.  
+**Hardware Involucrado:** Notebook (`192.168.1.106`) y PC (`192.168.1.198`).
+
+### Protocolo de Ruptura Ejecutado
+1. **Estado Estable Inicial:** Dos nodos emparejados activamente en la malla (PC en `:7001` y Notebook en `:7001`).
+2. **Inyección de Fallo Abrupto:** Se ejecutó `taskkill /F /IM ipv7-node.exe` en el Notebook, simulando un fallo catastrófico del sistema operativo o corte de alimentación.
+3. **Comportamiento del Nodo Sobreviviente (PC):** La PC mantuvo el estado en memoria sin colapsar ni lanzar `panics` por sockets cerrados.
+4. **Relanzamiento en Caliente:** El nodo del Notebook fue reiniciado vía SSH (`start /B .\ipv7-node.exe -peer 192.168.1.198:7001`).
+5. **Re-convergencia Automática:** En menos de **6 segundos**, el motor de auto-curación (`core.SelfHealingMesh`) y el descubrimiento LAN completaron un nuevo handshake criptográfico:
+
+```text
+[LAN Discovery] Peer detectado en 192.168.1.106:7001! Iniciando handshake automático...
+[OK]   ¡Handshake completado con 192.168.1.106:7001! Peer ID: 3e99be42d004b3e0... (RTT: 4ms)
+```
+
+| Métrica de Resiliencia | Resultado Observado | Estado |
+|---|---|---|
+| **Detección de Caída** | Socket UDP liberado limpiamente sin deadlocks | **PASS** |
+| **Tiempo de Re-convergencia** | **< 6 segundos** tras relanzar proceso | **PASS** |
+| **Integridad de Claves DID** | Misma identidad persistente preservada (`3e99be42d...`) | **PASS** |
+| **Latencia Post-Recuperación** | **4 ms RTT** | **PASS** |
+
+---
+
+## Fase 4: Soak Test Sostenido (Prueba de Remojo)
+
 *(En preparación)*
+
 
 
