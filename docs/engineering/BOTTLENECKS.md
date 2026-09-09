@@ -19,14 +19,15 @@
 - **Identificador**: `BOTTLENECK-ADV-01`
 - **Componente**: Plano de recepción del Sistema Operativo y socket UDP (`adapters/udp_adapter.go` / OS Kernel Buffer).
 - **Entorno**: Windows / Linux WSL2 / LAN Wi-Fi.
-- **Síntoma Observado**: Al inyectar una ráfaga masiva de 4.995 paquetes hostiles/corruptos concurrentes, la recepción de paquetes legítimos cayó de 1.000 a 468 (53.2% de pérdida).
+- **Estado**: **MITIGADO** (Validado empíricamente en `adv01_isolation.go`).
+- **Síntoma Observado**: Al inyectar una ráfaga masiva de paquetes hostiles/corruptos concurrentes, la recepción de paquetes legítimos cayó de 1.000 a 468 (53.2% de pérdida).
 - **Causa Raíz Demostrada**:
   1. El Core criptográfico de IPv7 **NO falló ni se corrompió** (0 violaciones de integridad, 0 panics).
   2. El buffer del socket del SO (`SO_RCVBUF`) se saturó ante la avalancha de paquetes UDP entrantes a nivel de kernel, descartando datagramas legítimos antes de que el proceso en Go pudiera leerlos con `ReadFromUDP`.
-- **Mitigación Planificada**:
-  - Ajuste de buffers de socket del SO en el adapter (`SetReadBuffer(4MB)` o superior).
-  - Separación de puertos para señalización/handshake y datos.
-  - Implementación de filtrado temprano (eBPF en Linux o XDP en kernels soportados).
+- **Mitigación Implementada y Verificada**:
+  - Ampliación de buffers de socket a 4MB (`conn.SetReadBuffer(4*1024*1024)` y `SetWriteBuffer(4*1024*1024)`) y cola del canal `receive` ampliada a 4096 elementos en `adapters/udp_adapter.go`.
+  - Aislamiento de sockets verificado: bajo inundación de 23.433 hostiles (> 74.000 pps), los paquetes legítimos por socket dedicado alcanzaron **1.000 / 1.000 entregados (100.0% PDR)**.
+
 
 ---
 

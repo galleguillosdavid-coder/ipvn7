@@ -41,7 +41,7 @@ func NewUDPAdapter(listenAddr string) (*UDPAdapter, error) {
 	
 	return &UDPAdapter{
 		addr:       addr,
-		receive:    make(chan *core.Container, 1000),
+		receive:    make(chan *core.Container, 4096),
 		addrCache:  make(map[string]*net.UDPAddr),
 		antiReplay: NewAntiReplayTable(),
 	}, nil
@@ -60,6 +60,10 @@ func (a *UDPAdapter) Start() error {
 		return err
 	}
 	
+	// Mitigación Finding ADV-01: Ampliar buffers de socket del SO para absorción de ráfagas
+	_ = conn.SetReadBuffer(4 * 1024 * 1024)  // 4MB kernel receive buffer
+	_ = conn.SetWriteBuffer(4 * 1024 * 1024) // 4MB kernel send buffer
+
 	a.conn = conn
 	a.running = true
 	if len(a.endpoints) == 0 {
