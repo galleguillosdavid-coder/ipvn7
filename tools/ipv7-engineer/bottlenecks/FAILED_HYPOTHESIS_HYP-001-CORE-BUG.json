@@ -1,0 +1,8 @@
+{
+  "id": "HYP-001-CORE-BUG",
+  "theory": "La pérdida de paquetes bajo ataque adversarial en socket único se debía a un deadlock o bug en el Protocol Core de IPv7",
+  "experiment": "Aislamiento de contención con receptor RAW UDP vs receptor IPv7 Core",
+  "result": "El socket RAW UDP sufrió idéntica degradación (30% PDR); con sockets separados ambos tuvieron 100% PDR",
+  "conclusion": "Hipótesis refutada: El Core de IPv7 no tiene responsabilidad en la contención de cola del SO",
+  "timestamp": "2026-09-09T17:07:23Z"
+}

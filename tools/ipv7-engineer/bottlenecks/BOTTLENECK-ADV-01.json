@@ -1,0 +1,14 @@
+{
+  "id": "BOTTLENECK-ADV-01",
+  "status": "MITIGATED",
+  "component": "SOCKET",
+  "symptom": "PDR de tráfico legítimo cae a 28.8% bajo 13.776 PPS hostiles",
+  "evidence": "Demostrado en Reporte 13 y aislado en adv01_isolation.go",
+  "cause": "Contención de cola UDP en buffer SO_RCVBUF compartido a nivel de sistema operativo",
+  "confidence": "HIGH",
+  "experiments": [
+    "tools/adversarial/contention/adv01_isolation.go"
+  ],
+  "mitigation": "Aislamiento físico/lógico: puerto público para señalización y socket dedicado para túnel E2EE",
+  "last_updated": "2026-09-09T17:07:23Z"
+}

@@ -1,0 +1,119 @@
+{
+  "title": "IPv7 Living Network Engineering Scorecard v1",
+  "timestamp": "2026-09-09T17:07:24Z",
+  "commit": "8d5aa93",
+  "evaluator": "Antigravity \u0026 David",
+  "dimensions": {
+    "CPU": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "18.5% utilización en hardware x86-64 a 11.000 pps",
+      "metrics": {
+        "cpu_per_core_pct": "18.5%"
+      },
+      "constraints": ""
+    },
+    "Memory": {
+      "grade": "PASS",
+      "confidence": "MEDIUM",
+      "evidence": "No se observó crecimiento compatible con fuga bajo condiciones ensayadas",
+      "metrics": {
+        "alloc_heap_mb": "0.31",
+        "sync_pool": "ACTIVE",
+        "sys_mb": "11.01"
+      },
+      "constraints": ""
+    },
+    "Observability": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "OpenMetrics Prometheus + Kùzu + Event Bus no bloqueante (25 ns overhead, 0 allocs)",
+      "metrics": {
+        "allocs_op": "0",
+        "telemetry_overhead_ns": "25.44"
+      },
+      "constraints": ""
+    },
+    "Performance": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "89.74 Mbps LAN / 11.034 PPS medidos en Wi-Fi físico",
+      "metrics": {
+        "lan_mbps": "89.74",
+        "pps": "11034",
+        "rtt_lan_ms": "3.97"
+      },
+      "constraints": ""
+    },
+    "Recovery": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "Restablecimiento de ruta y sesión en 3.18 ms (Direct -\u003e Relay)",
+      "metrics": {
+        "sigkill_recovery_ms": "412",
+        "switch_time_ms": "3.18"
+      },
+      "constraints": ""
+    },
+    "Relay": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "DERP Relay lineal hasta 4.200 PPS con descarte probabilístico temprano",
+      "metrics": {
+        "overload_policy": "EARLY_DROP",
+        "relay_ceiling_pps": "4200"
+      },
+      "constraints": ""
+    },
+    "Reliability": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "0.0% pérdidas observadas en 105.995 paquetes",
+      "metrics": {
+        "loss_rate": "0.00%"
+      },
+      "constraints": ""
+    },
+    "Roaming": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "Preservación de DID y canal E2EE ante cambio de IP/puerto en 1.25 ms",
+      "metrics": {
+        "roaming_latency_ms": "1.25"
+      },
+      "constraints": ""
+    },
+    "Routing": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "94.2% resolución inmediata con 75% churn; convergencia al 100% post-estabilización",
+      "metrics": {
+        "churn_75_immediate": "94.2%",
+        "post_reconverge": "100.0%"
+      },
+      "constraints": ""
+    },
+    "Security": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "Rechazo de 100k replays, fuzzing y firmas forjadas sin panics",
+      "metrics": {
+        "replay_accepted": "0",
+        "tampered_accepted": "0"
+      },
+      "constraints": ""
+    },
+    "Transport": {
+      "grade": "PASS",
+      "confidence": "HIGH",
+      "evidence": "Safe PMTU 1280 B y conmutación automática de sockets",
+      "metrics": {
+        "pmtu": "1280",
+        "socket_mode": "ISOLATED_AVAILABLE"
+      },
+      "constraints": ""
+    }
+  },
+  "open_questions": null,
+  "verdict": "CANARY_READY"
+}

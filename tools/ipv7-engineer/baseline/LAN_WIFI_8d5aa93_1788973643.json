@@ -1,0 +1,22 @@
+{
+  "id": "LAN_WIFI_8d5aa93_1788973643",
+  "category": "LAN_WIFI",
+  "commit": "8d5aa93",
+  "version": "IPv7-PRODUCTION-CANDIDATE-0",
+  "os": "windows",
+  "arch": "amd64",
+  "cpu": "8 cores (windows/amd64)",
+  "ram_total_mb": 0,
+  "go_version": "go1.26.4",
+  "configuration": null,
+  "test_parameters": null,
+  "timestamp": "2026-09-09T17:07:23Z",
+  "metrics": {
+    "loss_pct": 0,
+    "pmtu": 1280,
+    "pps": 11034,
+    "rtt_ms": 3.97,
+    "throughput_mbps": 89.74
+  },
+  "notes": "Baseline medido entre PC Windows 11 y Notebook Físico sobre Wi-Fi real"
+}
