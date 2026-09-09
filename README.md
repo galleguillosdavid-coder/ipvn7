@@ -196,3 +196,14 @@ Se eliminaron completamente todas las claves públicas dummy y valores cableados
 - **Telemetría y Streaming Verificable:**
   Los frames en cascada utilizan codificación CBOR estructurada (`StreamTelemetryFrame`) con sumas de comprobación SHA-256 e identidades criptográficas de origen en lugar de cadenas de texto estáticas.
 
+---
+
+## ⚖️ Términos y Condiciones de Uso (Licencia de Auditoría)
+
+Este proyecto está protegido bajo la **Licencia de Auditoría e Inspección (Source-Available)**:
+- 📖 **Permitido**: Leer, auditar, inspeccionar la criptografía y ejecutar pruebas locales de validación de seguridad.
+- 🚫 **Prohibido**: Copiar, redistribuir públicamente, crear forks comerciales o explotar el código con fines comerciales sin autorización explícita por escrito del autor.
+
+Para más detalles legales, consulte el archivo **[LICENSE.md](LICENSE.md)** o **[TERMS_OF_USE.md](TERMS_OF_USE.md)**.  
+**Copyright (c) 2026 David Galleguillos (@galleguillosdavid-coder). Todos los derechos reservados.**
+
