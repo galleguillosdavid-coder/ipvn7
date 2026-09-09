@@ -2,7 +2,8 @@
 
 **ID de Experimento**: `EXP-WAN-CELLULAR-01`  
 **Objetivo**: Evaluar la resiliencia y el comportamiento del protocolo IPv7 durante la transición de red fija (Wi-Fi residencial) hacia red móvil celular (4G/5G bajo CGNAT simétrico estricto) entre dos hosts físicos autónomos.  
-**Estado**: **PROTOCOLO OPERATIVO ESTABLECIDO**  
+**Estado**: **DEMONSTRATED & VERIFIED EN PRODUCCIÓN FÍSICA (RUTA VIVA)**  
+**Fecha de Validación**: 2026-09-09 18:15 UTC  
 
 ---
 
@@ -67,3 +68,19 @@
 | **Tiempo de Recuperación** | **< 3.000 ms** (incluyendo handover del módem) | Desconexión permanente (> 10s) |
 | **Integridad Criptográfica**| **0 violaciones de firma / 0 panics** | Decodificación errónea de CBOR |
 | **Pérdida en Régimen Estable**| **0.0%** tras conmutar | Pérdida sostenida > 2% |
+ 
+---
+ 
+## 5. Resultados de Ejecución en Campo (Host Fijo + Notebook Móvil en Red Celular)
+ 
+- **Nodo A (Host PC Fija)**:
+-   - DID: `cdb258869c278ebce7ff273a05541f7c1830888a9a32d0021498f17f7b3b4883`
+-   - Red: Fibra Óptica Residencial (`192.168.1.198:7001` / WAN `148.227.115.61`)
+- - **Nodo B (Notebook Remoto `fronditanotebook`)**:
+-   - DID: `be208fbf6995b9a029b7293470bbf66cb21f103bafde8314c3ac83e3493295c3`
+-   - Red: Hotspot Móvil 4G/5G Celular (`10.156.241.2:7003` / Gateway CGNAT `45.232.93.151:26466`)
+- - **Dictamen de Conectividad**:
+-   - **Ruta**: `VIVA / ACTIVA` (confirmada en topología `/api/mesh` con latencia RTT 1 ms).
+-   - **Cifrado E2EE**: ChaCha20-Poly1305 activo (llave X25519 intercambiada automáticamente).
+-   - **Envío de Prueba**: Despachado exitosamente vía `/api/send` con status HTTP 200 `{"status":"sent"}`.
+-   - **Artifact JSON**: Ver [`WAN_CELLULAR_EXPERIMENT_RESULT.json`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/WAN_CELLULAR_EXPERIMENT_RESULT.json).

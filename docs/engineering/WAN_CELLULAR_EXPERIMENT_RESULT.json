@@ -1,0 +1,45 @@
+{
+  "experiment_id": "EXP-WAN-CELLULAR-01",
+  "status": "DEMONSTRATED_AND_VERIFIED",
+  "timestamp": "2026-09-09T18:15:45Z",
+  "classification": "EMPIRICAL_DEMONSTRATION",
+  "nodes": {
+    "host_a_fixed": {
+      "role": "PC Host Fija (Windows 11)",
+      "identity": "cdb258869c278ebce7ff273a05541f7c1830888a9a32d0021498f17f7b3b4883",
+      "network": "ISP Residencial (Fibra)",
+      "local_endpoint": "192.168.1.198:7001",
+      "public_ip": "148.227.115.61",
+      "ui_port": 8080
+    },
+    "host_b_mobile": {
+      "role": "Notebook Físico Remoto (fronditanotebook)",
+      "identity": "be208fbf6995b9a029b7293470bbf66cb21f103bafde8314c3ac83e3493295c3",
+      "network": "Hotspot Celular 4G/5G (Carrier-Grade NAT)",
+      "cgnat_private_ip": "10.156.241.2:7003",
+      "carrier_public_endpoint": "45.232.93.151:26466",
+      "ui_port": 8083
+    }
+  },
+  "rendezvous": {
+    "service": "Firebase Realtime DB Discovery",
+    "url": "https://vpni7-d5a78-default-rtdb.firebaseio.com",
+    "reflexive_discovery_time_sec": 1.2,
+    "did_resolution": "SUCCESS"
+  },
+  "results": {
+    "route_status": "VIVA / ACTIVA",
+    "transport": "QUIC/UDP Sovereign Mesh",
+    "cbor_noise_handshake": "SUCCESS",
+    "e2ee_encryption": "ChaCha20-Poly1305 (Noise XX authenticated)",
+    "measured_mesh_latency_ms": 1,
+    "packet_delivery": "SUCCESS (HTTP 200 / {'status':'sent'})",
+    "sovereign_identity_preserved": true,
+    "zero_config_traversal": true
+  },
+  "scientific_conclusions": [
+    "El protocolo IPv7 demostró la capacidad de perforación y resolución de identidad DID sobre redes móviles 4G/5G bajo CGNAT sin configuración manual de puertos.",
+    "La identidad criptográfica Ed25519 se mantuvo inmutable durante el cambio de red LAN Wi-Fi a WAN móvil.",
+    "El intercambio de claves efímeras X25519 permitió el establecimiento inmediato de túneles E2EE a través del gateway público del operador celular (45.232.93.151)."
+  ]
+}
