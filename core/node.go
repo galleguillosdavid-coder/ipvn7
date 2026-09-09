@@ -455,6 +455,13 @@ func (n *Node) adapterListenLoop(a Adapter) {
 				continue
 			}
 
+			// Default or validate HopLimit / TTL: must satisfy <= DefaultHopLimit
+			if c.HopLimit == 0 {
+				c.HopLimit = DefaultHopLimit
+			} else if c.HopLimit > DefaultHopLimit {
+				continue
+			}
+
 			n.totalReceived.Add(1)
 			n.bytesReceived.Add(uint64(len(c.Payload)))
 

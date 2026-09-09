@@ -62,6 +62,9 @@ func (a *UDPAdapter) Start() error {
 	
 	a.conn = conn
 	a.running = true
+	if len(a.endpoints) == 0 {
+		a.endpoints = []string{conn.LocalAddr().String()}
+	}
 	
 	go a.listenLoop()
 	return nil
@@ -156,6 +159,16 @@ func (a *UDPAdapter) Endpoints() []string {
 	return eps
 }
 
+// LocalAddr returns the local bound address string
+func (a *UDPAdapter) LocalAddr() string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.conn != nil {
+		return a.conn.LocalAddr().String()
+	}
+	return ""
+}
+
 // DiscoverEndpoints queries local interfaces and STUN to populate reachable endpoints
 func (a *UDPAdapter) DiscoverEndpoints(stunServer string) error {
 	a.mu.Lock()
@@ -220,6 +233,13 @@ func (a *UDPAdapter) listenLoop() {
 		
 		if !c.Verify() {
 			continue // ignore invalid signatures
+		}
+
+		// Default or validate HopLimit / TTL (bounded by DefaultHopLimit)
+		if c.HopLimit == 0 {
+			c.HopLimit = core.DefaultHopLimit
+		} else if c.HopLimit > core.DefaultHopLimit {
+			continue // drop packets exceeding Small-World bound
 		}
 		
 		// Anti-replay filter: verify sequence number is not duplicated or stale
