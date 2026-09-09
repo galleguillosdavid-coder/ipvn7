@@ -79,3 +79,16 @@ La herramienta `baseline.go` compara cualquier métrica actual contra el baselin
 | **Overhead Telemetría** | > 50 ns/op |
 
 Si se sobrepasa cualquiera de estos umbrales, el pipeline de CI/CD o el ingeniero debe suspender la integración hasta subsanar la causa raíz.
+
+---
+
+## 5. Líneas Base de Recursos y Estabilidad (Soak & Multi-Host)
+
+| Parámetro / Entorno | Valor de Referencia Inmutable | Fuente / Validación |
+| :--- | :--- | :--- |
+| **Crecimiento de Heap en Soak (3.8h)** | **<= 0.01 MB / hora** (0.03 MB en 3.8h) | `EXP-SOAK-01` (`CANARY_RUNNER_EVALUATION.md`) |
+| **Goroutines en Steady-State** | **8 goroutines** (concurrencia constante) | `canary_runner.go` (454 ciclos continuos) |
+| **Memoria SO Windows (Host B Notebook)**| **57.6 MB** (`ipv7-node.exe` en Win 11 Home) | `EXP-PHYSICAL-NB-01` (`192.168.1.106`) |
+| **Latencia de Handshake LAN Wi-Fi** | **4.78 ms - 5.05 ms** | Noise XX sobre 802.11 ac/ax |
+| **Latencia RTT Transporte Wi-Fi** | **0.51 ms** | ICMP / Direct UDP |
+

@@ -74,3 +74,27 @@ Para ejecutar la prueba de despliegue canario:
 go run canary/runner/canary_runner.go -duration=24h -interval=30s
 ```
 El runner simula y supervisa los eventos de churn, conmutación de relay y tráfico sostenido, registrando las métricas sin alterar una sola línea del Protocol Core.
+
+---
+
+## 6. Resultados Consolidados de la Fase Canaria Inicial (Soak & Nodo Físico)
+
+En la primera corrida oficial de supervisión y estabilidad prolongada:
+
+### 6.1 Desempeño del Runner & Watchdog (3.8 Horas Continuas)
+- **Duración Efectiva**: **3 horas, 47 minutos, 05 segundos** (454 ciclos de muestreo de 30 segundos).
+- **Tráfico Procesado**: 158.900 paquetes enviados / 157.992 recibidos (**99.43% tasa de entrega**).
+- **Estabilidad de Memoria Heap**:
+  - Ciclo #1: `0.33 MB`
+  - Ciclo #250: `0.34 MB`
+  - Ciclo #454: `0.36 MB` (Crecimiento residual asintótico de 0.03 MB; **0 fugas de memoria**).
+- **Concurrencia de Goroutines**: Invariable en **8 goroutines** durante toda la prueba (**0 goroutine leaks**).
+- **Disponibilidad**: 100% HEALTHY; cero intervenciones forzadas del watchdog.
+
+### 6.2 Desempeño del Nodo Físico Autónomo (`fronditanotebook`)
+- **Endpoint**: `192.168.1.106:7003` (Notebook independiente en Wi-Fi real).
+- **Identidad**: DID `2581f063c103ed29...` (Ed25519).
+- **Descubrimiento y Handshake**: Autodetección vía LAN Discovery en 4.78 ms con cifrado Noise XX y ChaCha20-Poly1305.
+- **Consumo en SO Remoto**: **57.6 MB de RAM** tras horas de actividad. Cero caídas y cierre limpio controlado.
+- **Doble Pila**: Anuncio dual de IPv4 privada y prefijo global IPv6 (`2803:9810:3d7d:...`).
+

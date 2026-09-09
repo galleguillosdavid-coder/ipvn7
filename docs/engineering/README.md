@@ -55,3 +55,5 @@ go run .\tools\ipv7-engineer roaming
 - [`ROAMING.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/ROAMING.md): Resultados del experimento de movilidad de 25 ensayos.
 - [`CHAOS.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CHAOS.md): Pruebas controladas de disrupción.
 - [`OPTIMIZATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/OPTIMIZATION.md): Reglas de optimización justificada por evidencia.
+- [`CANARY_RUNNER_EVALUATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CANARY_RUNNER_EVALUATION.md): Evaluación formal de soak test y watchdog (3.8h, 454 ciclos, 0 fugas).
+

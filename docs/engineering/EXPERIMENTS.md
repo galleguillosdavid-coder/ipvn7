@@ -104,3 +104,27 @@ Se debe ejecutar inmediatamente:
 git checkout -- <archivos_modificados>
 ```
 Y registrar la hipótesis fallida en `tools/ipv7-engineer/bottlenecks/` mediante `RecordFailedHypothesis`.
+
+---
+
+## 7. Registro de Experimentos Ejecutados
+
+### EXP-ROAM-01: Batería de Movilidad e IP Roaming (25 Ensayos)
+- **Fecha**: 2026-09-09
+- **Objetivo**: Conmutación de sockets UDP preservando DID Ed25519.
+- **Resultado**: 25/25 PASS (100%), 0.0% pérdida de paquetes, P50 = 1.10 ms, P99 = 2.37 ms.
+- **Clasificación**: `DEMONSTRATED` (Ver [`ROAMING.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/ROAMING.md)).
+
+### EXP-SOAK-01: Estabilidad Continua y Detección de Fugas (Canary Soak)
+- **Fecha**: 2026-09-09
+- **Duración**: 3 horas, 47 minutos (454 ciclos consecutivos de 30s).
+- **Tráfico**: 158.900 paquetes enviados / 157.992 recibidos (99.43% entrega).
+- **Resultado**: HeapAlloc plano (0.33 MB a 0.36 MB, +0.03 MB), Goroutines constantes en 8, 0 crashes, 100% HEALTHY.
+- **Clasificación**: `DEMONSTRATED` (Ver [`CANARY_RUNNER_EVALUATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CANARY_RUNNER_EVALUATION.md)).
+
+### EXP-PHYSICAL-NB-01: Enlace Heterogéneo PC Host <-> Notebook Wi-Fi
+- **Fecha**: 2026-09-09
+- **Entorno**: PC Windows 11 (`192.168.1.198`) <-> Notebook Físico Windows 11 (`192.168.1.106`).
+- **Resultado**: Autodescubrimiento LAN UDP broadcast en 4.78 ms, E2EE Noise XX + ChaCha20-Poly1305, consumo de 57.6 MB de RAM en nodo remoto, dual-stack IPv4/IPv6 verificado.
+- **Clasificación**: `DEMONSTRATED`.
+
