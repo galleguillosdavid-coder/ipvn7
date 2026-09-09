@@ -35,7 +35,7 @@ A diferencia de los benchmarks de rendimiento sintético, una prueba de resisten
  [01] Packet corruption       PASS     (100% de paquetes corruptos rechazados; 0 aceptados)
  [02] Malformed CBOR          PASS     (Fuzzing descartado limpiamente sin panic)
  [03] Oversized packet        PASS     (Rechazo limpio de tramas > MTU hasta 65.507 B)
- [04] Replay x100000          PASS     (Ventana RFC 6479 bloqueó 99.999 réplicas; 1 entregado)
+ [04] Replay x100000          PASS     (Ventana RFC 6479 bloqueó 99.999 réplicas; tasa 99,999%)
  [05] Invalid signatures      PASS     (1000 intentos de suplantación rechazados; 0 aceptados)
  [06] Handshake flood         PASS     (1500 handshakes masivos sin fuga; Delta Goroutines: 0)
  [07] 20% packet loss         PASS     (Integridad 100% en flujo sobreviviente; 0 corruptos)
@@ -66,7 +66,7 @@ A diferencia de los benchmarks de rendimiento sintético, una prueba de resisten
 ### [01] Inversión de Bits y Corrupción de Paquetes (`Packet Corruption`)
 * **Metodología:** Inyección intercalada de 1.000 paquetes por socket UDP real (667 legítimos y 333 corruptos mediante inversión aleatoria de bits con operador XOR `0xFF`).
 * **Comportamiento del Nodo:** El pipeline de deserialización CBOR y verificación criptográfica Ed25519 (`c.Verify()`) interceptó y descartó el **100%** de los paquetes adulterados. Los 667 paquetes legítimos se entregaron a la capa de aplicación con cero pérdidas y cero corrupciones.
-* **Descubrimiento y Blindaje TTL/HopLimit:** Se identificó que el campo `HopLimit` (equivalente al TTL de IP) debe estar acotado a $1 \le \text{HopLimit} \le 12$ para respetar los teoremas de Kleinberg. Paquetes con `HopLimit == 0` o valores anómalos (>12) son descartados de inmediato en la entrada del socket.
+* **Descubrimiento y Blindaje TTL/HopLimit:** Se identificó que el campo `HopLimit` (equivalente al TTL de IP) debe estar acotado como política perimetral de ingreso a $1 \le \text{HopLimit} \le 12$. Esta decisión operativa busca alinear el límite de propagación con el diámetro esperado del enrutamiento Small-World (12 anillos logarítmicos de Kleinberg) para impedir bucles de reenvío infinitos bajo fuzzing; es una política de contención de frontera configurable en adaptadores, no una atadura intrínseca que restrinja topologías futuras.
 * **Resultado:** **`PASS`** (0 aceptados, 0 panics).
 
 ### [02] Deserialización CBOR con Payloads Fuzzing (`Malformed CBOR`)
@@ -81,7 +81,7 @@ A diferencia de los benchmarks de rendimiento sintético, una prueba de resisten
 
 ### [04] Inundación Nuclear Anti-Replay (`Replay x100000`)
 * **Metodología:** Se capturó un contenedor válido con firma legítima Ed25519 y número de secuencia `Seq = 42`. Se inyectaron **100.000 copias idénticas** a máxima tasa de transferencia por el socket UDP.
-* **Comportamiento del Nodo:** El filtro de ventana deslizante RFC 6479 (`adapters/replay_filter.go`) aceptó la primera trama y rechazó **99.999 copias** consecutivas con una tasa de rechazo del **100.000%**.
+* **Comportamiento del Nodo:** El filtro de ventana deslizante RFC 6479 (`adapters/replay_filter.go`) aceptó la primera trama legítima y rechazó **99.999 copias** consecutivas con una tasa de rechazo exacta del **99,999%** ($99.999 / 100.000$).
 * **Métricas:** 99.999 descartes en 193 ms (~518.000 descartes anti-replay por segundo). Solo 1 mensaje alcanzó la aplicación.
 * **Resultado:** **`PASS`** (Cero fugas de replay).
 

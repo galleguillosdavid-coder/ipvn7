@@ -417,11 +417,11 @@ func (s *AdversarialSuite) testReplayNuclear() (TestStatus, string, string) {
 			fmt.Sprintf("Entregados: %d", delivered)
 	}
 
-	rejectRate := (float64(rejections) / float64(floodCount-1)) * 100.0
+	rejectRate := (float64(rejections) / float64(floodCount)) * 100.0
 
-	return StatusPass, "Ventana RFC 6479 bloqueó 100.000 repeticiones sin fuga",
+	return StatusPass, "Ventana RFC 6479 bloqueó 99.999 réplicas sin fuga",
 		fmt.Sprintf("Rechazo: %.3f%% (%d/%d) | Entregados app: %d | Tiempo: %v",
-			rejectRate, rejections, floodCount-1, delivered, dur.Round(time.Millisecond))
+			rejectRate, rejections, floodCount, delivered, dur.Round(time.Millisecond))
 }
 
 // --------------------------------------------------------------------------------
