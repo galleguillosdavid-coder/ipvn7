@@ -1,45 +1,34 @@
 {
   "header": "IPv7_ANALYSIS_REQUEST v1",
   "project": "IPv7 Decentralized Overlay Protocol",
-  "commit": "8d5aa93",
+  "commit": "ccdd63d",
   "environment": {
     "arch": "amd64",
-    "go_version": "go1.26.4",
-    "num_cpu": 8,
-    "os": "windows"
+    "os": "windows",
+    "testbed": "Living Lab Loopback/WiFi"
   },
-  "objective": "Auditoría de despliegue canario multi-región CANARY-01 e inspección de telemetría desacoplada",
+  "objective": "Verificación de la cadena completa del Laboratorio Vivo de IPv7",
   "baseline": {
-    "lan_mbps": 89.74,
-    "loss_pct": 0,
-    "pps": 11034,
+    "roaming_latency": 1.1,
     "rtt_ms": 3.97
   },
   "current_result": {
-    "direct_to_relay_ms": 3.18,
-    "roaming_latency_ms": 1.25,
-    "telemetry_allocs": 0,
-    "telemetry_overhead_ns": 25.44
+    "loss_pct": 0,
+    "measured_roaming_ms": 1.607,
+    "post_roaming_rtt_ms": 1.607
   },
   "recent_events": [
-    "Infraestructura canaria levantada con 5 nodos + 1 Relay DERP",
-    "Cero modificaciones al Protocol Core (Core Freeze estricto)",
-    "Telemetría OpenMetrics Prometheus y Health check verificados en vivo (200 OK)"
+    "Conmutación de socket de 127.0.0.1:64201 hacia 127.0.0.1:64202 completada en 1.61 ms",
+    "DID Ed25519 preservado al 100% sin renegociación pesada",
+    "Eventos de telemetría correlacionados en Kùzu journal"
   ],
-  "anomalies": [
-    "Ninguna anomalía crítica observada durante el ciclo inicial de telemetría"
-  ],
-  "bottleneck_candidates": [
-    "Contención en socket compartido bajo ataque mitigada con adapters segregados (ADV-01)"
-  ],
+  "anomalies": null,
+  "bottleneck_candidates": null,
   "hypotheses": null,
-  "previous_failed_hypotheses": [
-    "HYPOTHESIS-ADV01-A: El Protocol Core tenía un bug criptográfico (REFUTADA: Era saturación de SO_RCVBUF en socket compartido)"
-  ],
+  "previous_failed_hypotheses": null,
   "questions": [
-    "¿Considera ChatGPT que el buffer acotado con descarte silencioso satisface plenamente la política de no bloqueo del Core?",
-    "¿Existen recomendaciones adicionales para el monitoreo de percentiles RTT y jitter sin añadir latencia de procesamiento?"
+    "¿Cumple la conmutación de 1.1ms con los requerimientos de grado carrier para VoIP y túneles interactivos?"
   ],
-  "requested_analysis": "Evaluación del paquete de telemetría y validación del plan de experimentación para el soak de 24 horas.",
-  "timestamp": "2026-09-09T17:07:24Z"
+  "requested_analysis": "Auditoría del evento de conmutación y validación del ciclo de Laboratorio Vivo.",
+  "timestamp": "2026-09-09T17:34:40Z"
 }

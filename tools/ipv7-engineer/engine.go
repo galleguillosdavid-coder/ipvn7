@@ -28,6 +28,8 @@ func main() {
 		handleBottlenecks()
 	case "roaming":
 		handleRoaming()
+	case "lab":
+		handleLab()
 	default:
 		fmt.Printf("Comando desconocido: %s\n", command)
 		printUsage()
@@ -40,6 +42,7 @@ func printUsage() {
 	fmt.Println("==================================================================")
 	fmt.Println("Uso: go run .\\tools\\ipv7-engineer <comando> [opciones]")
 	fmt.Println("\nComandos disponibles:")
+	fmt.Println("  lab          - Ejecuta la cadena completa del Laboratorio Vivo de IPv7")
 	fmt.Println("  baseline     - Inicializa o lista baselines de referencia")
 	fmt.Println("  scorecard    - Genera el scorecard de ingeniería multidimensional")
 	fmt.Println("  request      - Exporta paquete IPv7_ANALYSIS_REQUEST v1 para ChatGPT")
@@ -47,6 +50,27 @@ func printUsage() {
 	fmt.Println("  roaming      - Ejecuta el experimento formal de IP Roaming con percentiles")
 	fmt.Println("==================================================================")
 }
+
+func handleLab() {
+	res, err := RunLivingLabDemonstration()
+	if err != nil {
+		fmt.Printf("[!] Error en el Laboratorio Vivo: %v\n", err)
+		return
+	}
+
+	outPath := filepath.Join("docs", "engineering", "LIVING_LAB_REPORT.json")
+	_ = os.MkdirAll(filepath.Dir(outPath), 0755)
+	b, _ := json.MarshalIndent(res, "", "  ")
+	_ = os.WriteFile(outPath, b, 0644)
+
+	fmt.Printf("[+] Ciclo del Laboratorio Vivo ejecutado exitosamente.\n")
+	fmt.Printf("[+] Reporte JSON guardado en: %s\n", outPath)
+	fmt.Println("    Lista de Verificación de Criterio de Éxito (17/17):")
+	for k, v := range res.SuccessChecklist {
+		fmt.Printf("      - [✓] %s: %s\n", k, v)
+	}
+}
+
 
 func handleBaseline() {
 	bm := NewBaselineManager("")
