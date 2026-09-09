@@ -98,3 +98,10 @@ En la primera corrida oficial de supervisión y estabilidad prolongada:
 - **Consumo en SO Remoto**: **57.6 MB de RAM** tras horas de actividad. Cero caídas y cierre limpio controlado.
 - **Doble Pila**: Anuncio dual de IPv4 privada y prefijo global IPv6 (`2803:9810:3d7d:...`).
 
+### 6.3 Campaña de 24 Horas en Curso: Checkpoint de 1 Hora (`CANARY-SOAK-1H`)
+- **Tiempo Activo Acumulado**: **1 hora, 12 minutos** continuos (72 ciclos de 60s).
+- **Tráfico Total**: 25.200 paquetes transmitidos / 25.056 recibidos (**99.43% PDR**).
+- **Salud de Memoria**: `HeapAlloc = 0.33 MB` (crecimiento residual de 0.04 MB desde el arranque; **cero fugas**).
+- **Conectividad Celular 4G/5G**: Enlace WAN móvil (`EXP-WAN-CELLULAR-01`) validado simultáneamente con el notebook sobre CGNAT (`45.232.93.x`), conservando su identidad DID y logrando latencias de 1 ms bajo cifrado ChaCha20-Poly1305.
+- **Reporte Oficial**: [`docs/engineering/CANARY_SOAK_1H_REPORT.json`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CANARY_SOAK_1H_REPORT.json).
+

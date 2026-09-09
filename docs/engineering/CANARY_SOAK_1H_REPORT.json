@@ -1,0 +1,34 @@
+{
+  "checkpoint_id": "CANARY-SOAK-1H",
+  "timestamp": "2026-09-09T18:58:30Z",
+  "uptime_seconds": 4356,
+  "elapsed_cycles": 72,
+  "cycle_interval_seconds": 60,
+  "nodes_monitored": [
+    {"name": "NODE_CL_HOST", "prometheus_port": 9101, "role": "Host Principal (Chile)"},
+    {"name": "NODE_US_EAST", "prometheus_port": 9102, "role": "Canary Virginia"},
+    {"name": "NODE_EU_CENTRAL", "prometheus_port": 9103, "role": "Canary Frankfurt"},
+    {"name": "NODE_AP_SOUTH", "prometheus_port": 9104, "role": "Canary Mumbai"},
+    {"name": "NODE_BR_SOUTH", "prometheus_port": 9105, "role": "Canary São Paulo"},
+    {"name": "DERP_RELAY_CANARY", "prometheus_port": 9199, "role": "Fallback DERP Relay"}
+  ],
+  "traffic": {
+    "total_packets_sent": 25200,
+    "total_packets_received": 25056,
+    "packet_delivery_rate_percent": 99.43,
+    "adapter_drops": 0,
+    "reconnections_total": 0
+  },
+  "runtime_stability": {
+    "heap_alloc_bytes": 346672,
+    "heap_alloc_mb": 0.33,
+    "heap_growth_since_start_mb": 0.04,
+    "sys_memory_bytes": 11292672,
+    "sys_memory_mb": 10.77,
+    "active_goroutines": 10,
+    "goroutine_leak_detected": false,
+    "memory_leak_detected": false
+  },
+  "verdict": "HEALTHY - EXCEEDS_STABILITY_BASELINE",
+  "next_checkpoint": "CANARY-SOAK-6H (Estimated: 2026-09-09T23:45:00Z)"
+}
