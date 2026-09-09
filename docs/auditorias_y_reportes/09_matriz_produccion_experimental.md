@@ -151,11 +151,84 @@ $$\text{Vector de Telemetría} = \langle \text{Throughput (Mbps)}, \text{PPS}, \
 
 ---
 
-## 5. Próximos Pasos Operativos
+## 5. Validación Empírica en Hardware Físico Real (Notebook $\leftrightarrow$ PC)
 
-1. **Despliegue de Nodo Remoto en la Nube / Máquina Secundaria:**
-   - Instalar `bin/ipv7-node-linux` o `bin/iperf_ipv7_linux` en una instancia remota externa (VPS o segundo equipo en subred distinta).
-2. **Ejecución de la Primera Batería WAN Cruzada:**
-   - Probar `EXP-DIR-WAN-UDP` y `EXP-REL-WAN-UDP` con pruebas prolongadas (10 min y 60 min).
-3. **Consolidación en el Reporte 10:**
-   - Documentar la comparativa cuantitativa entre máquinas físicas independientes.
+**Fecha de Ejecución:** 09 de Septiembre de 2026  
+**Topología:** P2P Directo sobre Wi-Fi (`EXP-DIR-LAN-UDP`)  
+**Hardware Host A:** PC de Escritorio (`192.168.1.198`, Windows 11 x64, 8 CPUs)  
+**Hardware Host B:** Notebook Físico (`192.168.1.106`, Windows 11 x64, Hostname `Dvd`)  
+**Mecanismo de Despliegue:** SSH / SFTP nativo automatizado.
+
+---
+
+### Método 1: Saturación de Socket UDP con Encapsulado E2EE (`iperf_ipv7`)
+
+Ambas máquinas ejecutaron la prueba de saturación física bidireccional sobre la interfaz Wi-Fi real del hogar/oficina:
+
+#### A. Flujo Emisor: Notebook $\rightarrow$ PC (Duración: 10 segundos)
+```json
+{
+  "mode": "client",
+  "target": "192.168.1.198:9050",
+  "duration_sec": 10.00025,
+  "packet_size_bytes": 1024,
+  "bytes_total": 54084576,
+  "mb_total": 51.58,
+  "throughput_mb_s": 5.16,
+  "throughput_mbps": 41.26,
+  "packets_total": 50736,
+  "pps": 5073.47,
+  "loss_percentage": 0.0,
+  "alloc_ram_mb": 1.68,
+  "pmtu_bytes": 1280
+}
+```
+*Telemetría en Servidor Receptor (PC):* Ráfagas sostenidas observadas en recepción de **42,39 a 46,35 Mbps** y **5.000 a 5.435 pps**, con solo 1,3 a 3,4 MB de RAM asignada.
+
+#### B. Flujo Emisor: PC $\rightarrow$ Notebook (Duración: 5 segundos)
+```json
+{
+  "mode": "client",
+  "target": "192.168.1.106:9055",
+  "duration_sec": 5.00789,
+  "packet_size_bytes": 1024,
+  "bytes_total": 58906094,
+  "mb_total": 56.18,
+  "throughput_mb_s": 11.22,
+  "throughput_mbps": 89.74,
+  "packets_total": 55259,
+  "pps": 11034.38,
+  "loss_percentage": 0.0,
+  "alloc_ram_mb": 3.30,
+  "pmtu_bytes": 1280
+}
+```
+
+---
+
+### Método 2: Nodos Completos P2P con Interfaz Web (`ipv7-node.exe`)
+
+Se desplegaron e interconectaron simultáneamente dos instancias completas del protocolo IPv7 con sus respectivos servidores UI web y stacks de descubrimiento:
+* **Nodo PC:** `cdb258869c278ebce7ff273a05541f7c1830888a9a32d0021498f17f7b3b4883` en puerto `7001` (UI `:8080`).
+* **Nodo Notebook:** `3e99be42d004b3e002a8a56c0cdfbb6b0ae7e8fb95877db1e476473a8e4ecb63` en puerto `7001` (UI `:8080`).
+
+```
+[LAN Discovery] Peer detectado en 192.168.1.106:7001! Iniciando handshake automático...
+[OK]   ¡Handshake completado con 192.168.1.106:7001! Peer ID: 3e99be42d004b3e0... (RTT: 3.9778ms)
+```
+
+**Hallazgos Clave de la Validación Física:**
+1. **Latencia RTT Real:** **3,97 ms** en el handshake criptográfico Noise_XX directo sobre Wi-Fi.
+2. **Peers Reconocidos Mutuamente:** Ambos nodos reflejan al otro en `/api/peers` con `Degree: 12` (12 anillos del Mundo Pequeño) y canal E2EE asegurado.
+3. **Pérdida de Paquetes:** **0,0 %** observado a lo largo de más de 105.000 paquetes cifrados transmitidos.
+4. **Saturación en Enlace Físico Wi-Fi:** Entre **41 y 89 Mbps sostenidos** en condiciones inalámbricas no ideales, demostrando la capacidad de la arquitectura en producción real.
+
+---
+
+## 6. Próximos Pasos Operativos
+
+1. **Despliegue de Nodo Remoto en la Nube (WAN Externa):**
+   - Instalar `bin/ipv7-node-linux` o `bin/iperf_ipv7_linux` en una instancia remota externa (VPS) para probar `EXP-DIR-WAN-UDP` y `EXP-REL-WAN-UDP` con RTT > 30ms.
+2. **Pruebas de Remojo Prolongadas:**
+   - Ejecutar pruebas de saturación de 10 minutos y 60 minutos para evaluar estabilidad de buffers y temperatura térmica.
+
