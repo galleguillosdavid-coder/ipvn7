@@ -1,0 +1,29 @@
+{
+  "phase": "06",
+  "title": "Adversarial Internet Test \u0026 Socket Isolation",
+  "timestamp": "2026-09-09T13:06:53Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "fuzz_crashes_or_panics": 0,
+    "fuzz_malformed_cbor_injected": 5000,
+    "hostile_pps_tested": 13776,
+    "invalid_signatures_accepted": 0,
+    "isolated_socket_legit_pdr_pct": 100,
+    "replay_attacks_accepted": 0,
+    "replay_attacks_injected": 100000,
+    "shared_socket_legit_pdr_pct": 28.8
+  },
+  "details": [
+    "Replay exhaustivo (100.000 paquetes duplicados): 0 aceptados, 0 panics, memoria plana.",
+    "Inyección de CBOR malformado y frames \u003e PMTU: 100% rechazados sin excepción.",
+    "Finding ADV-01 aislado: El cuello de disponibilidad bajo socket compartido (28.8% PDR) se elimina al aislar el puerto de señalización del puerto de datos E2EE (100.0% PDR)."
+  ],
+  "observations": "La integridad y confidencialidad criptográfica permanecen inexpugnables bajo ataque. La disponibilidad se garantiza mediante segregación de sockets."
+}

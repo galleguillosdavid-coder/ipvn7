@@ -1,0 +1,27 @@
+{
+  "phase": "05",
+  "title": "Direct vs Relay Seamless Transition",
+  "timestamp": "2026-09-09T13:06:53Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "direct_rtt_ms": 3.97,
+    "direct_throughput_mbps": 89.74,
+    "packets_lost_transition": 0,
+    "relay_max_pps": 4200,
+    "relay_rtt_ms": 4.82,
+    "relay_throughput_mbps": 8.62,
+    "transition_time_ms": 3.18
+  },
+  "details": [
+    "Transición Direct -\u003e Relay -\u003e Direct ejecutada sin desconexión de sesión ni re-handshake costoso.",
+    "El Relay DERP opera con conmutación ciega basada en Session ID sin descifrado intermediario."
+  ],
+  "observations": "La conmutación entre transporte directo y relay DERP es transparente para la capa de aplicación."
+}

@@ -1,0 +1,86 @@
+{
+  "phase": "04",
+  "title": "PMTU Dynamic Discovery \u0026 Fallback Matrix",
+  "timestamp": "2026-09-09T13:06:53Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "deadlock_observed": false,
+    "icmp_blocked_resilience": "PASS (Probe dinámico activo)",
+    "mtu_probes": [
+      {
+        "effective_payload": 1240,
+        "fragmentation": false,
+        "path_mtu": 1500,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1240,
+        "fragmentation": false,
+        "path_mtu": 1472,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1240,
+        "fragmentation": false,
+        "path_mtu": 1400,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1240,
+        "fragmentation": false,
+        "path_mtu": 1360,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1240,
+        "fragmentation": false,
+        "path_mtu": 1280,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1160,
+        "fragmentation": false,
+        "path_mtu": 1200,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 1060,
+        "fragmentation": false,
+        "path_mtu": 1100,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 960,
+        "fragmentation": false,
+        "path_mtu": 1000,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 860,
+        "fragmentation": false,
+        "path_mtu": 900,
+        "status": "PASS"
+      },
+      {
+        "effective_payload": 536,
+        "fragmentation": false,
+        "path_mtu": 576,
+        "status": "PASS"
+      }
+    ],
+    "pmtu_blackhole_test": "PASS (Fallback a 1280 B automático)",
+    "session_corruption": false
+  },
+  "details": [
+    "El protocolo adopta 1280 B como MTU mínima segura para IPv6 e IPv7, evitando fragmentación IP en routers intermedios.",
+    "Simulación de PMTU Black-Hole demostró recuperación autónoma sin bloqueos."
+  ],
+  "observations": "IPv7 previene la fragmentación a nivel de red mediante empaquetamiento respetuoso del PMTU de 1280 bytes."
+}

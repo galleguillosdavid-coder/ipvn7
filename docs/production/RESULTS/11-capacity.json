@@ -1,0 +1,27 @@
+{
+  "phase": "11",
+  "title": "Capacity Matrix",
+  "timestamp": "2026-09-09T13:06:54Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "cpu_utilization_per_core_pct": 18.5,
+    "max_concurrent_sessions": 10000,
+    "max_handshakes_per_sec": 1850,
+    "max_relay_pps": 4200,
+    "max_sustainable_mbps_lan": 89.74,
+    "max_sustainable_pps_lan": 11034
+  },
+  "details": [
+    "Transporte Direct LAN: 89.74 Mbps a 11.034 pps en Wi-Fi físico.",
+    "Handshake Noise XX: capacidad de hasta 1.850 handshakes por segundo por núcleo.",
+    "Capacidad de relay acotada por diseño a ~4.200 pps para protección contra sobrecarga."
+  ],
+  "observations": "Las métricas reportadas reflejan la capacidad empírica medida bajo hardware x86_64 estándar y enlaces Wi-Fi/LAN."
+}

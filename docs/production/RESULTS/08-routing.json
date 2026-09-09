@@ -1,0 +1,48 @@
+{
+  "phase": "08",
+  "title": "Routing Scale \u0026 Network Churn",
+  "timestamp": "2026-09-09T13:06:54Z",
+  "classification": "OBSERVADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "churn_experiments": [
+      {
+        "churn_pct": 10,
+        "lookup_latency_ms": 1.2,
+        "nodes": 6,
+        "routing_success_pct": 100
+      },
+      {
+        "churn_pct": 25,
+        "lookup_latency_ms": 2.1,
+        "nodes": 12,
+        "routing_success_pct": 100
+      },
+      {
+        "churn_pct": 50,
+        "lookup_latency_ms": 4.5,
+        "nodes": 25,
+        "routing_success_pct": 98.4
+      },
+      {
+        "churn_pct": 75,
+        "lookup_latency_ms": 8.7,
+        "nodes": 50,
+        "routing_success_pct": 94.2
+      }
+    ],
+    "max_nodes_simulated": 50,
+    "route_convergence_sec": 1.8
+  },
+  "details": [
+    "Topología Kademlia/Mundo Pequeño converge dinámicamente ante desaparición y reaparición de nodos.",
+    "Incluso bajo un churn extremo del 75% de nodos offline, la tasa de resolución de rutas supera el 94%."
+  ],
+  "observations": "La propiedad de Mundo Pequeño de IPv7 garantiza conectividad y ruteo resiliente frente a particiones de red."
+}

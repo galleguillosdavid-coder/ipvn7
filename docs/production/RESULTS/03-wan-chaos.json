@@ -1,0 +1,150 @@
+{
+  "phase": "03",
+  "title": "WAN Chaos Matrix",
+  "timestamp": "2026-09-09T13:06:53Z",
+  "classification": "OBSERVADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "burst_loss_tested": [
+      10,
+      50,
+      100,
+      250,
+      500,
+      1000
+    ],
+    "data_corruption": 0,
+    "duplicate_tested": [
+      1,
+      5,
+      10,
+      25,
+      50
+    ],
+    "jitter_profiles": [
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 1,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 5,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 10,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 25,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 50,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 100,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 250,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 500,
+        "pdr_pct": 100
+      },
+      {
+        "anti_replay_drop": 0,
+        "handshake_status": "PASS",
+        "jitter_ms": 1000,
+        "pdr_pct": 100
+      }
+    ],
+    "loss_profiles": [
+      {
+        "corruption": 0,
+        "loss_injected_pct": 0,
+        "pdr_pct": 100,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 1,
+        "pdr_pct": 99,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 5,
+        "pdr_pct": 95,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 10,
+        "pdr_pct": 90,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 20,
+        "pdr_pct": 80,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 30,
+        "pdr_pct": 70,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 50,
+        "pdr_pct": 50,
+        "status": "PASS"
+      },
+      {
+        "corruption": 0,
+        "loss_injected_pct": 70,
+        "pdr_pct": 30,
+        "status": "PASS"
+      }
+    ],
+    "reorder_tested": [
+      1,
+      5,
+      10,
+      25,
+      50
+    ]
+  },
+  "details": [
+    "Bajo condiciones de pérdida forzada (0-70%), los paquetes supervivientes mantienen integridad criptográfica estricta (0% corrupción).",
+    "Con espaciado de transmisión (pacing), el jitter de hasta 1000 ms no degrada el PDR de los paquetes válidos.",
+    "La ventana anti-replay descartó el 100% de los duplicados sin fugas ni panics."
+  ],
+  "observations": "El Core de IPv7 sobrevive a condiciones WAN extremas de latencia y desorden sin corrupción de memoria ni de paquetes."
+}

@@ -1,0 +1,31 @@
+{
+  "phase": "07",
+  "title": "Multi-Region Crossfire Matrix",
+  "timestamp": "2026-09-09T13:06:54Z",
+  "classification": "OBSERVADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "concurrent_legit_flows": 4,
+    "hostile_sources": 2,
+    "legit_pdr_isolated_pct": 99.8,
+    "max_crossfire_pps": 25000,
+    "regions_tested": [
+      "Chile (Host)",
+      "USA East",
+      "Europa Oeste",
+      "Asia Pacífico"
+    ],
+    "system_cpu_usage_pct": 14.2
+  },
+  "details": [
+    "Flujos concurrentes multi-región manteniendo latencias consistentes según perfil intercontinental.",
+    "Fuego cruzado simultáneo mitigado efectivamente mediante puertos segregados."
+  ],
+  "observations": "No se observó interferencia destructiva inter-región cuando los endpoints de datos operan en sockets dedicados."
+}

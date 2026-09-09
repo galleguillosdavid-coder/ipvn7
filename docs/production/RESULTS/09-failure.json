@@ -1,0 +1,26 @@
+{
+  "phase": "09",
+  "title": "Catastrophic Failure \u0026 Identity Persistence",
+  "timestamp": "2026-09-09T13:06:54Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "db_corruption_detected": false,
+    "did_identity_preserved": true,
+    "node_restart_time_ms": 412,
+    "private_key_intact": true,
+    "session_auto_reconnect": true,
+    "sigkill_trials": 10
+  },
+  "details": [
+    "Terminación abrupta (SIGKILL) aplicada repetidamente durante escrituras continuas en base de datos Kùzu.",
+    "Al reiniciar el proceso, el DID de identidad y las claves Ed25519 se cargan sin pérdida de estado ni corrupción."
+  ],
+  "observations": "El estado persistente de IPv7 resiste terminaciones incondicionales sin degradación de base de datos ni desincronización de llaves."
+}

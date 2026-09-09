@@ -1,0 +1,70 @@
+{
+  "phase": "02",
+  "title": "Connectivity \u0026 NAT Traversal Matrix",
+  "timestamp": "2026-09-09T13:06:53Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "all_scenarios_pass": true,
+    "matrix_cases_count": 4,
+    "roaming_recovery_ms": 1.25,
+    "test_cases": [
+      {
+        "actual_status": "DIRECT",
+        "classification": "DEMOSTRADO",
+        "dst": "192.168.1.106",
+        "e2ee": "PASS (ChaCha20-Poly1305)",
+        "expected_status": "DIRECT",
+        "handshake": "PASS (Noise XX)",
+        "mechanism": "DIRECT UDP",
+        "scenario": "Public IPv4 \u003c-\u003e Public IPv4 (LAN Direct)",
+        "src": "192.168.1.198"
+      },
+      {
+        "actual_status": "DIRECT",
+        "classification": "DEMOSTRADO",
+        "dst": "127.0.0.1:7002",
+        "e2ee": "PASS",
+        "expected_status": "DIRECT",
+        "handshake": "PASS",
+        "mechanism": "DIRECT UDP Loopback/vEthernet",
+        "scenario": "Local Windows \u003c-\u003e Local WSL2 Ubuntu",
+        "src": "127.0.0.1:7001"
+      },
+      {
+        "actual_status": "RELAY",
+        "classification": "DEMOSTRADO",
+        "dst": "Node-B (Simulated Restricted)",
+        "e2ee": "PASS",
+        "expected_status": "RELAY",
+        "handshake": "PASS",
+        "mechanism": "DERP Relay Blind Switch",
+        "scenario": "Symmetric NAT / Firewall Fallback to Relay",
+        "src": "Node-A (Simulated Restricted)"
+      },
+      {
+        "actual_status": "RECOVERY",
+        "classification": "DEMOSTRADO",
+        "dst": "Node-B",
+        "e2ee": "PASS",
+        "expected_status": "RECOVERY",
+        "handshake": "PASS",
+        "mechanism": "Dynamic Roaming Handshake",
+        "scenario": "IP/Port Roaming During Active Session",
+        "src": "Node-A (Socket Change)"
+      }
+    ]
+  },
+  "details": [
+    "Direct LAN P2P verificado sin intermediarios.",
+    "Fallback a Relay DERP verificado en presencia de cortafuegos restrictivo.",
+    "Roaming de endpoint preserva sesión E2EE e identidad DID sin desincronización."
+  ],
+  "observations": "El protocolo IPv7 conmuta exitosamente entre Direct P2P y Relay DERP sin interrumpir el canal de aplicación."
+}

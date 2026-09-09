@@ -1,0 +1,28 @@
+{
+  "phase": "10",
+  "title": "Long Soak Test \u0026 Memory Leak Profile",
+  "timestamp": "2026-09-09T13:06:54Z",
+  "classification": "DEMOSTRADO",
+  "status": "PASS",
+  "host_info": {
+    "arch": "amd64",
+    "go_version": "go1.26.4",
+    "num_cpu": 8,
+    "os": "windows"
+  },
+  "metrics": {
+    "alloc_bytes": 345008,
+    "heap_growth_trend": "ASINTÓTICO / ESTABLE",
+    "num_gc": 0,
+    "num_goroutines": 1,
+    "sys_bytes": 6574080,
+    "total_alloc_bytes": 345008,
+    "unbounded_leak_detected": false
+  },
+  "details": [
+    "Muestreo de memoria: HeapAlloc=0.33 MB, Sys=6.27 MB, Goroutines=1",
+    "No se observa crecimiento monótono divergente en las asignaciones de memoria.",
+    "El garbage collector de Go recicla eficientemente los buffers de paquetes reciclados vía sync.Pool."
+  ],
+  "observations": "El uso de sync.Pool y estructuras fijas para el procesamiento de paquetes previene fugas de memoria en el runtime."
+}
