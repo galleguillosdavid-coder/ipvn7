@@ -221,14 +221,88 @@ Se desplegaron e interconectaron simultáneamente dos instancias completas del p
 1. **Latencia RTT Real:** **3,97 ms** en el handshake criptográfico Noise_XX directo sobre Wi-Fi.
 2. **Peers Reconocidos Mutuamente:** Ambos nodos reflejan al otro en `/api/peers` con `Degree: 12` (12 anillos del Mundo Pequeño) y canal E2EE asegurado.
 3. **Pérdida de Paquetes:** **0,0 %** observado a lo largo de más de 105.000 paquetes cifrados transmitidos.
-4. **Saturación en Enlace Físico Wi-Fi:** Entre **41 y 89 Mbps sostenidos** en condiciones inalámbricas no ideales, demostrando la capacidad de la arquitectura en producción real.
+4. **Throughput y Capacidad del Sistema:** El throughput observado quedó determinado por las condiciones del enlace Wi-Fi durante estas pruebas; no se observó evidencia de saturación del CPU, memoria o del Core IPv7 que limitara el flujo.
+5. **Path MTU:** PMTU efectivo de 1.280 bytes, utilizado sin fragmentación en el escenario probado.
 
 ---
 
-## 6. Próximos Pasos Operativos
+## 6. Estado Oficial del Proyecto y Veredicto Técnico
 
-1. **Despliegue de Nodo Remoto en la Nube (WAN Externa):**
-   - Instalar `bin/ipv7-node-linux` o `bin/iperf_ipv7_linux` en una instancia remota externa (VPS) para probar `EXP-DIR-WAN-UDP` y `EXP-REL-WAN-UDP` con RTT > 30ms.
-2. **Pruebas de Remojo Prolongadas:**
-   - Ejecutar pruebas de saturación de 10 minutos y 60 minutos para evaluar estabilidad de buffers y temperatura térmica.
+Con estos resultados empíricos, la etapa de **Validación Física LAN** queda formalmente **CERRADA**:
+
+```
+                    IPv7
+                      │
+                      ▼
+           ┌─────────────────────┐
+           │ Validación funcional│
+           │       ✓ PASADA      │
+           └──────────┬──────────┘
+                      ▼
+           ┌─────────────────────┐
+           │Validación cripto/PFS│
+           │       ✓ PASADA      │
+           └──────────┬──────────┘
+                      ▼
+           ┌─────────────────────┐
+           │ Benchmark interno   │
+           │       ✓ PASADO      │
+           └──────────┬──────────┘
+                      ▼
+           ┌─────────────────────┐
+           │ Socket físico real  │
+           │       ✓ PASADO      │
+           └──────────┬──────────┘
+                      ▼
+           ┌─────────────────────┐
+           │ Dos máquinas reales │
+           │       ✓ PASADO      │
+           └──────────┬──────────┘
+                      ▼
+           ┌─────────────────────┐
+           │ P2P LAN automático  │
+           │       ✓ PASADO      │
+           └──────────┬──────────┘
+                      ▼
+                 NUEVA ETAPA
+                      │
+                      ▼
+          SUSTAINED / WAN / CHAOS
+           PRODUCTION VALIDATION
+```
+
+### Veredicto Técnico Aprobado:
+> *«IPv7 ha demostrado funcionamiento extremo a extremo entre dos hosts físicos independientes sobre una red Wi-Fi real, incluyendo descubrimiento P2P, handshake criptográfico, establecimiento E2EE, transporte UDP sostenido, PMTU efectivo y operación sin pérdida observada en los escenarios ensayados.»*
+
+---
+
+## 7. Cambio de Paradigma: De Perfeccionar a Intentar Romper el Protocolo
+
+A partir de este hito, la pregunta rectora de ingeniería deja de ser:  
+*«¿Qué característica podemos agregarle a IPv7?»*  
+y pasa a ser:  
+*«¿Qué condiciones reales todavía pueden romper IPv7?»*
+
+### Próximos Escenarios de Ataque y Resiliencia (Reporte 10):
+1. **Tráfico Sostenido de Remojo:** 30 a 60 minutos ininterrumpidos para monitoreo térmico, buffer bloat y detección de fugas de memoria.
+2. **Inyección de Pérdida Artificial:** Escenarios calibrados al 1%, 5%, 10% y 20% de descarte forzado.
+3. **Jitter y Reordenamiento Masivo:** Fluctuaciones abruptas de latencia y entrega desordenada.
+4. **Mutación de PMTU en Caliente:** Forzado de cambio de MTU a mitad de transferencia para evaluar recuperación sin caídas.
+5. **Caída y Recuperación de Nodos:** Desconexión súbita de interfaz de red y reconexión automática en caliente.
+6. **Experimento Nuclear: Direct P2P vs. Relay DERP:**
+   ```
+                    IPv7
+                     │
+           ┌─────────┴─────────┐
+           │                   │
+         DIRECT              RELAY
+           │                   │
+       throughput          throughput
+       RTT                 RTT
+       jitter              jitter
+       loss                loss
+       CPU                 CPU
+   ```
+   *Determinar cuantitativamente el costo real de la abstracción cuando el camino P2P directo no está disponible.*
+
 
