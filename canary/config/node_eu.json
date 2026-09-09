@@ -1,0 +1,30 @@
+{
+  "node_id": "NODE_EU_WEST",
+  "region": "Europa Oeste (Frankfurt WAN Proxy)",
+  "listen_port_public": 7005,
+  "listen_port_dedicated": 7015,
+  "metrics_port": 9105,
+  "health_port": 9105,
+  "ui_port": 0,
+  "endpoint": "127.0.0.1:7005",
+  "wan_profile": {
+    "base_rtt_ms": 210,
+    "jitter_ms": 15,
+    "packet_loss_pct": 1.0
+  },
+  "limits": {
+    "max_peers": 1000,
+    "max_handshakes_per_sec": 2000,
+    "max_sessions": 5000,
+    "max_pps": 20000,
+    "max_relay_pps": 4200,
+    "max_memory_mb": 512,
+    "backpressure_action": "DROP_HOSTILE_RATE_LIMIT"
+  },
+  "adapters": {
+    "public_discovery": true,
+    "dedicated_transport": true,
+    "direct_p2p": true,
+    "relay_fallback": true
+  }
+}

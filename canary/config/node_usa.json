@@ -1,0 +1,30 @@
+{
+  "node_id": "NODE_USA_EAST",
+  "region": "USA East (N. Virginia WAN Proxy)",
+  "listen_port_public": 7004,
+  "listen_port_dedicated": 7014,
+  "metrics_port": 9104,
+  "health_port": 9104,
+  "ui_port": 0,
+  "endpoint": "127.0.0.1:7004",
+  "wan_profile": {
+    "base_rtt_ms": 120,
+    "jitter_ms": 10,
+    "packet_loss_pct": 0.5
+  },
+  "limits": {
+    "max_peers": 1000,
+    "max_handshakes_per_sec": 2000,
+    "max_sessions": 5000,
+    "max_pps": 20000,
+    "max_relay_pps": 4200,
+    "max_memory_mb": 512,
+    "backpressure_action": "DROP_HOSTILE_RATE_LIMIT"
+  },
+  "adapters": {
+    "public_discovery": true,
+    "dedicated_transport": true,
+    "direct_p2p": true,
+    "relay_fallback": true
+  }
+}

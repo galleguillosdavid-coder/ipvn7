@@ -1,0 +1,25 @@
+{
+  "node_id": "NODE_WSL_LINUX",
+  "region": "Local Linux (WSL2 Ubuntu)",
+  "listen_port_public": 7002,
+  "listen_port_dedicated": 7012,
+  "metrics_port": 9102,
+  "health_port": 9102,
+  "ui_port": 8082,
+  "endpoint": "127.0.0.1:7002",
+  "limits": {
+    "max_peers": 1000,
+    "max_handshakes_per_sec": 2000,
+    "max_sessions": 5000,
+    "max_pps": 20000,
+    "max_relay_pps": 4200,
+    "max_memory_mb": 512,
+    "backpressure_action": "DROP_HOSTILE_RATE_LIMIT"
+  },
+  "adapters": {
+    "public_discovery": true,
+    "dedicated_transport": true,
+    "direct_p2p": true,
+    "relay_fallback": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "node_id": "DERP_RELAY_CANARY",
+  "region": "Global Central Relay",
+  "listen_port_public": 7099,
+  "metrics_port": 9199,
+  "health_port": 9199,
+  "endpoint": "192.168.1.198:7099",
+  "limits": {
+    "max_concurrent_tunnels": 2000,
+    "max_relay_pps": 4200,
+    "queue_capacity": 500,
+    "backpressure_action": "PROBABILISTIC_EARLY_DROP",
+    "max_memory_mb": 256
+  }
+}

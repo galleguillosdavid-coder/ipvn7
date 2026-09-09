@@ -1,0 +1,25 @@
+{
+  "node_id": "NODE_NB_REMOTE",
+  "region": "Chile (Notebook Físico Wi-Fi)",
+  "listen_port_public": 7003,
+  "listen_port_dedicated": 7013,
+  "metrics_port": 9103,
+  "health_port": 9103,
+  "ui_port": 8083,
+  "endpoint": "192.168.1.106:7003",
+  "limits": {
+    "max_peers": 1000,
+    "max_handshakes_per_sec": 2000,
+    "max_sessions": 5000,
+    "max_pps": 20000,
+    "max_relay_pps": 4200,
+    "max_memory_mb": 512,
+    "backpressure_action": "DROP_HOSTILE_RATE_LIMIT"
+  },
+  "adapters": {
+    "public_discovery": true,
+    "dedicated_transport": true,
+    "direct_p2p": true,
+    "relay_fallback": true
+  }
+}

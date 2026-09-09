@@ -1,0 +1,25 @@
+{
+  "node_id": "NODE_CL_HOST",
+  "region": "Chile (Santiago / Host Windows)",
+  "listen_port_public": 7001,
+  "listen_port_dedicated": 7011,
+  "metrics_port": 9101,
+  "health_port": 9101,
+  "ui_port": 8080,
+  "endpoint": "192.168.1.198:7001",
+  "limits": {
+    "max_peers": 1000,
+    "max_handshakes_per_sec": 2000,
+    "max_sessions": 5000,
+    "max_pps": 20000,
+    "max_relay_pps": 4200,
+    "max_memory_mb": 512,
+    "backpressure_action": "DROP_HOSTILE_RATE_LIMIT"
+  },
+  "adapters": {
+    "public_discovery": true,
+    "dedicated_transport": true,
+    "direct_p2p": true,
+    "relay_fallback": true
+  }
+}
