@@ -136,7 +136,7 @@ Para erradicar falsos positivos derivados de ejecuciones únicas, se ejecutaron 
 | **Handshake Cryptographic Parsing** | 100 / 100 | **100.0%** | 0.00 µs | 0.00 µs | 0.00 µs | 0.00 µs |
 | **Combined Chaos Resilience** | 100 / 100 | **100.0%** | 0.00 µs | 0.00 µs | 1.022.20 µs | 1.805.90 µs |
 
-**Dispersión de fallos:** **0.0%** (Cero fallos intermitentes en 400 ensayos analizados).
+**Consistencia Observada:** No se observaron fallos en 400 ejecuciones bajo las condiciones del experimento (cero fallos registrados en los 4 vectores analizados).
 
 ---
 

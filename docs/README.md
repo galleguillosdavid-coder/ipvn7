@@ -55,6 +55,7 @@ Evaluación rigurosa del rendimiento, cobertura de código y topología en malla
 - [**10. Validación de Resiliencia, Caos y Direct vs. Relay**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/10_validacion_resiliencia_chaos_y_wan.md): Batería de estrés físico (pérdida 1-20%, jitter 50ms, caída de proceso SIGKILL y cuantificación nuclear Direct 199.9 Mbps vs Relay 34.5 Mbps).
 - [**11. Batería de Validación Adversarial Extrema y Resistencia en Fallo**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/11_bateria_adversarial_y_resistencia_extrema.md): 18 vectores de ciberataque, caos, fuzzing y saturación sin alterar el Core. 99.999 replays bloqueados, 0 panics, 0 crashes, 0 security fails y 100% auto-recuperación.
 - [**12. Caracterización Adversarial de Límites Reales y Fuego Cruzado**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/12_caracterizacion_adversarial_y_limites_reales.md): Mapeo cuantitativo de degradación por jitter (0 a 500 ms), límites y backpressure del Relay DERP (techo ~8.6 Mbps), fuego cruzado 5:1 y 100% repetibilidad.
+- [**13. Aislamiento Causal de Finding ADV-01 (Contención UDP en SO)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/13_aislamiento_adv01_cuello_disponibilidad_udp.md): Descomposición en 4 escenarios de contención de cola UDP en SO vs. Core IPv7. Demostración de aislamiento: 28.8% en puerto compartido vs 100.0% PDR en puertos aislados. Exoneración total del Core.
 
 ---
 
