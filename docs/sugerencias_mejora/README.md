@@ -1,10 +1,18 @@
 # Sugerencias de Arquitectura, UX e IA para IPv7
 
-Este directorio contiene propuestas de ingeniería de software, mejoras de experiencia de usuario (UX) y adaptaciones de inteligencia artificial (AI-readiness) para evolucionar el protocolo **IPv7** hacia un estándar de nivel de producción masiva.
+> [!IMPORTANT]
+> **POLÍTICA DE EVOLUCIÓN: PROTOCOL CORE FREEZE STRICT**  
+> El Protocol Core de IPv7 se encuentra **oficialmente congelado** tras la validación de Release Candidate y despliegue canario `CANARY-01`.  
+> Ninguna sugerencia de mejora de arquitectura o código puede aplicarse directamente sobre [`core/`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core). Toda propuesta futura debe regirse por la disciplina de **[`docs/engineering/OPTIMIZATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/OPTIMIZATION.md)**:
+> 1. Perfilado `pprof` previo que demuestre el cuello de botella.
+> 2. Fast-path con 0 allocs/op.
+> 3. Comparación contra baselines inmutables.
+> 4. Aprobación explícita del arquitecto (David).
 
 ---
 
 ## 🧭 Índice de Propuestas y Módulos
+
 
 1. [**01. Mejoras de Experiencia de Usuario (UX)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/01_mejoras_experiencia_usuario_ux.md)
    - Dashboard Web Reactivo con grafos 3D y Canvas interactivo.
