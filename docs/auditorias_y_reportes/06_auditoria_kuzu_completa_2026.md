@@ -1,6 +1,6 @@
 # 🔍 Reporte de Auditoría de Arquitectura con Kùzu Graph Engine
 
-> **Fecha de Ejecución**: 2026-09-08 21:15:01  
+> **Fecha de Ejecución**: 2026-09-08 22:11:54  
 > **Motor de Grafo**: Kùzu Graph Database CLI (Embedded Engine)  
 > **Ubicación Base de Datos**: `.kuzu_index/ipv7.db`  
 > **Estado General**: **SALUDABLE / CERO CICLOS DE DEPENDENCIA**  
@@ -32,14 +32,14 @@ MATCH (p:Package)-[:CONTAINS]->(f:File) RETURN p.name, count(f), sum(f.loc) ORDE
 │ STRING   │ INT64        │ INT128     │
 ├──────────┼──────────────┼────────────┤
 │ core     │ 36           │ 4964       │
-│ adapters │ 15           │ 1874       │
+│ adapters │ 16           │ 1916       │
 │ ui       │ 4            │ 949        │
 │ dht      │ 4            │ 434        │
 │ main     │ 2            │ 259        │
 └──────────┴──────────────┴────────────┘
 (5 tuples)
 (3 columns)
-Time: 34.81ms (compiling), 12.20ms (executing)
+Time: 30.61ms (compiling), 10.55ms (executing)
 ```
 
 ---
@@ -67,7 +67,7 @@ MATCH (p1:Package)-[r:DEPENDS_ON]->(p2:Package) RETURN p1.name, p2.name ORDER BY
 └──────────┴──────────┘
 (7 tuples)
 (2 columns)
-Time: 28.92ms (compiling), 4.25ms (executing)
+Time: 22.75ms (compiling), 5.60ms (executing)
 ```
 
 ---
@@ -100,7 +100,7 @@ MATCH (f:File) RETURN f.path, f.loc ORDER BY f.loc DESC LIMIT 12;
 └───────────────────────────────┴───────┘
 (12 tuples)
 (2 columns)
-Time: 28.62ms (compiling), 3.06ms (executing)
+Time: 22.50ms (compiling), 3.86ms (executing)
 ```
 
 ---
@@ -118,13 +118,13 @@ MATCH (s:Symbol) RETURN s.kind, count(s) ORDER BY count(s) DESC;
 │ s.kind    │ COUNT(s._ID) │
 │ STRING    │ INT64        │
 ├───────────┼──────────────┤
-│ func      │ 221          │
+│ func      │ 222          │
 │ struct    │ 57           │
 │ interface │ 3            │
 └───────────┴──────────────┘
 (3 tuples)
 (2 columns)
-Time: 35.32ms (compiling), 18.19ms (executing)
+Time: 25.98ms (compiling), 4.48ms (executing)
 ```
 
 ---
@@ -165,7 +165,7 @@ MATCH (p:Package {name: 'core'})-[:CONTAINS]->(f:File)-[:DEFINES]->(s:Symbol) RE
 └───────────────────┴────────┴─────────────────────────────────────┘
 (20 tuples)
 (3 columns)
-Time: 30.63ms (compiling), 13.64ms (executing)
+Time: 26.41ms (compiling), 12.04ms (executing)
 ```
 
 ---
@@ -179,37 +179,20 @@ MATCH (p:Peer) RETURN p.id, p.endpoint, p.is_local;
 
 **Resultado Kùzu:**
 ```text
-┌────────────────────────────────────────────────┬────────────────┬────────────┐
-│ p.id                                           │ p.endpoint     │ p.is_local │
-│ STRING                                         │ STRING         │ BOOL       │
-├────────────────────────────────────────────────┼────────────────┼────────────┤
-│ win-node                                       │ 127.0.0.1:7001 │ True       │
-│ wsl-node                                       │ 127.0.0.1:7002 │ False      │
-│ 8738211081cedce28e8467ada723da81f1a8dfaf770c...│  127.0.0.1:8080│  True      │
-│ 12b9ce2a1043bfe4a8514702bdb35af482984b03f07c...│  127.0.0.1:8080│  True      │
-│ e2c4d6d69d6d9c92ad39a249d23e847755db0a7345d8...│  127.0.0.1:8080│  True      │
-│ 39b6ce9665d65c403d63a85dbfad4f47a3717d5f7974...│  127.0.0.1:8080│  True      │
-│ e6b28ab59e5d85121c8c1139b0abb6404f7e4aec86f4...│  127.0.0.1:8080│  True      │
-│ cfd8006e2bf61469b180b3144f542e638f92416a208c...│  127.0.0.1:8080│  True      │
-│ 8b9215c9609104cd9c6142b7ac62fcf2c935c068351c...│  127.0.0.1:8080│  True      │
-│ c8434348349ecd7173ecb000135032064fd1cc50d92b...│  127.0.0.1:8080│  True      │
-│                       ·                        │       ·        │     ·      │
-│                       ·                        │       ·        │     ·      │
-│                       ·                        │       ·        │     ·      │
-│ 801997a88e219f42a39b8a84fcf6d33f83553c0d5075...│  127.0.0.1:8080│  True      │
-│ 8fe98243ff79157320bbdb207aa99a7b2a6817e9b1e0...│  127.0.0.1:8080│  True      │
-│ 13751125db4ab53b1a18747037235f207703e230a423...│  127.0.0.1:8080│  True      │
-│ e8c0adbee62bf717e6c11ac50d7adb9041053ba137b0...│  127.0.0.1:8080│  True      │
-│ 89b0297e45fdda34f7537e564d422968326c42208d47...│  127.0.0.1:8080│  True      │
-│ 374dd9bd54fbf264e45f03a2633a700ecb2adb1dac2d...│  127.0.0.1:8080│  True      │
-│ 0b4495f579dfd2b4a8234eed5c5ffc48e9c0da997e4d...│  127.0.0.1:8080│  True      │
-│ a173fc1462bfc91c3ffc115890234d129b396d47a419...│  127.0.0.1:8080│  True      │
-│ 9ed84a3e6966e09917f96b08063b317226a5a32166d4...│  127.0.0.1:8080│  True      │
-│ 2bc471662faec4b99ecdf651cc541ae61e1386c3216a...│  127.0.0.1:8080│  True      │
-└────────────────────────────────────────────────┴────────────────┴────────────┘
-(32 tuples, 20 shown)
+┌────────────────────────────────────────────┬────────────────────┬────────────┐
+│ p.id                                       │ p.endpoint         │ p.is_local │
+│ STRING                                     │ STRING             │ BOOL       │
+├────────────────────────────────────────────┼────────────────────┼────────────┤
+│ win-node                                   │ 127.0.0.1:7001     │ True       │
+│ wsl-node                                   │ 127.0.0.1:7002     │ False      │
+│ 3f53d789e5a3d57ddf44af189d76e7b05a9ab378...│  172.22.72.89:7004 │  False     │
+│ f4f08d5421739c0afd2d49791a75b0bfab7a166f...│  192.168.1.106:7001│  False     │
+│ 05c05a2ce5d2b07dc2b67a122ee50b712524db2a...│  192.168.1.106:7001│  False     │
+│ cef7d7f7595756e122457d1d61fd84c794ee6fd6...│  192.168.1.106:7001│  False     │
+└────────────────────────────────────────────┴────────────────────┴────────────┘
+(6 tuples)
 (3 columns)
-Time: 18.60ms (compiling), 1.56ms (executing)
+Time: 17.91ms (compiling), 1.30ms (executing)
 ```
 
 ---

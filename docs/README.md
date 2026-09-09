@@ -49,6 +49,9 @@ Evaluación rigurosa del rendimiento, cobertura de código y topología en malla
 - [**04. Catálogo de Oportunidades de Mejora**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/04_catalogo_oportunidades_de_mejora.md): Áreas de optimización identificadas.
 - [**05. Plan de Acción y Roadmap Evolutivo**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/05_plan_de_accion_y_roadmap_evolutivo.md): Fases de desarrollo y matriz de impacto.
 - [**06. Auditoría Integral Kùzu Graph 2026**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/06_auditoria_kuzu_completa_2026.md): Auditoría completa automatizada mediante consultas Cypher en `.kuzu_index/`.
+- [**07. Análisis Crítico del Checklist ChatGPT (posibles.md)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/07_analisis_checklist_posibles.md): Contraste riguroso entre el checklist conceptual y la implementación real en Go.
+- [**08. Fase de Perfeccionamiento Full (5 Objetivos)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/08_fase_perfeccionamiento_completa.md): Resultados empíricos de cuellos de botella, PMTU dinámico, caos, PQC híbrido y benchmarks.
+- [**09. Matriz de Validación Experimental de Producción (EPV)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/09_matriz_produccion_experimental.md): Congelamiento oficial del Core, rigor empírico, matriz Direct/Relay x LAN/WAN/NAT x UDP/QUIC y telemetría estandarizada.
 
 ---
 

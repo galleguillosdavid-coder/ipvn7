@@ -30,7 +30,7 @@ Implementación en **Go** del protocolo IPv7 basado en identidades criptográfic
    - Cobertura teórica global de hasta **$10^{12} = 1.000.000.000.000$ dispositivos** (1 billón).
    - Reenvío voraz (*Greedy Routing*) por distancia criptográfica XOR.
    - Campo `HopLimit = 12` con preservación de firma digital de extremo a extremo.
-   - Consulta la [Documentación del Modelo de Mundo Pequeño](file:///c:/Users/Frondabrick/Desktop/dvd/Ip/docs/MUNDO_PEQUENO_ROUTING.md).
+   - Consulta la [Documentación del Modelo de Mundo Pequeño](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/02_mundo_pequeno_routing.md).
 
 7. **Descubrimiento con DHT Seguro (`dht/`)**:
    - Mapeo descentralizado de `Identity (Clave Pública) -> []Endpoints (IP:Puerto)`.
@@ -109,7 +109,7 @@ IPv7 puede compilarse y ejecutarse en **WSL2 (Ubuntu)** con supervisión en tiem
    ```
    Abre tu navegador en Windows en **`http://localhost:8082`**.
 
-3. **Guía operativa detallada:** Consulta [docs/WSL_SUPERVISION.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/WSL_SUPERVISION.md).
+3. **Guía operativa detallada:** Consulta [docs/operaciones/06_supervision_wsl2.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/operaciones/06_supervision_wsl2.md).
 
 ---
 
@@ -147,8 +147,8 @@ El proyecto integra **Kùzu Graph DB** (`tools/kuzu/`) para indexar la arquitect
   ```powershell
   .\tools\kuzu\kuzu.exe .kuzu_index\ipv7.db
   ```
-- **Índice completo del repositorio:** Consulta [docs/PROJECT_INDEX.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/PROJECT_INDEX.md).
-- **Manual de consultas Cypher:** Consulta [docs/KUZU_MESH_GRAPH.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/KUZU_MESH_GRAPH.md).
+- **Índice completo del repositorio:** Consulta [docs/indices/PROJECT_INDEX.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/indices/PROJECT_INDEX.md).
+- **Manual de consultas Cypher:** Consulta [docs/arquitectura/03_kuzu_mesh_graph.md](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/03_kuzu_mesh_graph.md).
 
 ---
 

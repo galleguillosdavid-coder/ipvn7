@@ -7,7 +7,11 @@
       const status = document.getElementById('rdpTunnelStatus');
 
       if (!peer) {
-        alert('Selecciona o ingresa la ID del peer con Windows RDP.');
+        if (typeof showToast === 'function') {
+          showToast('Falta Peer', 'Selecciona o ingresa la ID del peer con Windows RDP.', 'warning');
+        } else {
+          alert('Selecciona o ingresa la ID del peer con Windows RDP.');
+        }
         return;
       }
 
@@ -37,7 +41,11 @@
       const status = document.getElementById('customTunnelStatus');
 
       if (!peer || !localPort || !targetPort) {
-        alert('Por favor completa todos los campos (puerto local, remoto y peer).');
+        if (typeof showToast === 'function') {
+          showToast('Campos requeridos', 'Por favor completa todos los campos (puerto local, remoto y peer).', 'warning');
+        } else {
+          alert('Por favor completa todos los campos (puerto local, remoto y peer).');
+        }
         return;
       }
 
@@ -102,7 +110,13 @@
     async function broadcastTestStream() {
       try {
         await fetch('/api/broadcast-stream', { method: 'POST' });
+        if (typeof showToast === 'function') {
+          showToast('Streaming en Cascada', 'Frame de telemetría emitido (Fan-out 10)', 'info', 2000);
+        }
       } catch (e) {
         console.error(e);
+        if (typeof showToast === 'function') {
+          showToast('Error', 'No se pudo emitir frame en cascada: ' + e, 'error');
+        }
       }
     }

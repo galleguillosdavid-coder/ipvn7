@@ -139,7 +139,8 @@
     function selectPeerFromMesh() {
       if (!inspectedNode) return;
       if (inspectedNode.is_local) {
-        alert('Este es tu propio nodo.');
+        if (typeof showToast === 'function') showToast('Nodo Local', 'Este es tu propio nodo.', 'info');
+        else alert('Este es tu propio nodo.');
         return;
       }
       selectPeer(inspectedNode.id, inspectedNode.endpoints[0] || '');
@@ -149,7 +150,8 @@
     function copyMeshNodeID() {
       if (!inspectedNode) return;
       navigator.clipboard.writeText(inspectedNode.id);
-      alert('Clave pública copiada:\n' + inspectedNode.id);
+      if (typeof showToast === 'function') showToast('DID Copiado', inspectedNode.id.substring(0, 20) + '...', 'success');
+      else alert('Clave pública copiada:\n' + inspectedNode.id);
     }
 
     async function exportMeshToKuzu() {
@@ -157,9 +159,14 @@
         const res = await fetch('/api/mesh/export-cypher');
         const cypher = await res.text();
         await navigator.clipboard.writeText(cypher);
-        alert('¡Consultas Cypher copiadas al portapapeles!\n\nPuedes ejecutarlas en Kùzu CLI con:\n.\\tools\\kuzu\\kuzu.exe .kuzu_index/ipv7.db\n\n' + cypher);
+        if (typeof showToast === 'function') {
+          showToast('Cypher Copiado', 'Consultas Cypher copiadas al portapapeles para Kùzu CLI.', 'success');
+        } else {
+          alert('¡Consultas Cypher copiadas al portapapeles!\n\nPuedes ejecutarlas en Kùzu CLI con:\n.\\tools\\kuzu\\kuzu.exe .kuzu_index/ipv7.db\n\n' + cypher);
+        }
       } catch (e) {
-        alert('Error exportando a Kùzu: ' + e);
+        if (typeof showToast === 'function') showToast('Error', 'Error exportando a Kùzu: ' + e, 'error');
+        else alert('Error exportando a Kùzu: ' + e);
       }
     }
 
@@ -378,7 +385,13 @@
           dot.setAttribute('r', 6);
           dot.setAttribute('fill', '#00f2fe');
           dot.setAttribute('cursor', 'pointer');
-          dot.onclick = () => alert('Peer ID: ' + id + '\nGrado: ' + degVal + '\nLatencia: ' + latVal + ' ms');
+          dot.onclick = () => {
+            if (typeof showToast === 'function') {
+              showToast(`Anillo ${degVal}`, `Peer: ${id.substring(0, 14)}... | Latencia: ${latVal} ms`, 'info');
+            } else {
+              alert('Peer ID: ' + id + '\nGrado: ' + degVal + '\nLatencia: ' + latVal + ' ms');
+            }
+          };
           svg.appendChild(dot);
         });
       });

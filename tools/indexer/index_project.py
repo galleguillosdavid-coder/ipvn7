@@ -2,7 +2,7 @@
 """
 IPv7 Project Indexer & Kùzu Graph Generator
 Analiza el repositorio IPv7, extrae paquetes, archivos, structs, interfaces y funciones Go,
-genera la base de datos de grafo en Kùzu (.kuzu_index/) y compila el índice docs/PROJECT_INDEX.md.
+genera la base de datos de grafo en Kùzu (.kuzu_index/) y compila el índice docs/indices/PROJECT_INDEX.md.
 """
 
 import os

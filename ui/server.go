@@ -138,6 +138,7 @@ func (s *Server) Start() error {
 				return
 			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 			_, _ = w.Write(data)
 			return
 		}
@@ -150,6 +151,7 @@ func (s *Server) Start() error {
 			} else if strings.HasSuffix(cleanPath, ".js") {
 				w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 			}
+			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 			_, _ = w.Write(data)
 			return
 		}
@@ -241,7 +243,7 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 		LatencyMsCap int64    `json:"LatencyMs"`
 	}
 
-	var list []PeerDTO
+	list := make([]PeerDTO, 0)
 	for _, p := range peers {
 		lat := p.Latency.Milliseconds()
 		if lat <= 0 {

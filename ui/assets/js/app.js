@@ -1,66 +1,166 @@
 let myIdentity = '';
-    let selectedPeerID = '';
+let selectedPeerID = '';
 
-    // Switch tabs
-    function switchTab(name) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      const targetBtn = document.querySelector(`button[onclick*="'${name}'"]`);
-      if (targetBtn) {
-        targetBtn.classList.add('active');
-      } else if (window.event && window.event.target && window.event.target.classList) {
-        window.event.target.classList.add('active');
-      }
-      const pane = document.getElementById('tab-' + name);
-      if (pane) pane.classList.add('active');
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
-      if (name === 'radar') renderRadar();
-      if (name === 'desktop') initDesktop();
-      if (name === 'tunnel') refreshTunnelList();
-      if (name === 'mesh') {
-        initMeshCanvas();
-        fetchMeshTopology();
-      }
-      if (name === 'kuzu') {
-        initKuzuCanvas();
-        if (!currentKuzuMode) currentKuzuMode = 'network';
-        setKuzuMode(currentKuzuMode);
+function showToast(titleOrMsg, subtitleOrType = 'info', durationOrCustom = 3500) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  let title = titleOrMsg;
+  let subtitle = '';
+  let type = 'info';
+  let duration = 3500;
+
+  if (typeof subtitleOrType === 'string') {
+    if (['info', 'success', 'warning', 'error'].includes(subtitleOrType.toLowerCase())) {
+      type = subtitleOrType.toLowerCase();
+      if (typeof durationOrCustom === 'number') duration = durationOrCustom;
+    } else {
+      subtitle = subtitleOrType;
+      if (typeof durationOrCustom === 'string') {
+        type = (durationOrCustom.startsWith('#') || durationOrCustom.includes('10b981')) ? 'success' : 'info';
+      } else if (typeof durationOrCustom === 'number') {
+        duration = durationOrCustom;
       }
     }
+  }
 
-    // ==========================================
-    // CORE APP, PEERS & E2EE CHAT
-    // ==========================================
+  const icons = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || '✨'}</span>
+    <div class="toast-content">
+      <div style="font-weight:600;">${escapeHtml(title)}</div>
+      ${subtitle ? `<div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${escapeHtml(subtitle)}</div>` : ''}
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-hiding');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 250);
+  }, duration);
+}
+window.showToast = showToast;
+
+// Global Keyboard Navigation (Alt+1..7 and Ctrl+K)
+window.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key >= '1' && e.key <= '7') {
+    e.preventDefault();
+    const tabMap = {
+      '1': 'chat',
+      '2': 'desktop',
+      '3': 'tunnel',
+      '4': 'mesh',
+      '5': 'kuzu',
+      '6': 'radar',
+      '7': 'cascade'
+    };
+    const tabName = tabMap[e.key];
+    if (tabName) {
+      switchTab(tabName);
+      showToast(`Pestaña: ${tabName.toUpperCase()}`, 'info', 1200);
+    }
+  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    const manualInput = document.getElementById('manualPeerID');
+    if (manualInput) {
+      manualInput.focus();
+      manualInput.select();
+      showToast('Enfoque rápido en búsqueda DID', 'info', 1500);
+    }
+  }
+});
+
+// Switch tabs
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const targetBtn = document.querySelector(`button[onclick*="'${name}'"]`);
+  if (targetBtn) {
+    targetBtn.classList.add('active');
+    targetBtn.setAttribute('aria-selected', 'true');
+  } else if (window.event && window.event.target && window.event.target.classList) {
+    window.event.target.classList.add('active');
+    window.event.target.setAttribute('aria-selected', 'true');
+  }
+  const pane = document.getElementById('tab-' + name);
+  if (pane) pane.classList.add('active');
+
+  if (name === 'radar') renderRadar();
+  if (name === 'desktop') initDesktop();
+  if (name === 'tunnel') refreshTunnelList();
+  if (name === 'mesh') {
+    initMeshCanvas();
+    fetchMeshTopology();
+  }
+  if (name === 'kuzu') {
+    initKuzuCanvas();
+    if (!currentKuzuMode) currentKuzuMode = 'network';
+    setKuzuMode(currentKuzuMode);
+  }
+}
+
+// ==========================================
+// CORE APP, PEERS & E2EE CHAT
+// ==========================================
 // Load initial info
-    async function loadInfo() {
-      try {
-        const res = await fetch('/api/info');
-        const data = await res.json();
-        myIdentity = data.identity;
-        document.getElementById('myIdShort').innerText = myIdentity.substring(0, 12) + '...';
-        document.getElementById('myIdBadge').onclick = () => {
-          navigator.clipboard.writeText(myIdentity);
-          alert('Clave pública copiada al portapapeles:\n' + myIdentity);
-        };
-        document.getElementById('cascadeChildrenVal').innerText = data.cascade_count + ' / 10';
-        if (typeof updateDesktopLanBanner === 'function') {
-          updateDesktopLanBanner(data);
-        }
-        loadPeers();
-      } catch (e) {
-        console.error('Error loading node info:', e);
-      }
+async function loadInfo() {
+  try {
+    const res = await fetch('/api/info');
+    const data = await res.json();
+    myIdentity = data.identity;
+    document.getElementById('myIdShort').innerText = myIdentity.substring(0, 12) + '...';
+    document.getElementById('myIdBadge').onclick = () => {
+      navigator.clipboard.writeText(myIdentity);
+      showToast('DID copiado al portapapeles', myIdentity.substring(0, 20) + '...', 'success');
+    };
+    document.getElementById('cascadeChildrenVal').innerText = data.cascade_count + ' / 10';
+    if (typeof updateDesktopLanBanner === 'function') {
+      updateDesktopLanBanner(data);
     }
+    loadPeers();
+  } catch (e) {
+    console.error('Error loading node info:', e);
+  }
+}
 
-    async function loadPeers() {
-      try {
-        const res = await fetch('/api/peers');
-        const peers = await res.json();
-        const peerList = document.getElementById('peerList');
-        if (!peers || peers.length === 0) {
-          peerList.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:1rem 0;">No hay peers remotos aún.</div>';
-          return;
-        }
+async function loadPeers() {
+  try {
+    const res = await fetch('/api/peers');
+    const peers = await res.json();
+    const peerList = document.getElementById('peerList');
+    if (!peers || peers.length === 0) {
+      peerList.innerHTML = `
+        <div class="peer-empty-state">
+          <div class="empty-icon">📡</div>
+          <div class="empty-title">Sin pares remotos aún</div>
+          <div class="empty-desc">Conéctate a otro nodo con <code>-peer IP:PUERTO</code> o introduce su clave DID arriba.</div>
+        </div>
+      `;
+      return;
+    }
         peerList.innerHTML = '';
         peers.forEach(p => {
           const id = p.id || p.ID || '';
@@ -90,7 +190,7 @@ let myIdentity = '';
       const status = document.getElementById('didConnectStatus');
       let did = input.value.trim();
       if (!did) {
-        alert('Por favor ingresa el DID o Clave Pública del destinatario.');
+        showToast('Atención', 'Por favor ingresa el DID o Clave Pública del destinatario.', 'warning');
         return;
       }
       did = did.replace(/^did:ipv7:/, '');
@@ -108,18 +208,16 @@ let myIdentity = '';
             status.innerText = `✅ Ruta viva: ${data.endpoint} (RTT: ${data.rtt_ms}ms)`;
           }
           selectPeer(did, data.endpoint);
+          showToast('Peer resuelto', `${data.endpoint} (RTT: ${data.rtt_ms}ms)`, 'success');
         } else {
           if (status) {
             status.style.color = '#eab308';
             status.innerText = '⚠️ Aún no visible en WAN. Enrutando por Small-World...';
           }
-          selectPeer(did, '');
+          showToast('Enrutando por Small-World', 'Peer no visible en WAN directa aún', 'info');
         }
       } catch (e) {
-        if (status) {
-          status.style.color = '#ef4444';
-          status.innerText = 'Error: ' + e.message;
-        }
+        showToast('Error', 'No se pudo contactar al resolutor DID: ' + e, 'error');
         selectPeer(did, '');
       }
     }
@@ -144,7 +242,7 @@ let myIdentity = '';
       const endpoint = document.getElementById('manualPeerEp').value.trim();
 
       if (!recipient) {
-        alert('Por favor selecciona o ingresa el DID / clave pública del destinatario.');
+        showToast('Falta destinatario', 'Selecciona un peer de la lista o introduce un DID arriba.', 'warning');
         return;
       }
 
@@ -165,10 +263,12 @@ let myIdentity = '';
         });
         if (!res.ok) {
           const err = await res.text();
-          alert('Error enviando mensaje: ' + err);
+          showToast('Error de transmisión', err, 'error');
+        } else {
+          showToast('Transmitido', 'Paquete cifrado E2EE enviado', 'success', 2000);
         }
       } catch (e) {
-        alert('Error conectando al nodo local: ' + e);
+        showToast('Error de conexión', 'No se pudo comunicar con el nodo local: ' + e, 'error');
       }
     }
 
@@ -216,7 +316,7 @@ let myIdentity = '';
 
     function uploadAndSendFile(file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Para esta demo web el límite por archivo es de 2MB.');
+        showToast('Archivo grande', 'Para esta demo web el límite por archivo es de 2MB.', 'warning');
         return;
       }
       const reader = new FileReader();

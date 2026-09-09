@@ -197,9 +197,17 @@
       try {
         document.getElementById('kuzuStatsSummary').innerText = 'Sincronizando peers en vivo con Kùzu...';
         await loadKuzuNetworkGraph();
-        alert('¡Malla sincronizada con éxito en Kùzu Graph DB!');
+        if (typeof showToast === 'function') {
+          showToast('Kùzu Sincronizado', 'Malla sincronizada con éxito en Kùzu Graph DB', 'success');
+        } else {
+          alert('¡Malla sincronizada con éxito en Kùzu Graph DB!');
+        }
       } catch (e) {
-        alert('Error sincronizando: ' + e);
+        if (typeof showToast === 'function') {
+          showToast('Error de Sincronización', 'No se pudo sincronizar: ' + e, 'error');
+        } else {
+          alert('Error sincronizando: ' + e);
+        }
       }
     }
 

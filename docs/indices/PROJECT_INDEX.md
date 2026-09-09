@@ -6,11 +6,11 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 
 | Paquete | Archivos | Líneas de Código (LoC) | Propósito Principal |
 |---|---|---|---|
-| [`adapters`](#paquete-adapters) | 15 | 1923 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
+| [`adapters`](#paquete-adapters) | 16 | 1965 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
 | [`core`](#paquete-core) | 36 | 5368 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
 | [`dht`](#paquete-dht) | 4 | 434 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
 | [`main`](#paquete-main) | 2 | 472 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
-| [`ui`](#paquete-ui) | 4 | 1704 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
+| [`ui`](#paquete-ui) | 4 | 1726 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
 
 ---
 
@@ -82,6 +82,10 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 ### 📄 [tls_helper.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/tls_helper.go) (47 LoC)
 **Funciones Clave:**
 - `GenerateTLSConfig()`
+
+### 📄 [tls_helper_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/tls_helper_test.go) (42 LoC)
+**Funciones Clave:**
+- `TestGenerateTLSConfig()`
 
 ### 📄 [udp_adapter.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/adapters/udp_adapter.go) (238 LoC)
 **Tipos y Estructuras:**
@@ -494,7 +498,7 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 
 ### 📄 [observability.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) (209 LoC)
 
-### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (905 LoC)
+### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (927 LoC)
 **Tipos y Estructuras:**
 - `struct Server`
 - `struct SendMessageReq`

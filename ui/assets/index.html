@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPv7: Panel de Control P2P Descentralizado</title>
+  <meta name="description" content="IPv7 — Dashboard de control P2P descentralizado con cifrado E2EE, visualización de malla y explorador de grafos Kùzu.">
+  <title>IPv7 · Panel P2P Descentralizado</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
@@ -15,31 +16,32 @@
   <header>
     <div class="brand">
       <div class="logo-badge">IPv7</div>
-      <div class="brand-title">P2P Decentralized Network</div>
+      <div class="brand-title"><span>P2P</span> Decentralized</div>
     </div>
     <div class="node-status">
       <div class="status-pill" id="wsStatusPill">
         <div class="status-dot" id="wsStatusDot"></div>
-        <span id="wsStatusText">Malla P2P Activa</span>
+        <span id="wsStatusText">Malla Activa</span>
       </div>
-      <div class="my-id-card" id="myIdBadge" title="Clic para copiar">
-        ID: <span id="myIdShort">Cargando...</span>
+      <div class="my-id-card" id="myIdBadge" title="Clic para copiar tu DID completo">
+        <span style="color:var(--text-muted); font-size:0.65rem; margin-right:0.3rem;">DID</span><span id="myIdShort">Cargando...</span>
+        <span style="font-size:0.75rem; margin-left:0.35rem; opacity:0.75;">📋</span>
       </div>
-      <a href="/api/openapi.json" target="_blank" class="mesh-btn" style="text-decoration:none; font-size:0.75rem; padding:0.35rem 0.6rem; color:var(--accent-cyan); border-color:rgba(0,242,254,0.3);">📜 OpenAPI</a>
-      <a href="/metrics" target="_blank" class="mesh-btn" style="text-decoration:none; font-size:0.75rem; padding:0.35rem 0.6rem; color:var(--text-muted); border-color:var(--card-border);">📈 Métricas</a>
+      <a href="/api/openapi.json" target="_blank" class="mesh-btn" style="text-decoration:none;">📜 API</a>
+      <a href="/metrics" target="_blank" class="mesh-btn" style="text-decoration:none;">📈 Métricas</a>
     </div>
   </header>
 
   <!-- MAIN -->
   <main>
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat Seguro E2EE</button>
-      <button class="tab-btn" onclick="switchTab('desktop')">🖥️ Escritorio Remoto Web</button>
-      <button class="tab-btn" onclick="switchTab('tunnel')">⚡ Túneles P2P & VPN</button>
-      <button class="tab-btn" onclick="switchTab('mesh')">🕸️ Topología de Malla</button>
-      <button class="tab-btn" onclick="switchTab('kuzu')">📊 Explorador Kùzu (Red & Código)</button>
-      <button class="tab-btn" onclick="switchTab('radar')">🌐 Radar Mundo Pequeño (12 Grados)</button>
-      <button class="tab-btn" onclick="switchTab('cascade')">📡 Streaming en Cascada (Fanout 10)</button>
+    <div class="tabs" role="tablist" aria-label="Panel de Control IPv7">
+      <button class="tab-btn active" onclick="switchTab('chat')" role="tab" id="tab-btn-chat" aria-controls="tab-chat" aria-selected="true" title="Atajo: Alt+1">💬 Chat E2EE</button>
+      <button class="tab-btn" onclick="switchTab('desktop')" role="tab" id="tab-btn-desktop" aria-controls="tab-desktop" aria-selected="false" title="Atajo: Alt+2">🖥️ Escritorio Remoto</button>
+      <button class="tab-btn" onclick="switchTab('tunnel')" role="tab" id="tab-btn-tunnel" aria-controls="tab-tunnel" aria-selected="false" title="Atajo: Alt+3">⚡ Túneles P2P</button>
+      <button class="tab-btn" onclick="switchTab('mesh')" role="tab" id="tab-btn-mesh" aria-controls="tab-mesh" aria-selected="false" title="Atajo: Alt+4">🕸️ Malla P2P</button>
+      <button class="tab-btn" onclick="switchTab('kuzu')" role="tab" id="tab-btn-kuzu" aria-controls="tab-kuzu" aria-selected="false" title="Atajo: Alt+5">📊 Kùzu Studio</button>
+      <button class="tab-btn" onclick="switchTab('radar')" role="tab" id="tab-btn-radar" aria-controls="tab-radar" aria-selected="false" title="Atajo: Alt+6">🌐 Radar SmallWorld</button>
+      <button class="tab-btn" onclick="switchTab('cascade')" role="tab" id="tab-btn-cascade" aria-controls="tab-cascade" aria-selected="false" title="Atajo: Alt+7">📡 Cascade Stream</button>
     </div>
 
     <!-- TAB 1: CHAT -->
@@ -356,11 +358,14 @@
     </div>
   </main>
 
+  <!-- TOAST CONTAINER FOR NOTIFICATIONS -->
+  <div id="toast-container" aria-live="polite"></div>
+
   <!-- MODULOS JAVASCRIPT MODULARES (IPV7 WEB SUITE) -->
-  <script src="/js/app.js"></script>
-  <script src="/js/kuzu_studio.js"></script>
-  <script src="/js/mesh.js"></script>
-  <script src="/js/desktop.js"></script>
-  <script src="/js/tunnels.js"></script>
+  <script src="/js/app.js?v=2026"></script>
+  <script src="/js/kuzu_studio.js?v=2026"></script>
+  <script src="/js/mesh.js?v=2026"></script>
+  <script src="/js/desktop.js?v=2026"></script>
+  <script src="/js/tunnels.js?v=2026"></script>
 </body>
 </html>

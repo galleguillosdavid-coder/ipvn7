@@ -165,6 +165,9 @@
       const btn = document.getElementById('btnCopyShareUrl');
       if (!shareInput) return;
       navigator.clipboard.writeText(shareInput.value).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('Enlace Copiado', 'Pégalo en el navegador del otro equipo para ver tu pantalla', 'success');
+        }
         if (btn) {
           const orig = btn.innerText;
           btn.innerText = '✅ ¡Copiado!';
@@ -175,7 +178,11 @@
           }, 2500);
         }
       }).catch(() => {
-        alert('Enlace para otro equipo:\n' + shareInput.value);
+        if (typeof showToast === 'function') {
+          showToast('Enlace Remoto', shareInput.value, 'info');
+        } else {
+          alert('Enlace para otro equipo:\n' + shareInput.value);
+        }
       });
     }
 
