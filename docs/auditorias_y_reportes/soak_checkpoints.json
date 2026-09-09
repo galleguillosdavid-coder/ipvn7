@@ -1,0 +1,62 @@
+[
+  {
+    "cycle": 1,
+    "timestamp": "09:09:52",
+    "throughput_mbps": 41.36423645807509,
+    "pps": 5086.0161360533,
+    "packets_sent": 50890,
+    "alloc_ram_mb": 2.14373779296875,
+    "sys_ram_mb": 11.68359375,
+    "pmtu_bytes": 1280
+  },
+  {
+    "cycle": 2,
+    "timestamp": "09:10:05",
+    "throughput_mbps": 40.18523185481351,
+    "pps": 4941.049446223374,
+    "packets_sent": 49412,
+    "alloc_ram_mb": 0.5072555541992188,
+    "sys_ram_mb": 11.41796875,
+    "pmtu_bytes": 1280
+  },
+  {
+    "cycle": 3,
+    "timestamp": "09:10:18",
+    "throughput_mbps": 33.860362700489574,
+    "pps": 4163.363470805412,
+    "packets_sent": 41659,
+    "alloc_ram_mb": 2.2267837524414062,
+    "sys_ram_mb": 15.69140625,
+    "pmtu_bytes": 1280
+  },
+  {
+    "cycle": 4,
+    "timestamp": "09:10:31",
+    "throughput_mbps": 36.57688460821165,
+    "pps": 4497.378442183412,
+    "packets_sent": 44983,
+    "alloc_ram_mb": 2.5173873901367188,
+    "sys_ram_mb": 15.68359375,
+    "pmtu_bytes": 1280
+  },
+  {
+    "cycle": 5,
+    "timestamp": "09:10:44",
+    "throughput_mbps": 32.95980353659419,
+    "pps": 4052.6335545482866,
+    "packets_sent": 40541,
+    "alloc_ram_mb": 0.95245361328125,
+    "sys_ram_mb": 15.92578125,
+    "pmtu_bytes": 1280
+  },
+  {
+    "cycle": 6,
+    "timestamp": "09:10:57",
+    "throughput_mbps": 39.071342199280544,
+    "pps": 4804.089085125796,
+    "packets_sent": 48046,
+    "alloc_ram_mb": 2.3389434814453125,
+    "sys_ram_mb": 15.42578125,
+    "pmtu_bytes": 1280
+  }
+]

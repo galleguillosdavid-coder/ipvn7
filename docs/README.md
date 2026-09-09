@@ -52,6 +52,7 @@ Evaluación rigurosa del rendimiento, cobertura de código y topología en malla
 - [**07. Análisis Crítico del Checklist ChatGPT (posibles.md)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/07_analisis_checklist_posibles.md): Contraste riguroso entre el checklist conceptual y la implementación real en Go.
 - [**08. Fase de Perfeccionamiento Full (5 Objetivos)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/08_fase_perfeccionamiento_completa.md): Resultados empíricos de cuellos de botella, PMTU dinámico, caos, PQC híbrido y benchmarks.
 - [**09. Matriz de Validación Experimental de Producción (EPV)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/09_matriz_produccion_experimental.md): Congelamiento oficial del Core, rigor empírico, matriz Direct/Relay x LAN/WAN/NAT x UDP/QUIC y telemetría estandarizada.
+- [**10. Validación de Resiliencia, Caos y Direct vs. Relay**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/10_validacion_resiliencia_chaos_y_wan.md): Batería de estrés físico (pérdida 1-20%, jitter 50ms, caída de proceso SIGKILL y cuantificación nuclear Direct 199.9 Mbps vs Relay 34.5 Mbps).
 
 ---
 
