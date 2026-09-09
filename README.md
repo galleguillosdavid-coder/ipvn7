@@ -72,9 +72,15 @@ Implementación en **Go** del protocolo IPv7 basado en identidades criptográfic
 
 ## 📚 Documentación Integral y Recursos
 
-- [**Manual Operativo para Humanos**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/manual_operativo_humano/README.md): 5 capítulos exhaustivos con 8 casos prácticos paso a paso, diagnósticos y preguntas frecuentes.
-- [**Skill Especializada para Agentes de IA**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/SKILL.md): System prompt, especificación OpenAPI, schemas de llamadas a funciones (Function Calling) y catálogo de consultas Cypher para Kùzu.
-- [**Sugerencias de Arquitectura, UX y Código**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/README.md): Roadmap técnico, estado de implementación de fases y prototipos de código.
+Toda la documentación técnica, operativa y de arquitectura está centralizada en [`docs/`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/README.md):
+
+- [**Centro de Documentación Unificado (`docs/README.md`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/README.md): Hub principal con acceso directo a todos los módulos.
+- [**Arquitectura y Protocolo (`docs/arquitectura/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/01_genesis.md): Plan Génesis, enrutamiento en Mundo Pequeño (12 anillos) y modelado de grafos Kùzu.
+- [**Manual Operativo para Humanos (`docs/operaciones/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/operaciones/README.md): Guías de usuario, instalación, supervisión en WSL2, acceso remoto y casos prácticos.
+- [**Auditorías y Reportes de Pruebas (`docs/auditorias_y_reportes/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/auditorias_y_reportes/README.md): Auditorías unitarias, benchmarks, pruebas de malla en vivo y auditoría de grafo Kùzu.
+- [**Sugerencias de Arquitectura, UX y Código (`docs/sugerencias_mejora/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/README.md): Roadmap técnico, estado evolutivo y prototipos de código.
+- [**Skill Especializada para Agentes de IA (`docs/skill_ia/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/SKILL.md): System prompt, OpenAPI, schemas de Function Calling y consultas Cypher para Kùzu.
+- [**Índice de Código (`docs/indices/`)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/indices/PROJECT_INDEX.md): Catálogo exhaustivo de todos los paquetes, archivos y funciones Go.
 
 ---
 

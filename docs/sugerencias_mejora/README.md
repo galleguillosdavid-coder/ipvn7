@@ -6,7 +6,7 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
 
 ## 🧭 Índice de Propuestas y Módulos
 
-1. [**01. Mejoras de Experiencia de Usuario (UX)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/01_mejoras_experiencia_usuario_ux.md)
+1. [**01. Mejoras de Experiencia de Usuario (UX)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/01_mejoras_experiencia_usuario_ux.md)
    - Dashboard Web Reactivo con grafos 3D y Canvas interactivo.
    - Transferencia de archivos Drag & Drop con progreso visual.
    - Asistente de Escritorio Remoto con detección Loopback y enlace LAN de 1 clic.
@@ -15,20 +15,20 @@ Este directorio contiene propuestas de ingeniería de software, mejoras de exper
    - Bandeja del sistema (Systray) para ejecución en segundo plano.
    - Protocolos automáticos de apertura de puertos (UPnP IGD / NAT-PMP).
 
-2. [**02. Mejoras para Inteligencias Artificiales y Agentes Autónomos (AI)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/02_mejoras_inteligencia_artificial_ai.md)
+2. [**02. Mejoras para Inteligencias Artificiales y Agentes Autónomos (AI)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/02_mejoras_inteligencia_artificial_ai.md)
    - Servidor **Model Context Protocol (MCP)** nativo embebido en Go.
    - Especificación OpenAPI 3.1 viva (`/api/openapi.json`) y Swagger UI.
    - Logs estructurados con `log/slog` nativo de Go en formato JSON.
    - Métricas de telemetría Prometheus (`/metrics`) para observabilidad por IA.
    - Optimizador de topología Small-World autónomo guiado por IA con Kùzu.
 
-3. [**03. Mejoras de Arquitectura y Rendimiento del Código**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/03_mejoras_arquitectura_y_rendimiento.md)
+3. [**03. Mejoras de Arquitectura y Rendimiento del Código**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/03_mejoras_arquitectura_y_rendimiento.md)
    - Multiplexación QUIC nativa (`quic.Stream`) para túneles P2P de alto ancho de banda.
    - Protocolo de Handshake Noise (Noise_XX) con Perfect Forward Secrecy (PFS).
    - Aceleración por hardware H.264 / VP8 para el Escritorio Remoto Web.
    - Persistencia de identidad y pares en base de datos ligera embebida (BuntDB / Pebble).
 
-4. [**04. Prototipos y Snippets de Código en Go**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/sugerencias_mejora_codigo_ux_ia/04_prototipos_y_snippets_codigo.md)
+4. [**04. Prototipos y Snippets de Código en Go**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/sugerencias_mejora/04_prototipos_y_snippets_codigo.md)
    - Prototipo 1: Servidor MCP integrado en el binario del nodo.
    - Prototipo 2: Logging estructurado JSON con `log/slog`.
    - Prototipo 3: Soporte UPnP con `huin/goupnp`.

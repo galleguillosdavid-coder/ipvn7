@@ -2,7 +2,7 @@ package ui
 
 import (
 	"crypto/sha256"
-	_ "embed"
+	"embed"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -19,8 +19,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-//go:embed assets/index.html
-var indexHTML []byte
+//go:embed assets/*
+var assetsFS embed.FS
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
@@ -131,8 +131,30 @@ func (s *Server) Start() error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_, _ = w.Write(indexHTML)
+		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
+			data, err := assetsFS.ReadFile("assets/index.html")
+			if err != nil {
+				http.Error(w, "index.html not found", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			_, _ = w.Write(data)
+			return
+		}
+
+		cleanPath := strings.TrimPrefix(r.URL.Path, "/")
+		data, err := assetsFS.ReadFile("assets/" + cleanPath)
+		if err == nil {
+			if strings.HasSuffix(cleanPath, ".css") {
+				w.Header().Set("Content-Type", "text/css; charset=utf-8")
+			} else if strings.HasSuffix(cleanPath, ".js") {
+				w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+			}
+			_, _ = w.Write(data)
+			return
+		}
+
+		http.NotFound(w, r)
 	})
 
 	mux.HandleFunc("/api/info", s.handleInfo)

@@ -116,7 +116,7 @@ Al consultar `http://127.0.0.1:8085/api/mesh`, el nodo reportó una topología v
 
 ## 4. Auditoría del Servidor Model Context Protocol (MCP) en `/api/mcp`
 
-Conforme al Procedimiento Operativo Estándar **SOP 4** definido en [`skill_ia_ipv7/workflows_diagnostico_ia.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/workflows_diagnostico_ia.md), se auditaron las capacidades agénticas mediante JSON-RPC 2.0:
+Conforme al Procedimiento Operativo Estándar **SOP 4** definido en [`docs/skill_ia/workflows_diagnostico_ia.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/workflows_diagnostico_ia.md), se auditaron las capacidades agénticas mediante JSON-RPC 2.0:
 
 ### 4.1. Invocación de `tools/list`
 La petición retornó el catálogo formal de herramientas soportadas:
@@ -266,7 +266,7 @@ El nodo WSL2 se inició conectándose al nodo Windows (`-peer 127.0.0.1:7001`):
 [UI] Dashboard web available at: http://localhost:8083
 ```
 
-### 7.3. Validación con Herramientas SOP `skill_ia_ipv7`
+### 7.3. Validación con Herramientas SOP `docs/skill_ia`
 
 1. **Catálogo OpenAPI 3.1 en WSL2**:
    - `curl -s http://127.0.0.1:8083/api/openapi.json`

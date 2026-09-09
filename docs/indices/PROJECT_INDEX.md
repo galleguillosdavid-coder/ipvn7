@@ -7,10 +7,10 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 | Paquete | Archivos | Líneas de Código (LoC) | Propósito Principal |
 |---|---|---|---|
 | [`adapters`](#paquete-adapters) | 15 | 1923 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
-| [`core`](#paquete-core) | 30 | 4224 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
+| [`core`](#paquete-core) | 36 | 5368 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
 | [`dht`](#paquete-dht) | 4 | 434 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
-| [`main`](#paquete-main) | 2 | 438 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
-| [`ui`](#paquete-ui) | 4 | 1448 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
+| [`main`](#paquete-main) | 2 | 472 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
+| [`ui`](#paquete-ui) | 4 | 1704 | Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de topología en malla. |
 
 ---
 
@@ -182,7 +182,26 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `TestContainerSigningAndVerification()`
 - `TestGenerateIdentity()`
 
-### 📄 [e2ee.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/e2ee.go) (132 LoC)
+### 📄 [discovery_firebase.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/discovery_firebase.go) (306 LoC)
+**Tipos y Estructuras:**
+- `struct FirebasePeerRecord`
+- `struct FirebaseDiscovery`
+**Funciones Clave:**
+- `Announce()`
+- `AnnounceAndDiscover()`
+- `Deregister()`
+- `FetchPeers()`
+- `NewFirebaseDiscovery()`
+- `ResolveDID()`
+- `SetEndpointRefresher()`
+- `Start()`
+- `Stop()`
+
+### 📄 [discovery_firebase_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/discovery_firebase_test.go) (67 LoC)
+**Funciones Clave:**
+- `TestFirebaseDiscoveryAnnounceAndFetch()`
+
+### 📄 [e2ee.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/e2ee.go) (159 LoC)
 **Funciones Clave:**
 - `DecryptE2EE()`
 - `DeriveX25519FromSeed()`
@@ -265,7 +284,7 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 **Funciones Clave:**
 - `TestMCPServer()`
 
-### 📄 [node.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/node.go) (586 LoC)
+### 📄 [node.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/node.go) (612 LoC)
 **Tipos y Estructuras:**
 - `struct Node`
 **Funciones Clave:**
@@ -282,6 +301,7 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `PingPeer()`
 - `SendEncryptedMessage()`
 - `SendMessage()`
+- `SetDIDResolver()`
 - `SetEndpoints()`
 - `SetPeerEncKey()`
 - `Start()`
@@ -296,6 +316,27 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 - `Stop()`
 - `TestNodeHandshakeAndE2EE()`
 - `TestNodeP2PCommunication()`
+
+### 📄 [noise.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/noise.go) (365 LoC)
+**Tipos y Estructuras:**
+- `struct NoiseSession`
+- `struct NoiseMsg1`
+- `struct NoiseMsg2`
+- `struct NoiseMsg3`
+- `struct NoiseHandshakeState`
+**Funciones Clave:**
+- `Decrypt()`
+- `Encrypt()`
+- `InitiatorStep1()`
+- `InitiatorStep3()`
+- `NewNoiseHandshake()`
+- `ResponderFinal()`
+- `ResponderStep2()`
+
+### 📄 [noise_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/noise_test.go) (135 LoC)
+**Funciones Clave:**
+- `TestNoiseHandshakeAndSession()`
+- `TestNoiseTamperedSignature()`
 
 ### 📄 [remotedesktop.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/remotedesktop.go) (72 LoC)
 **Tipos y Estructuras:**
@@ -319,6 +360,21 @@ Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo 
 **Funciones Clave:**
 - `CaptureFrame()`
 - `InjectInput()`
+
+### 📄 [self_healing.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/self_healing.go) (157 LoC)
+**Tipos y Estructuras:**
+- `struct SelfHealingSupervisor`
+**Funciones Clave:**
+- `CheckAndHeal()`
+- `NewSelfHealingSupervisor()`
+- `OnAction()`
+- `Start()`
+- `Stats()`
+- `Stop()`
+
+### 📄 [self_healing_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/self_healing_test.go) (61 LoC)
+**Funciones Clave:**
+- `TestSelfHealingSupervisor()`
 
 ### 📄 [smallworld.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/core/smallworld.go) (224 LoC)
 **Tipos y Estructuras:**
@@ -417,7 +473,7 @@ Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/chat/main.go) (193 LoC)
 
-### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/node/main.go) (245 LoC)
+### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/cmd/node/main.go) (279 LoC)
 
 ## Paquete `ui`
 
@@ -436,9 +492,9 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - `FindKuzuDB()`
 - `SyncPeersToKuzu()`
 
-### 📄 [observability.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) (183 LoC)
+### 📄 [observability.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/observability.go) (209 LoC)
 
-### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (675 LoC)
+### 📄 [server.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server.go) (905 LoC)
 **Tipos y Estructuras:**
 - `struct Server`
 - `struct SendMessageReq`
@@ -453,6 +509,7 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - `struct StartVPNReq`
 **Funciones Clave:**
 - `NewServer()`
+- `SetFirebaseDiscovery()`
 - `Start()`
 
 ### 📄 [server_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/ui/server_test.go) (143 LoC)
@@ -470,11 +527,13 @@ Dashboard web SPA interactivo, servidor HTTP/WebSocket, Chat E2EE y monitor de t
 - [scripts/dual_node_test.ps1](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/dual_node_test.ps1): Orquestador de pruebas de malla cruzada Windows <-> WSL2.
 - [tools/kuzu/setup_kuzu.ps1](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/tools/kuzu/setup_kuzu.ps1): Descarga y aprovisionamiento de Kùzu Graph DB CLI.
 - [tools/indexer/index_project.py](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/tools/indexer/index_project.py): Indexador de código hacia Grafo Kùzu.
+- [tools/indexer/audit_kuzu.py](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/tools/indexer/audit_kuzu.py): Auditoría integral y métricas del Grafo Kùzu.
 
 ## Documentación Técnica Relacionada
 
-- [docs/WSL_SUPERVISION.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/WSL_SUPERVISION.md): Guía operativa de supervisión en WSL2.
-- [docs/KUZU_MESH_GRAPH.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/KUZU_MESH_GRAPH.md): Modelado en Kùzu y consultas Cypher.
-- [docs/MUNDO_PEQUENO_ROUTING.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/MUNDO_PEQUENO_ROUTING.md): Enrutamiento logarítmico acotado a 12 grados.
-- [docs/genesis.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/genesis.md): Plan génesis de arquitectura del proyecto.
-- [docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.
+- [docs/README.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/README.md): Catálogo y Hub Central de Documentación IPv7.
+- [docs/operaciones/06_supervision_wsl2.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/operaciones/06_supervision_wsl2.md): Guía operativa de supervisión en WSL2.
+- [docs/arquitectura/03_kuzu_mesh_graph.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/03_kuzu_mesh_graph.md): Modelado en Kùzu y consultas Cypher.
+- [docs/arquitectura/02_mundo_pequeno_routing.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/02_mundo_pequeno_routing.md): Enrutamiento logarítmico acotado a 12 grados.
+- [docs/arquitectura/01_genesis.md](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/01_genesis.md): Plan génesis de arquitectura del proyecto.
+- [docs/arquitectura/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///C:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.

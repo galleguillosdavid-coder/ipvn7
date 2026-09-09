@@ -82,9 +82,10 @@ def main():
     print(f"[+] Archivos Go encontrados: {len(go_files)}")
     print(f"[+] Paquetes Go detectados:  {len(packages)} ({', '.join(sorted(packages))})")
 
-    # 1. Generar docs/PROJECT_INDEX.md
-    DOCS_DIR.mkdir(exist_ok=True)
-    index_md = DOCS_DIR / "PROJECT_INDEX.md"
+    # 1. Generar docs/indices/PROJECT_INDEX.md
+    indices_dir = DOCS_DIR / "indices"
+    indices_dir.mkdir(parents=True, exist_ok=True)
+    index_md = indices_dir / "PROJECT_INDEX.md"
 
     md_lines = [
         "# Índice Integral del Proyecto IPv7",
@@ -148,14 +149,16 @@ def main():
         f"- [scripts/dual_node_test.ps1](file:///{PROJECT_ROOT.as_posix()}/scripts/dual_node_test.ps1): Orquestador de pruebas de malla cruzada Windows <-> WSL2.",
         f"- [tools/kuzu/setup_kuzu.ps1](file:///{PROJECT_ROOT.as_posix()}/tools/kuzu/setup_kuzu.ps1): Descarga y aprovisionamiento de Kùzu Graph DB CLI.",
         f"- [tools/indexer/index_project.py](file:///{PROJECT_ROOT.as_posix()}/tools/indexer/index_project.py): Indexador de código hacia Grafo Kùzu.",
+        f"- [tools/indexer/audit_kuzu.py](file:///{PROJECT_ROOT.as_posix()}/tools/indexer/audit_kuzu.py): Auditoría integral y métricas del Grafo Kùzu.",
         "",
         "## Documentación Técnica Relacionada",
         "",
-        f"- [docs/WSL_SUPERVISION.md](file:///{PROJECT_ROOT.as_posix()}/docs/WSL_SUPERVISION.md): Guía operativa de supervisión en WSL2.",
-        f"- [docs/KUZU_MESH_GRAPH.md](file:///{PROJECT_ROOT.as_posix()}/docs/KUZU_MESH_GRAPH.md): Modelado en Kùzu y consultas Cypher.",
-        f"- [docs/MUNDO_PEQUENO_ROUTING.md](file:///{PROJECT_ROOT.as_posix()}/docs/MUNDO_PEQUENO_ROUTING.md): Enrutamiento logarítmico acotado a 12 grados.",
-        f"- [docs/genesis.md](file:///{PROJECT_ROOT.as_posix()}/docs/genesis.md): Plan génesis de arquitectura del proyecto.",
-        f"- [docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///{PROJECT_ROOT.as_posix()}/docs/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.",
+        f"- [docs/README.md](file:///{PROJECT_ROOT.as_posix()}/docs/README.md): Catálogo y Hub Central de Documentación IPv7.",
+        f"- [docs/operaciones/06_supervision_wsl2.md](file:///{PROJECT_ROOT.as_posix()}/docs/operaciones/06_supervision_wsl2.md): Guía operativa de supervisión en WSL2.",
+        f"- [docs/arquitectura/03_kuzu_mesh_graph.md](file:///{PROJECT_ROOT.as_posix()}/docs/arquitectura/03_kuzu_mesh_graph.md): Modelado en Kùzu y consultas Cypher.",
+        f"- [docs/arquitectura/02_mundo_pequeno_routing.md](file:///{PROJECT_ROOT.as_posix()}/docs/arquitectura/02_mundo_pequeno_routing.md): Enrutamiento logarítmico acotado a 12 grados.",
+        f"- [docs/arquitectura/01_genesis.md](file:///{PROJECT_ROOT.as_posix()}/docs/arquitectura/01_genesis.md): Plan génesis de arquitectura del proyecto.",
+        f"- [docs/arquitectura/Ruta_de_trabajo_IPv7_P2P_DHT.pdf](file:///{PROJECT_ROOT.as_posix()}/docs/arquitectura/Ruta_de_trabajo_IPv7_P2P_DHT.pdf): Especificación técnica de arquitectura P2P/DHT.",
         ""
     ])
 

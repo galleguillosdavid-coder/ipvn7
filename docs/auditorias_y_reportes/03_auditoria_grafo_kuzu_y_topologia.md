@@ -3,7 +3,7 @@
 **Fecha de Ejecución**: 2026-09-08  
 **Motor de Grafos**: Kùzu Graph Database CLI v0.8+  
 **Directorio de Almacenamiento**: `.kuzu_index/ipv7.db`  
-**Guía de Referencia**: [`skill_ia_ipv7/kuzu_cypher_agent_guide.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/kuzu_cypher_agent_guide.md)
+**Guía de Referencia**: [`docs/skill_ia/kuzu_cypher_agent_guide.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/kuzu_cypher_agent_guide.md)
 
 ---
 

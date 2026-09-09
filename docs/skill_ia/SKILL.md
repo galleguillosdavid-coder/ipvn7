@@ -11,11 +11,11 @@ Esta habilidad dota a cualquier agente de Inteligencia Artificial (Antigravity, 
 
 La suite técnica se compone de los siguientes módulos:
 
-1. [**System Prompt & AI Persona**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/system_prompt_ia.md): Reglas de comportamiento, tono, axiomas criptográficos y restricciones de seguridad para la IA.
-2. [**Especificación Técnica de APIs (REST + WS + CBOR)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/api_reference_ai.md): Catálogo completo de endpoints HTTP, sockets WebSocket, formatos binarios CBOR e interfaces de servicio.
-3. [**Guía de Consultas Cypher con Kùzu Graph Engine**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/kuzu_cypher_agent_guide.md): Cheatsheet de consultas en Cypher para inspeccionar el grafo de código Go y la topología de la malla P2P.
-4. [**Schemas de Function Calling para LLMs**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/function_calling_schemas.json): Definiciones formales en formato JSON Schema / OpenAI Tools listas para ser invocadas por modelos de lenguaje.
-5. [**Workflows Automatizados de Diagnóstico**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/skill_ia_ipv7/workflows_diagnostico_ia.md): Procedimientos operativos estándar (SOP) ejecutables por la IA para resolver anomalías de red de forma autónoma.
+1. [**System Prompt & AI Persona**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/system_prompt_ia.md): Reglas de comportamiento, tono, axiomas criptográficos y restricciones de seguridad para la IA.
+2. [**Especificación Técnica de APIs (REST + WS + CBOR)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/api_reference_ai.md): Catálogo completo de endpoints HTTP, sockets WebSocket, formatos binarios CBOR e interfaces de servicio.
+3. [**Guía de Consultas Cypher con Kùzu Graph Engine**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/kuzu_cypher_agent_guide.md): Cheatsheet de consultas en Cypher para inspeccionar el grafo de código Go y la topología de la malla P2P.
+4. [**Schemas de Function Calling para LLMs**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/function_calling_schemas.json): Definiciones formales en formato JSON Schema / OpenAI Tools listas para ser invocadas por modelos de lenguaje.
+5. [**Workflows Automatizados de Diagnóstico**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/skill_ia/workflows_diagnostico_ia.md): Procedimientos operativos estándar (SOP) ejecutables por la IA para resolver anomalías de red de forma autónoma.
 
 ---
 
