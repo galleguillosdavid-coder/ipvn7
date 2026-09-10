@@ -37,10 +37,10 @@ func getIPv7Dir() string {
 }
 
 func printHelp() {
-	fmt.Println(Banner)
+	fmt.Print(Banner)
 	fmt.Printf("Version: %s\n\n", Version)
 	fmt.Println("Uso: ipvn7-cli <comando> [argumentos]")
-	fmt.Println("\nComandos disponibles:")
+	fmt.Print("\nComandos disponibles:\n")
 	fmt.Println("  status                         Muestra la identidad local DID y estado del sistema")
 	fmt.Println("  petname list                   Lista los nombres amigables (dDNS) registrados")
 	fmt.Println("  petname add <nombre> <did>     Asocia un alias legible a un DID soberano")
@@ -76,7 +76,7 @@ func main() {
 		fmt.Printf("ipvn7 Network Operating System (NOS) — Control Plane CLI\nVersión: %s\n", Version)
 
 	case "status":
-		fmt.Println(Banner)
+		fmt.Print(Banner)
 		keyPath := filepath.Join(ipv7Dir, "identity.key")
 		id, _, err := core.LoadOrCreatePersistentIdentity(keyPath)
 		if err != nil {
