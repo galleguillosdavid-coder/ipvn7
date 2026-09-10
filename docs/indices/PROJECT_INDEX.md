@@ -6,10 +6,10 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 
 | Paquete | Archivos | Líneas de Código (LoC) | Propósito Principal |
 |---|---|---|---|
-| [`adapters`](#paquete-adapters) | 18 | 2298 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
+| [`adapters`](#paquete-adapters) | 20 | 2764 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
 | [`core`](#paquete-core) | 41 | 6081 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
-| [`dht`](#paquete-dht) | 7 | 955 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
-| [`main`](#paquete-main) | 3 | 587 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
+| [`dht`](#paquete-dht) | 9 | 1375 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
+| [`main`](#paquete-main) | 4 | 848 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
 | [`offgrid`](#paquete-offgrid) | 5 | 961 | Módulo de soporte del sistema. |
 | [`onion`](#paquete-onion) | 4 | 561 | Módulo de soporte del sistema. |
 | [`telemetry`](#paquete-telemetry) | 9 | 1221 | Módulo de soporte del sistema. |
@@ -23,6 +23,31 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 ## Paquete `adapters`
 
 Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC.
+
+### 📄 [firewall.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/firewall.go) (276 LoC)
+**Tipos y Estructuras:**
+- `struct FirewallRule`
+- `struct ZTNAFirewall`
+**Funciones Clave:**
+- `AddRule()`
+- `AllowRateLimited()`
+- `Inspect()`
+- `ListRules()`
+- `LoadFromFile()`
+- `NewZTNAFirewall()`
+- `RemoveRule()`
+- `SaveToFile()`
+- `SetDefaultAction()`
+- `Stats()`
+
+### 📄 [firewall_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/firewall_test.go) (190 LoC)
+**Funciones Clave:**
+- `TestZTNAFirewallDefaultDeny()`
+- `TestZTNAFirewallExplicitAllow()`
+- `TestZTNAFirewallPersistence()`
+- `TestZTNAFirewallRemoveRule()`
+- `TestZTNAFirewallTokenBucketRateLimit()`
+- `TestZTNAFirewallWildcardAndExpiry()`
 
 ### 📄 [pmtu.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/pmtu.go) (215 LoC)
 **Tipos y Estructuras:**
@@ -554,6 +579,35 @@ Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity
 - `Marshal()`
 - `Unmarshal()`
 
+### 📄 [petnames.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/dht/petnames.go) (276 LoC)
+**Tipos y Estructuras:**
+- `struct PetnameEntry`
+- `struct PetnameStore`
+**Funciones Clave:**
+- `CalculateNamePoW()`
+- `Delete()`
+- `DeriveVirtualIPv4()`
+- `DeriveVirtualIPv6()`
+- `ExportHostsFile()`
+- `List()`
+- `LoadFromFile()`
+- `NewPetnameStore()`
+- `NormalizeName()`
+- `Resolve()`
+- `ReverseLookup()`
+- `SaveToFile()`
+- `Set()`
+- `ValidateName()`
+- `VerifyNamePoW()`
+
+### 📄 [petnames_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/dht/petnames_test.go) (144 LoC)
+**Funciones Clave:**
+- `TestPetnamePersistence()`
+- `TestPetnamePoW()`
+- `TestPetnameStoreBasic()`
+- `TestPetnameValidation()`
+- `TestPetnameVirtualIPAndHosts()`
+
 ### 📄 [record.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/dht/record.go) (92 LoC)
 **Tipos y Estructuras:**
 - `struct Record`
@@ -571,6 +625,8 @@ Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd
 ### 📄 [canary_runner.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/canary/runner/canary_runner.go) (115 LoC)
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/chat/main.go) (193 LoC)
+
+### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/ipvn7-cli/main.go) (261 LoC)
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/node/main.go) (279 LoC)
 
