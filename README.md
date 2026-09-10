@@ -105,6 +105,24 @@ Implementación en **Go** del protocolo **IPv7**: una arquitectura de red overla
 - Autodescubrimiento LAN UDP broadcast en **4.78 ms**.
 - Huella de memoria en reposo del cliente en Windows: **57.6 MB**.
 - Soporte nativo de doble pila IPv4 / IPv6 global.
+- **Ruta Viva Celular 4G/5G**: Enlace de campo establecido sobre CGNAT simétrico móvil (`45.232.93.x`) con mensajería E2EE confirmada en 1 ms.
+
+---
+
+## 🌍 Visión y Horizontes: Hacia el Nuevo Internet Mundial
+
+El Internet actual confunde identidad con ubicación, carece de cifrado por defecto y depende de monopolios BGP y DNS raíz centralizados. Para transformar a IPv7 en el nuevo sustrato de interconexión global, se han formalizado **Cuatro Horizontes Estratégicos** gobernados por el método científico experimental ([especificación completa en `docs/arquitectura/04_horizontes_nuevo_internet_mundial.md`](docs/arquitectura/04_horizontes_nuevo_internet_mundial.md)):
+
+1. **🌐 Horizonte 1: Adaptador TUN/TAP Universal (`ipv70`)**:
+   - Creación de interfaces virtuales de red en Windows, Linux, Android, iOS y OpenWrt para que cualquier aplicación (navegadores, SSH, streaming, juegos) viaje de forma transparente sobre IPv7 sin modificar su código fuente.
+2. **🌐 Horizonte 2: Descentralización Total sin Terceros (P2P Puro & DHT Soberana)**:
+   - Eliminación de cualquier dependencia de servicios en la nube (como Firebase), reemplazándolo por una DHT Kademlia global autoinmune contra Sybil y nodos semilla distribuidos.
+3. **🌐 Horizonte 3: Enrutamiento Cebolla Multi-Salto (Onion Multi-Hop / Sphinx Routing)**:
+   - Enrutamiento indirigible sobre el grafo de Mundo Pequeño de Kleinberg: los nodos intermediarios retransmiten paquetes opacos de longitud fija sin conocer el origen ni el destino final.
+4. **🌐 Horizonte 4: Malla Física Fuera de Internet (Mesh Off-Grid / Wi-Fi Direct / LoRa)**:
+   - Continuidad operativa en redes locales ad-hoc, Wi-Fi Direct y radioenlaces LoRa, garantizando comunicaciones seguras incluso ante cortes masivos de cables submarinos o apagones de infraestructura nacional.
+
+> **Regla de Gobernanza**: Todo avance en estos horizontes se rige por el protocolo de `docs/3.md`: Protocol Core Freeze, mediciones empíricas antes de fusionar, cero regresiones y validación tripartita (David, Antigravity, ChatGPT).
 
 ---
 

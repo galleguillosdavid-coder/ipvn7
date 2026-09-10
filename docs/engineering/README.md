@@ -56,4 +56,5 @@ go run .\tools\ipv7-engineer roaming
 - [`CHAOS.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CHAOS.md): Pruebas controladas de disrupción.
 - [`OPTIMIZATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/OPTIMIZATION.md): Reglas de optimización justificada por evidencia.
 - [`CANARY_RUNNER_EVALUATION.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/CANARY_RUNNER_EVALUATION.md): Evaluación formal de soak test y watchdog (3.8h, 454 ciclos, 0 fugas).
+- [**HORIZONTES ESTRATÉGICOS**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/04_horizontes_nuevo_internet_mundial.md): Hoja de ruta científica hacia el Nuevo Internet Mundial (TUN/TAP, DHT Soberana, Onion Mesh y Off-Grid).
 

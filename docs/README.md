@@ -80,6 +80,7 @@ Informes de caracterización adversarial, estrés de red y aislamiento causal:
 - [**01. Plan Génesis de Arquitectura**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/01_genesis.md): Modelo de capas, identidades Ed25519 y serialización CBOR.
 - [**02. Enrutamiento en Mundo Pequeño (12 Anillos)**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/02_mundo_pequeno_routing.md): Algoritmo voraz XOR acotado a 120 peers con convergencia logarítmica.
 - [**03. Modelado de Grafo en Kùzu**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/03_kuzu_mesh_graph.md): Esquema de datos de nodos y aristas para Kùzu Graph Engine.
+- [**04. Los Cuatro Horizontes hacia el Nuevo Internet Mundial**](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/arquitectura/04_horizontes_nuevo_internet_mundial.md): Hoja de ruta estratégica (TUN/TAP universal, DHT pura soberana, Onion Routing multi-salto y Malla física off-grid).
 
 ---
 
