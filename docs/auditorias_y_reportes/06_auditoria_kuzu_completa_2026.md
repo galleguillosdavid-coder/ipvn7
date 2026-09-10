@@ -1,6 +1,6 @@
 # 🔍 Reporte de Auditoría de Arquitectura con Kùzu Graph Engine
 
-> **Fecha de Ejecución**: 2026-09-10 14:33:48  
+> **Fecha de Ejecución**: 2026-09-10 15:11:17  
 > **Motor de Grafo**: Kùzu Graph Database CLI (Embedded Engine)  
 > **Ubicación Base de Datos**: `.kuzu_index/ipv7.db`  
 > **Estado General**: **SALUDABLE / CERO CICLOS DE DEPENDENCIA**  
@@ -32,20 +32,20 @@ MATCH (p:Package)-[:CONTAINS]->(f:File) RETURN p.name, count(f), sum(f.loc) ORDE
 │ STRING    │ INT64        │ INT128     │
 ├───────────┼──────────────┼────────────┤
 │ core      │ 41           │ 6081       │
-│ adapters  │ 18           │ 2298       │
+│ adapters  │ 20           │ 2764       │
 │ ui        │ 4            │ 1728       │
+│ dht       │ 9            │ 1375       │
 │ telemetry │ 9            │ 1221       │
 │ tests     │ 5            │ 1153       │
 │ offgrid   │ 5            │ 961        │
-│ dht       │ 7            │ 955        │
 │ tun       │ 5            │ 859        │
-│ main      │ 3            │ 587        │
+│ main      │ 4            │ 848        │
 │ onion     │ 4            │ 561        │
 │ watchdog  │ 1            │ 87         │
 └───────────┴──────────────┴────────────┘
 (11 tuples)
 (3 columns)
-Time: 52.41ms (compiling), 24.08ms (executing)
+Time: 50.60ms (compiling), 28.06ms (executing)
 ```
 
 ---
@@ -82,7 +82,7 @@ MATCH (p1:Package)-[r:DEPENDS_ON]->(p2:Package) RETURN p1.name, p2.name ORDER BY
 └──────────┴───────────┘
 (16 tuples)
 (2 columns)
-Time: 44.34ms (compiling), 5.19ms (executing)
+Time: 53.91ms (compiling), 5.34ms (executing)
 ```
 
 ---
@@ -115,7 +115,7 @@ MATCH (f:File) RETURN f.path, f.loc ORDER BY f.loc DESC LIMIT 12;
 └─────────────────────────────────┴───────┘
 (12 tuples)
 (2 columns)
-Time: 56.05ms (compiling), 3.85ms (executing)
+Time: 41.58ms (compiling), 4.87ms (executing)
 ```
 
 ---
@@ -133,13 +133,13 @@ MATCH (s:Symbol) RETURN s.kind, count(s) ORDER BY count(s) DESC;
 │ s.kind    │ COUNT(s._ID) │
 │ STRING    │ INT64        │
 ├───────────┼──────────────┤
-│ func      │ 404          │
-│ struct    │ 93           │
+│ func      │ 440          │
+│ struct    │ 97           │
 │ interface │ 7            │
 └───────────┴──────────────┘
 (3 tuples)
 (2 columns)
-Time: 64.56ms (compiling), 5.81ms (executing)
+Time: 35.80ms (compiling), 7.31ms (executing)
 ```
 
 ---
@@ -180,7 +180,7 @@ MATCH (p:Package {name: 'core'})-[:CONTAINS]->(f:File)-[:DEFINES]->(s:Symbol) RE
 └──────────────────────────────┴────────┴──────────────────────────────────────┘
 (20 tuples)
 (3 columns)
-Time: 37.07ms (compiling), 6.70ms (executing)
+Time: 50.72ms (compiling), 18.36ms (executing)
 ```
 
 ---
@@ -194,14 +194,16 @@ MATCH (p:Peer) RETURN p.id, p.endpoint, p.is_local;
 
 **Resultado Kùzu:**
 ```text
-┌────────┬────────────┬────────────┐
-│ p.id   │ p.endpoint │ p.is_local │
-│ STRING │ STRING     │ BOOL       │
-├────────┼────────────┼────────────┤
-└────────┴────────────┴────────────┘
-(0 tuples)
+┌────────────────────────────────────────────────┬────────────────┬────────────┐
+│ p.id                                           │ p.endpoint     │ p.is_local │
+│ STRING                                         │ STRING         │ BOOL       │
+├────────────────────────────────────────────────┼────────────────┼────────────┤
+│ de7b129846acea1fd6aa1eb57e6f226de1a96b202473...│  127.0.0.1:8080│  True      │
+│ a6c144f6cfa6cbdfda8b3401af2f2fa7ac2151f08a95...│  127.0.0.1:8080│  True      │
+└────────────────────────────────────────────────┴────────────────┴────────────┘
+(2 tuples)
 (3 columns)
-Time: 33.41ms (compiling), 0.80ms (executing)
+Time: 38.51ms (compiling), 1.78ms (executing)
 ```
 
 ---
