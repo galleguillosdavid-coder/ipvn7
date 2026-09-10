@@ -58,12 +58,18 @@ func (m *RadioMedium) Unregister(addr string) {
 
 // Broadcast broadcasts a frame to all physical radios in range safely
 func (m *RadioMedium) Broadcast(srcAddr string, data []byte) {
+	m.Transmit(srcAddr, "BROADCAST", data)
+}
+
+// Transmit delivers a frame to targetAddr, or to all nodes if targetAddr is BROADCAST
+func (m *RadioMedium) Transmit(srcAddr, targetAddr string, data []byte) {
 	m.mu.RLock()
-	// Copy slice of links to avoid holding lock during deliver
 	links := make([]*VirtualRadioLink, 0, len(m.nodes))
 	for addr, link := range m.nodes {
 		if addr != srcAddr {
-			links = append(links, link)
+			if targetAddr == "BROADCAST" || targetAddr == "" || addr == targetAddr {
+				links = append(links, link)
+			}
 		}
 	}
 	m.mu.RUnlock()
@@ -120,7 +126,7 @@ func (l *VirtualRadioLink) Send(targetAddr string, packet []byte) error {
 		return ErrPacketExceedsMTU
 	}
 	if l.medium != nil {
-		l.medium.Broadcast(l.addr, packet)
+		l.medium.Transmit(l.addr, targetAddr, packet)
 	}
 	return nil
 }

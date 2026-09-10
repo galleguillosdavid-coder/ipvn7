@@ -152,16 +152,41 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
   - **Reensamblado Criptográfico Íntegro**: El paquete reconstruido fue verificado byte a byte con hash SHA256 idéntico (**0 corrupción de datos**).
 - **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
 
+#### 6. La Gran Convergencia: Pipeline Unificado de los Cuatro Horizontes (`TestFourHorizons_UnifiedEndToEnd`)
+- **Cadena de transporte ejecutada**:
+  $$\text{TUN (IPv6 ULA } fd07::) \xrightarrow{\text{DHT 256b Lookup}} \text{Sphinx Onion (3 saltos, 1280B)} \xrightarrow{\text{Off-Grid L2 Radio}} \text{TUN (IPv6 Destino)}$$
+- **Invariantes verificadas**:
+  - **Derivación Criptográfica ULA**: $fd07::...$ derivado de DIDs Ed25519 nativos.
+  - **Resolución P2P Pura**: Primer salto resuelto mediante métrica XOR en Kademlia sin Firebase ni servidores centrales.
+  - **Invarianza de Cifrado Cebolla**: Tráfico empaquetado en exactamente 1280 bytes, 3 capas desenvueltas a ciegas por relés intermedios ($A \to \text{Hop}_1 \to \text{Hop}_2 \to B$).
+  - **Entrega Física y TUN Final**: Paquete IPv6 sintético extraído e inyectado en el TUN del destino con **100% PDR** y hash SHA256 idéntico bit a bit.
+- **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
+
 ---
 
-## 6. Conclusión y Síntesis Operativa
+## 6. Matriz Final de Certificación de Horizonte 5
+
+| Hipótesis / Propiedad Evaluada | Condición Hostil Provocada | Clasificación Epistémica | Métrica / Evidencia |
+| :--- | :--- | :---: | :--- |
+| **$H\text{-MULTI-01}$ (Failover WAN $\to$ Malla)** | Corte intempestivo de sockets y fibra WAN. | **`DEMONSTRATED`** | 100% PDR post-blackout, reconvergencia en 100.35 ms, DIDs idénticos. |
+| **$H\text{-L2-DOS}$ (Ataque de Balizas)** | Inundación de 10.000 balizas forjadas en 11 ms. | **`DEMONSTRATED`** | 888.723 balizas/s, 96% PDR legítimo, memoria acotada a 256 peers ($O(1)$). |
+| **$H\text{-FLAPPING}$ (Inestabilidad WAN)** | 30 ciclos de corte y reconexión cada 8 ms. | **`DEMONSTRATED`** | 60 transiciones sin deadlocks, convergencia determinista a cero bloqueos. |
+| **$H\text{-SPLIT-BRAIN}$ (Partición Física)** | 2 islas aisladas operando con DHT independiente. | **`DEMONSTRATED`** | Resolución bilateral tras bridge ad-hoc, métrica XOR monotónica decreciente. |
+| **$H\text{-CONSTRAINED-MTU}$ (Canal LoRa 180B)** | Paquete de 1280B en canal angosto con desorden. | **`DEMONSTRATED`** | Fragmentación en 8 trozos, reensamblado con 0 corrupción (SHA256 idéntico). |
+| **$H\text{-UNIFIED-E2E}$ (Convergencia Global)** | Pipeline completo: TUN $\to$ DHT $\to$ Onion $\to$ Off-Grid $\to$ TUN. | **`DEMONSTRATED`** | Entrega de extremo a extremo sin fugas, integridad bit a bit (100% PDR). |
+
+---
+
+## 7. Conclusión y Síntesis Operativa
 
 - **Core Freeze Inviolado**: **0 líneas modificadas en `core/`**.
 - **Endurecimiento de Adaptadores**: La batería destructiva identificó, corrigió y blindó:
-  1. Concurrencia de canal cerrado en `RadioMedium.deliver()`.
+  1. Concurrencia de canal cerrado en `RadioMedium.deliver()` y `Unregister()`.
   2. Bounded memory a 256 peers en `BeaconEngine` ($O(1)$ amortizado).
-  3. Control estricto de MTU y motor de fragmentación/reensamblaje para canales estrechos (`adapters/offgrid/fragmentation.go`).
-- **Estado Epistémico General**: Las 5 hipótesis críticas de rotura de transporte y partición física han sido elevadas de `HYPOTHESIS` a **`DEMONSTRATED (Laboratorio Controlado)`**.
+  3. Filtrado L2 Unicast/Broadcast en `RadioMedium.Transmit()`.
+  4. Control estricto de MTU y motor de fragmentación/reensamblaje para canales estrechos (`adapters/offgrid/fragmentation.go`).
+- **Estado Epistémico General**: Las 6 hipótesis críticas de rotura de transporte, ataque de balizas, partición física y convergencia global han sido elevadas de `HYPOTHESIS` a **`DEMONSTRATED (Laboratorio Controlado)`**.
+
 
 
 
