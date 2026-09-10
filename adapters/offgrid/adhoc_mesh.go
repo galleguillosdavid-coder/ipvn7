@@ -11,6 +11,8 @@ import (
 
 var BeaconMagic = [4]byte{0x4F, 0x47, 0x37, 0x21} // OG7! (OffGrid IPv7)
 
+const MaxDiscoveredPeers = 256
+
 // VirtualRadioLink simulates ad-hoc physical radio channels (Wi-Fi Direct, Bluetooth LE, LoRa)
 type VirtualRadioLink struct {
 	name      string
@@ -47,19 +49,29 @@ func (m *RadioMedium) Register(link *VirtualRadioLink) {
 	m.nodes[link.addr] = link
 }
 
-// Broadcast broadcasts a frame to all physical radios in range
+// Unregister detaches a virtual radio link from the medium
+func (m *RadioMedium) Unregister(addr string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.nodes, addr)
+}
+
+// Broadcast broadcasts a frame to all physical radios in range safely
 func (m *RadioMedium) Broadcast(srcAddr string, data []byte) {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
+	// Copy slice of links to avoid holding lock during deliver
+	links := make([]*VirtualRadioLink, 0, len(m.nodes))
 	for addr, link := range m.nodes {
 		if addr != srcAddr {
-			buf := make([]byte, len(data))
-			copy(buf, data)
-			select {
-			case link.rxQueue <- radioFrame{srcAddr: srcAddr, data: buf}:
-			default:
-			}
+			links = append(links, link)
 		}
+	}
+	m.mu.RUnlock()
+
+	for _, link := range links {
+		buf := make([]byte, len(data))
+		copy(buf, data)
+		link.deliver(radioFrame{srcAddr: srcAddr, data: buf})
 	}
 }
 
@@ -84,10 +96,24 @@ func NewVirtualRadioLink(name, addr string, mtu int, medium *RadioMedium) *Virtu
 func (l *VirtualRadioLink) Name() string { return l.name }
 func (l *VirtualRadioLink) MTU() int     { return l.mtu }
 
-func (l *VirtualRadioLink) Send(targetAddr string, packet []byte) error {
+func (l *VirtualRadioLink) deliver(frame radioFrame) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.closed {
+		return
+	}
+	select {
+	case l.rxQueue <- frame:
+	default:
+	}
+}
+
+func (l *VirtualRadioLink) Send(targetAddr string, packet []byte) error {
+	l.mu.Lock()
+	closed := l.closed
+	l.mu.Unlock()
+
+	if closed {
 		return ErrLinkClosed
 	}
 	if l.medium != nil {
@@ -109,6 +135,9 @@ func (l *VirtualRadioLink) Close() error {
 	defer l.mu.Unlock()
 	if !l.closed {
 		l.closed = true
+		if l.medium != nil {
+			l.medium.Unregister(l.addr)
+		}
 		close(l.rxQueue)
 	}
 	return nil
@@ -205,6 +234,22 @@ func (b *BeaconEngine) rxLoop(ctx context.Context) {
 					LastSeen:  time.Now(),
 				}
 				b.mu.Lock()
+				if _, exists := b.peers[did.String()]; !exists && len(b.peers) >= MaxDiscoveredPeers {
+					// Evict oldest seen peer to guarantee O(1) memory bound
+					var oldestKey string
+					var oldestTime time.Time
+					first := true
+					for k, v := range b.peers {
+						if first || v.LastSeen.Before(oldestTime) {
+							oldestTime = v.LastSeen
+							oldestKey = k
+							first = false
+						}
+					}
+					if oldestKey != "" {
+						delete(b.peers, oldestKey)
+					}
+				}
 				b.peers[did.String()] = peer
 				b.mu.Unlock()
 
