@@ -28,11 +28,11 @@ Si un test permite un margen más permisivo que el afirmado en la documentación
 │ H-L2-DOS         │ No colapso ante 10k balizas forjadas     │ panic / crash               │ 0 panics        │ Completitud normal del test             │
 │ H-L2-DOS         │ Disponibilidad de tráfico legítimo       │ deliveredLegit / sentLegit  │ >= 0.90 (90%)   │ if delivered < uint64(sent*0.90) {t.Fail}│
 │ H-L2-DOS         │ Capacidad máxima acotada de tabla L2     │ len(beacon.DiscoveredPeers) │ <= 256 peers    │ if len(peers) > 256 { t.Fatalf(...) }   │
-│ H-L2-DOS         │ Crecimiento de memoria heap acotado      │ deltaHeapKB                 │ <= 1024 KB      │ if deltaHeapKB > 1024 { t.Fatalf(...) } │
+│ H-L2-DOS         │ Crecimiento de memoria heap acotado      │ deltaHeapKB                 │ <= 512 KB       │ if deltaHeapKB > 512 { t.Fatalf(...) }  │
 ├──────────────────┼──────────────────────────────────────────┼─────────────────────────────┼─────────────────┼─────────────────────────────────────────┤
 │ H-FLAPPING       │ Resistencia a 30 ciclos de oscilación    │ recordedTransitions         │ >= 60 trans     │ if trans < 60 { t.Fatalf(...) }         │
 │ H-FLAPPING       │ Convergencia determinista de modo        │ switcher.CurrentMode()      │ OffGrid / Hybrid│ if mode != expected { t.Fatalf(...) }   │
-│ H-FLAPPING       │ Ausencia de fugas de goroutines          │ deltaGoroutines (post-settle│ <= 4 goroutines │ if deltaG > 4 { t.Fatalf(...) }         │
+│ H-FLAPPING       │ Ausencia de fugas de goroutines          │ deltaGoroutines (post-settle│ <= 1 goroutine  │ if deltaG > 1 { t.Fatalf(...) }         │
 ├──────────────────┼──────────────────────────────────────────┼─────────────────────────────┼─────────────────┼─────────────────────────────────────────┤
 │ H-SPLIT-BRAIN    │ Resolución transversal bilateral         │ foundB1 && foundA1          │ true            │ if !foundB1 || !foundA1 { t.Fatalf(...) }│
 │ H-SPLIT-BRAIN    │ Inviolabilidad de firmas DHT Ed25519     │ rec.Verify()                │ true            │ if !rec.Verify() { t.Fatalf(...) }      │

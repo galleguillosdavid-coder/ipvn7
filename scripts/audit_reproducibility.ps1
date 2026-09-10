@@ -109,8 +109,8 @@ $heapStr = "N/A"
 if ($heapMatch.Success) {
     $heapKB = [int]$heapMatch.Groups[1].Value
     $heapStr = "${heapKB} KB"
-    if ($heapKB -gt 1024) {
-        $metricErrors += "H-L2-DOS: Crecimiento de heap excedio cota de seguridad (${heapKB} KB > 1024 KB)"
+    if ($heapKB -gt 512) {
+        $metricErrors += "H-L2-DOS: Crecimiento de heap excedio cota de seguridad (${heapKB} KB > 512 KB)"
     }
 } else {
     $metricErrors += "H-L2-DOS: No se encontro registro de medicion de heap"
@@ -135,8 +135,8 @@ $goroStr = "N/A"
 if ($goroMatch.Success) {
     $deltaGoro = [int]$goroMatch.Groups[1].Value
     $goroStr = "${deltaGoro} goroutines"
-    if ($deltaGoro -gt 4) {
-        $metricErrors += "H-FLAPPING: Posible fuga de goroutines detectada (${deltaGoro} > +4)"
+    if ($deltaGoro -gt 1) {
+        $metricErrors += "H-FLAPPING: Posible fuga de goroutines detectada (${deltaGoro} > +1)"
     }
 } else {
     $metricErrors += "H-FLAPPING: No se encontro registro de delta de goroutines"

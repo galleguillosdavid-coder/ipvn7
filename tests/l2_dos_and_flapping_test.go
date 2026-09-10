@@ -142,8 +142,8 @@ func TestBeaconEngine_PoisonAndFloodResistance(t *testing.T) {
 	heapGrowthKB := int64(mPost.HeapAlloc-mPre.HeapAlloc) / 1024
 	t.Logf("Crecimiento neto de heap tras procesar 10.000 balizas forjadas: %d KB", heapGrowthKB)
 
-	if heapGrowthKB > 1024 {
-		t.Fatalf("VIOLACIÓN DE MEMORIA: Crecimiento de heap excedió la cota contractual de 1024 KB tras 10k balizas: %d KB", heapGrowthKB)
+	if heapGrowthKB > 512 {
+		t.Fatalf("VIOLACIÓN DE MEMORIA: Crecimiento de heap excedió la cota contractual de 512 KB tras 10k balizas: %d KB", heapGrowthKB)
 	}
 
 	t.Log("==========================================================================================")
@@ -207,7 +207,7 @@ func TestHybridSwitcher_FlappingResistance(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 	deltaGoroutines := runtime.NumGoroutine() - baselineGoroutines
 	t.Logf("Delta de goroutines tras tormenta de flapping: %+d", deltaGoroutines)
-	if deltaGoroutines > 4 {
+	if deltaGoroutines > 1 {
 		t.Fatalf("VIOLACIÓN DE CONCURRENCIA: Fuga de goroutines detectada tras flapping: %+d goroutines residuales",
 			deltaGoroutines)
 	}

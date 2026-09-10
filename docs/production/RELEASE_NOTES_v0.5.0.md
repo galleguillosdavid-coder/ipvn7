@@ -42,9 +42,9 @@ Todas las aserciones han sido formalizadas bajo el contrato de aserciones ([`ASS
 │ H-MULTI-01       │ Corte simultáneo y abrupto de WAN        │ DEMONSTRATED     │ COMPLETE  │ 100% PDR     │
 │                  │ Conmutación a radio L2 (cota <= 250ms)   │ LAB_SIMULATED    │           │ 100.76 ms    │
 │ H-L2-DOS         │ Inundación de 10.000 balizas forjadas    │ DEMONSTRATED     │ COMPLETE  │ 100% PDR leg.│
-│                  │ Cota tabla <= 256, heap <= 1024 KB       │ LAB_SIMULATED    │           │ 292 KB heap  │
+│                  │ Cota tabla <= 256, heap <= 512 KB        │ LAB_SIMULATED    │           │ 293 KB heap  │
 │ H-FLAPPING       │ 30 ciclos rápidos de corte WAN (60 trans)│ DEMONSTRATED     │ COMPLETE  │ 0 deadlocks  │
-│                  │ Cota de fuga goroutines <= 4 (delta = 0) │ LAB_SIMULATED    │           │ Convergente  │
+│                  │ Cota de fuga goroutines <= 1 (delta = 0) │ LAB_SIMULATED    │           │ Convergente  │
 │ H-SPLIT-BRAIN    │ Partición en 2 islas con DHT local       │ DEMONSTRATED     │ PARTIAL   │ Fusión XOR   │
 │                  │ Puente local inter-islas (sin bkg DHT)   │ LAB_SIMULATED    │           │ Firmas OK    │
 │ H-CONSTRAINED-MTU│ Enlace con MTU físico de 180 bytes       │ DEMONSTRATED     │ PARTIAL   │ 8 fragmentos │

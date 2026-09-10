@@ -123,8 +123,8 @@ HEAP_LINE=$(echo "$CHAOS_OUTPUT" | grep -E "Crecimiento neto de heap tras proces
 if [ -n "$HEAP_LINE" ]; then
     HEAP_KB=$(echo "$HEAP_LINE" | sed -E 's/.*: ([0-9]+) KB.*/\1/')
     HEAP_STR="${HEAP_KB} KB"
-    if [ "$HEAP_KB" -gt 1024 ]; then
-        echo -e "${RED}   - H-L2-DOS: Crecimiento de heap excedió cota de seguridad (${HEAP_KB} KB > 1024 KB)${NC}"
+    if [ "$HEAP_KB" -gt 512 ]; then
+        echo -e "${RED}   - H-L2-DOS: Crecimiento de heap excedió cota de seguridad (${HEAP_KB} KB > 512 KB)${NC}"
         METRIC_ERRORS=$((METRIC_ERRORS+1))
     fi
 else
@@ -153,8 +153,8 @@ GORO_LINE=$(echo "$CHAOS_OUTPUT" | grep "Delta de goroutines tras tormenta de fl
 if [ -n "$GORO_LINE" ]; then
     GORO_VAL=$(echo "$GORO_LINE" | sed -E 's/.*flapping: ([+-]?[0-9]+).*/\1/')
     GORO_STR="${GORO_VAL} goroutines"
-    if [ "$GORO_VAL" -gt 4 ]; then
-        echo -e "${RED}   - H-FLAPPING: Fuga de goroutines detectada (${GORO_VAL} > +4)${NC}"
+    if [ "$GORO_VAL" -gt 1 ]; then
+        echo -e "${RED}   - H-FLAPPING: Fuga de goroutines detectada (${GORO_VAL} > +1)${NC}"
         METRIC_ERRORS=$((METRIC_ERRORS+1))
     fi
 else
