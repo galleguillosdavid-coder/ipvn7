@@ -96,6 +96,16 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
    - Identidades $A$ y $B$ deben permanecer idénticas.
    - La tabla de rutas debe actualizar el próximo salto sin destruir la sesión de transporte virtual.
 
+### Resultados Experimentales Obtenidos (`TestMultimediumTransportFailover_Chaos`):
+- **Estado Epistémico**: Elevado a **`DEMONSTRATED` (Laboratorio Controlado)** en [`tests/multimedium_chaos_test.go`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/tests/multimedium_chaos_test.go).
+- **Fase 1 (Tránsito WAN)**: 30/30 paquetes recibidos (**100% PDR**).
+- **Corte Catastrófico de WAN**: `wanA.Cut()`, `wanB.Cut()` aplicados simultáneamente.
+- **Tiempo de Reconvergencia a Radio Off-Grid**: **100.37 ms** con auto-activación de balizas L2 `OG7!`.
+- **Fase 3 (Tránsito Post-Failover en Malla)**: 30/30 paquetes recibidos (**100% PDR**).
+- **Invarianza de Identidad**: $DID_A$ y $DID_D$ verificados bit a bit antes y después del corte. Cero mutación.
+- **Continuidad de Sesión E2EE**: Todos los paquetes post-failover fueron descifrados con la clave X25519 generada antes del corte, sin renegociar handshake ni reiniciar la sesión criptográfica.
+- **Telemetría de Conmutación**: `ModeTransitions=1`, `WANPacketsSent=30`, `MeshPacketsSent=30`, `PacketsDropped=0`.
+
 ---
 
 ## 5. Batería de Pruebas Destructivas (Chaos Engineering)
