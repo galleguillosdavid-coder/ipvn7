@@ -87,3 +87,8 @@ Cualquier auditor externo puede ejecutar la verificación en un solo paso:
 > [!NOTE]
 > **NO SE AÑADIRÁ HORIZONTE 6**:  
 > Conforme al acuerdo de gobernanza técnica, el proyecto sella este estado como una versión experimental madura. La prioridad operativa futura será la transición hacia hardware físico real (`REAL_HARDWARE`) cuando existan los transceptores de radio pertinentes, manteniendo inviolable la verdad empírica documentada.
+
+> [!IMPORTANT]
+> **DICTAMEN EPISTÉMICO DE AUDITORÍA**:  
+> *"La cadena `documentación → contrato → test → assertion → resultado` es reproducible bajo el entorno y las condiciones de prueba declaradas."*
+
