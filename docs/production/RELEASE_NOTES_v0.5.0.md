@@ -89,6 +89,21 @@ Cualquier auditor externo puede ejecutar la verificación en un solo paso:
 > Conforme al acuerdo de gobernanza técnica, el proyecto sella este estado como una versión experimental madura. La prioridad operativa futura será la transición hacia hardware físico real (`REAL_HARDWARE`) cuando existan los transceptores de radio pertinentes, manteniendo inviolable la verdad empírica documentada.
 
 > [!IMPORTANT]
-> **DICTAMEN EPISTÉMICO DE AUDITORÍA**:  
+> **DICTAMEN EPISTÉMICO DE AUDITORÍA (Aprobado y Cerrado)**:  
 > *"La cadena `documentación → contrato → test → assertion → resultado` es reproducible bajo el entorno y las condiciones de prueba declaradas."*
+
+---
+
+## 7. Cierre Formal de Auditoría de Segundo Orden y Transición Operativa
+
+> [!TIP]
+> **ESTADO FORMAL**: **HORIZONTE 5 — IMPLEMENTACIÓN Y AUDITORÍA CERRADAS**.  
+> La cadena metodológica queda formalmente sellada y congelada. Cero modificaciones adicionales a `core/`.
+
+### Próxima Etapa: Fase de Validación Externa / Canary
+El proyecto transiciona desde la verificación destructiva en laboratorio hacia la observación empírica en condiciones reales:
+1. **Mayor Duración**: Escalamiento de soak test desde 24 horas hacia 7 días continuos.
+2. **Diversidad de Nodos**: Despliegue en máquinas y arquitecturas heterogéneas (Windows + Linux nativos).
+3. **Condiciones de Red Real**: Internet público, traversals NAT reales, Wi-Fi con pérdida estocástica, IP roaming y relays de respaldo.
+
 
