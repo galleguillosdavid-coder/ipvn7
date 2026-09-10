@@ -1,3 +1,20 @@
+# ipvn7: The Living Network Evolution of IPv7
+## Fase de Validación Externa, Resiliencia en Red Real y Hardware Físico
+
+[![Status](https://img.shields.io/badge/Status-Active%20Evolution-blue.svg)](docs/engineering/MASTER_PLAN_IPVN7.md)
+[![Inherited Protocol Core](https://img.shields.io/badge/Protocol%20Core-FROZEN%20(from%20IPv7%20v0.5.0)-success.svg)](core/)
+[![Historical Baseline](https://img.shields.io/badge/Historical%20Baseline-IPv7%20v0.5.0--chaos.audit-orange.svg)](https://github.com/galleguillosdavid-coder/Ipv7)
+[![Master Plan](https://img.shields.io/badge/Master%20Plan-Horizons%206--9-violet.svg)](docs/engineering/MASTER_PLAN_IPVN7.md)
+
+**ipvn7** es el repositorio activo para la siguiente etapa de desarrollo del protocolo IPv7. Mientras que el repositorio histórico [galleguillosdavid-coder/Ipv7](https://github.com/galleguillosdavid-coder/Ipv7) queda **formalmente congelado** tras la certificación de la auditoría de segundo orden en la versión 0.5.0-chaos.audit, **ipvn7** asume la misión de sacar el protocolo del laboratorio controlado y llevarlo al mundo real:
+
+- **Horizonte 6**: Validación Continua de 7 Días y Resiliencia en Red Real (Wi-Fi real, NAT simétrico, roaming, pérdida estocástica).
+- **Horizonte 7**: Topología Heterogénea Multi-Host en Internet Público (Windows + Linux + ARM interconectados globalmente).
+- **Horizonte 8**: Living Network Graph con Kùzu y Telemetría en Tiempo Real (consultas estructurales Cypher sin tocar el camino crítico).
+- **Horizonte 9**: Hardware Físico y Transceptores de Radio Reales (LoRa, BLE, Wi-Fi Direct y SDR).
+
+---
+
 # IPv7: Protocolo de Red Overlay P2P Descentralizada
 
 [![Go Version](https://img.shields.io/badge/Go-1.23%2B-blue.svg)](https://golang.org)
