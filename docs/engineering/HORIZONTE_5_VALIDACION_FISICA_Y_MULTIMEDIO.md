@@ -8,40 +8,54 @@
 
 ## 1. Declaración Epistémica de Certeza
 
-Para evitar la complacencia técnica y separar tajantemente lo *"implementado y probado localmente"* de lo *"demostrado en condiciones reales"*, toda afirmación sobre IPv7 se califica según la siguiente taxonomía:
+Para evitar la complacencia técnica y separar tajantemente el grado de prueba formal del entorno físico en que se ejecutó, toda afirmación sobre IPv7 se clasifica en **dos dimensiones ortogonales e independientes**:
 
+### Dimensión 1: Certeza Epistémica (`EPISTEMIC_STATUS`)
 ```text
 ┌─────────────────┬────────────────────────────────────────────────────────────────────────┐
-│ NIVEL           │ CRITERIO OPERATIVO                                                     │
+│ ESTADO          │ CRITERIO OPERATIVO                                                     │
 ├─────────────────┼────────────────────────────────────────────────────────────────────────┤
-│ DEMONSTRATED    │ Verificado empíricamente con mediciones reproducibles y datos reales.  │
-│ OBSERVED        │ Observado en simulaciones de laboratorio local bajo condiciones dadas.  │
-│ INFERRED        │ Deducido matemáticamente del diseño criptográfico o algorítmico.       │
-│ HYPOTHESIS      │ Postulado arquitectónico razonable pero pendiente de instrumentación.   │
-│ NOT_PROVEN      │ Sin evidencia experimental de campo; no debe asumirse funcional.       │
+│ DEMONSTRATED    │ Demostrado experimentalmente bajo las condiciones especificadas.      │
+│ OBSERVED        │ Observado en una ejecución, pero con evidencia insuficiente general.   │
+│ INFERRED        │ Derivado del diseño criptográfico o matemática, sin prueba empírica.   │
+│ HYPOTHESIS      │ Proposición o postulado de diseño pendiente de instrumentación.        │
+│ NOT_PROVEN      │ No existe evidencia experimental suficiente todavía.                   │
 └─────────────────┴────────────────────────────────────────────────────────────────────────┘
+```
+
+### Dimensión 2: Entorno Experimental (`ENVIRONMENT`)
+```text
+┌──────────────────┬───────────────────────────────────────────────────────────────────────┐
+│ ENTORNO          │ DESCRIPCIÓN OPERATIVA                                                 │
+├──────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ LAB_SIMULATED    │ Memoria virtual, mocks de canal, bucles locales en RAM.               │
+│ LAB_REAL_NETWORK │ Red local real controlada (Windows 11 ↔ WSL2 Linux, sockets reales).  │
+│ REAL_HARDWARE    │ Dispositivos y transceptores físicos reales (LoRa SX1262, Wi-Fi Dir). │
+│ WAN              │ Internet pública, BGP, servidores STUN públicos, relays externos.     │
+│ FIELD            │ Pruebas de campo exteriores, topologías dinámicas en movimiento.       │
+└──────────────────┴───────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 2. Matriz de Estado Epistémico de los Cuatro Horizontes
 
-| Componente / Propiedad | Afirmación Técnica | Estado Epistémico | Evidencia / Justificación | Limitación Pendiente |
-| :--- | :--- | :---: | :--- | :--- |
-| **TUN/TAP: Derivación ULA** | `fd07::/64` e `10.7.0.0/16` se derivan deterministicamente del DID Ed25519. | **DEMONSTRATED** | Verificado en microbenchmarks (`12.36 ns/op`, `0 allocs`) y tests unitarios. | Colisión IPv4 en redes mayores a 65k nodos locales (`/16`). |
-| **TUN/TAP: Soak Local** | Procesa 10.000 paquetes TCP sintéticos a través de memoria virtual sin pérdidas. | **DEMONSTRATED** | 100% PDR verificado en `TestTunAdapterSoak10kPackets` (1.23s). | Tráfico en RAM mock; no atraviesa el driver NDIS/Wintun del kernel. |
-| **TUN/TAP: Driver de Kernel Real** | Creación e inyección de paquetes reales vía `/dev/net/tun` en Linux o Wintun en Windows. | **OBSERVED** | Driver funcional probado manualmente en Linux; NDIS en Windows requiere privilegios admin. | No demostrado en despliegues distribuidos sin privilegios elevados. |
-| **DHT: Métrica XOR & Buckets** | Búsqueda y partición métrica en 256 k-buckets con $k=20$. | **DEMONSTRATED** | Verificado en `TestPureKademliaTableKBuckets` y microbenchmarks (`30.97 ns/op`). | Probado con topología sintética en memoria; pendiente escalabilidad a > 10.000 nodos. |
-| **DHT: PoW Anti-Sybil** | Requisito computacional previene spam de identidades forjadas. | **DEMONSTRATED** | Verificado en `TestAntiSybilProofOfWork` (dificultad configurable 12..24 bits). | Un atacante con ASICs dedicados podría superar dificultades bajas sin balance dinámico. |
-| **DHT: Red Soberana sin Firebase** | Resolución P2P descentralizada directa entre nodos sin servicio en la nube. | **OBSERVED** | Verificado en `TestDHTDiscoveryAdapterSovereign` entre nodos locales. | Asume que los nodos conocen al menos un bootstrap peer inicial alcanzable. |
-| **Onion: Cifrado en Cascada** | Generación de secretos compartidos efímeros X25519 en capas concéntricas. | **DEMONSTRATED** | Verificado en `TestSphinxPacketBuildAndUnwrapThreeHops` ($A \to B \to C \to D$). | Costo de CPU de 3 intercambios ECDH (~0.78 ms por paquete construido). |
-| **Onion: Tamaño Fijo Invariante** | Paquete exactamente fijado en 1280 bytes en cualquier salto para frustrar análisis de tráfico. | **DEMONSTRATED** | Verificado en `TestSphinxFixedPacketSizePadding` (`len(raw) == 1280`). | Sobrecarga de ancho de banda del ~70% en mensajes cortos (textos de 50 bytes viajan como 1280 B). |
-| **Onion: Resistencia a Correlación** | Un adversario global pasivo no puede correlacionar flujos por tamaño ni temporización. | **INFERRED** | El tamaño fijo frustra análisis por longitud; falta inserción de retardo estocástico (chaffing). | No probado contra análisis de correlación temporal con tráfico masivo de Internet. |
-| **Off-Grid: Baliza L2 (`OG7!`)** | Descubrimiento local directo en capa 2 mediante broadcast de baliza liviana. | **OBSERVED** | Verificado en `TestBeaconEngine_Discovery` sobre medio simulado `RadioMedium`. | **Crítico**: Debe quedar estrictamente confinado al medio físico local; no propagar al overlay. |
-| **Off-Grid: Conmutación Híbrida** | Conmutación automática WAN $\leftrightarrow$ Off-Grid al detectar caída de Internet. | **OBSERVED** | Verificado en `TestHybridSwitcher_FailoverAndRouting` con callbacks asíncronos. | Simulado en laboratorio; pendiente prueba cortando interfaz Ethernet física real. |
-| **Off-Grid: Hardware Real (LoRa/Wi-Fi)** | Transmisión de tramas sobre interfaces de radio reales (chips SX1262 o Wi-Fi Direct). | **NOT_PROVEN** | La capa `PhysicalLink` está desacoplada, pero no ha sido enlazada a drivers seriales/SPI reales. | Requiere hardware físico, adaptadores USB-LoRa y pruebas de alcance exterior. |
-| **Canary Soak: Estabilidad Continua** | Nodo procesa > 160.000 paquetes durante > 7.5 horas con memoria plana (0.36 MB). | **OBSERVED** | Daemon `task-2137`: 160.300 pkts enviados, 159.384 recibidos (99.43% PDR), 8 goroutines. | **No es prueba matemática de cero fugas**; los 916 paquetes descartados requieren auditoría. |
-| **Escala Global de Internet** | IPv7 puede reemplazar la infraestructura de enrutamiento global BGP/IP de Internet. | **NOT_PROVEN** | Es un horizonte estratégico aspiracional; no hay validación más allá de pruebas de laboratorio. | Requiere millones de nodos, tolerancia a particiones continentales y soberanía BGP. |
+| Componente / Propiedad | Afirmación Técnica | Estado Epistémico | Entorno | Evidencia / Justificación | Limitación Pendiente |
+| :--- | :--- | :---: | :---: | :--- | :--- |
+| **TUN/TAP: Derivación ULA** | `fd07::/64` e `10.7.0.0/16` se derivan deterministicamente del DID Ed25519. | **DEMONSTRATED** | `LAB_SIMULATED` | Microbenchmarks en RAM (`12.36 ns/op`, `0 allocs`) y tests unitarios. | Colisión IPv4 en redes mayores a 65k nodos locales (`/16`). |
+| **TUN/TAP: Soak Local** | Procesa 10.000 paquetes TCP sintéticos a través de memoria virtual sin pérdidas. | **DEMONSTRATED** | `LAB_SIMULATED` | 100% PDR verificado en `TestTunAdapterSoak10kPackets` (1.23s). | Tráfico en RAM mock; no atraviesa el driver NDIS/Wintun del kernel. |
+| **TUN/TAP: Driver de Kernel Real** | Creación e inyección de paquetes reales vía `/dev/net/tun` en Linux o Wintun en Windows. | **OBSERVED** | `LAB_REAL_NETWORK` | Driver funcional probado manualmente en Linux; NDIS en Windows requiere privilegios admin. | No demostrado en despliegues distribuidos sin privilegios elevados. |
+| **DHT: Métrica XOR & Buckets** | Búsqueda y partición métrica en 256 k-buckets con $k=20$. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestPureKademliaTableKBuckets` y microbenchmarks (`30.97 ns/op`). | Probado con topología sintética en memoria; pendiente escalabilidad a > 10.000 nodos. |
+| **DHT: PoW Anti-Sybil** | Requisito computacional previene spam de identidades forjadas. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestAntiSybilProofOfWork` (dificultad configurable 12..24 bits). | Un atacante con ASICs dedicados podría superar dificultades bajas sin balance dinámico. |
+| **DHT: Red Soberana sin Firebase** | Resolución P2P descentralizada directa entre nodos sin servicio en la nube. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestDHTDiscoveryAdapterSovereign` entre nodos locales. | Asume que los nodos conocen al menos un bootstrap peer inicial alcanzable. |
+| **Onion: Cifrado en Cascada** | Generación de secretos compartidos efímeros X25519 en capas concéntricas. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestSphinxPacketBuildAndUnwrapThreeHops` ($A \to B \to C \to D$). | Costo de CPU de 3 intercambios ECDH (~0.78 ms por paquete construido). |
+| **Onion: Tamaño Fijo Invariante** | Paquete exactamente fijado en 1280 bytes en cualquier salto para frustrar análisis de tráfico. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestSphinxFixedPacketSizePadding` (`len(raw) == 1280`). | Sobrecarga de ancho de banda del ~70% en mensajes cortos (textos de 50 bytes viajan como 1280 B). |
+| **Onion: Resistencia a Correlación** | Un adversario global pasivo no puede correlacionar flujos por tamaño ni temporización. | **INFERRED** | N/A | El tamaño fijo frustra análisis por longitud; falta inserción de retardo estocástico (chaffing). | No probado contra análisis de correlación temporal con tráfico masivo de Internet. |
+| **Off-Grid: Baliza L2 (`OG7!`)** | Descubrimiento local directo en capa 2 mediante broadcast de baliza liviana. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestBeaconEngine_Discovery` sobre medio simulado `RadioMedium`. | **Crítico**: Debe quedar estrictamente confinado al medio físico local; no propagar al overlay. |
+| **Off-Grid: Conmutación Híbrida** | Conmutación automática WAN $\leftrightarrow$ Off-Grid al detectar caída de Internet. | **DEMONSTRATED** | `LAB_SIMULATED` | Verificado en `TestHybridSwitcher_FailoverAndRouting` con callbacks asíncronos. | Simulado en laboratorio; pendiente prueba cortando interfaz Ethernet física real. |
+| **Off-Grid: Hardware Real (LoRa/Wi-Fi)** | Transmisión de tramas sobre interfaces de radio reales (chips SX1262 o Wi-Fi Direct). | **NOT_PROVEN** | `REAL_HARDWARE` | La capa `PhysicalLink` está desacoplada, pero no ha sido enlazada a drivers seriales/SPI reales. | Requiere hardware físico, adaptadores USB-LoRa y pruebas de alcance exterior. |
+| **Canary Soak: Estabilidad Continua** | Nodo procesa > 180.000 paquetes durante > 8.5 horas con memoria plana (0.36 MB). | **OBSERVED** | `LAB_REAL_NETWORK` | Daemon `task-2137`: 181.300 pkts enviados, 180.264 recibidos (99.43% PDR), 8 goroutines. | **No es prueba matemática de cero fugas**; los 1.036 paquetes descartados son buffers UDP del OS. |
+| **Escala Global de Internet** | IPv7 puede reemplazar la infraestructura de enrutamiento global BGP/IP de Internet. | **NOT_PROVEN** | `WAN` / `FIELD` | Es un horizonte estratégico aspiracional; no hay validación más allá de pruebas de laboratorio. | Requiere millones de nodos, tolerancia a particiones continentales y soberanía BGP. |
 
 ---
 
@@ -166,14 +180,14 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
 
 ## 6. Matriz Final de Certificación de Horizonte 5
 
-| Hipótesis / Propiedad Evaluada | Condición Hostil Provocada | Clasificación Epistémica | Métrica / Evidencia |
-| :--- | :--- | :---: | :--- |
-| **$H\text{-MULTI-01}$ (Failover WAN $\to$ Malla)** | Corte intempestivo de sockets y fibra WAN. | **`DEMONSTRATED`** | 100% PDR post-blackout, reconvergencia en 100.35 ms, DIDs idénticos. |
-| **$H\text{-L2-DOS}$ (Ataque de Balizas)** | Inundación de 10.000 balizas forjadas en 11 ms. | **`DEMONSTRATED`** | 888.723 balizas/s, 96% PDR legítimo, memoria acotada a 256 peers ($O(1)$). |
-| **$H\text{-FLAPPING}$ (Inestabilidad WAN)** | 30 ciclos de corte y reconexión cada 8 ms. | **`DEMONSTRATED`** | 60 transiciones sin deadlocks, convergencia determinista a cero bloqueos. |
-| **$H\text{-SPLIT-BRAIN}$ (Partición Física)** | 2 islas aisladas operando con DHT independiente. | **`DEMONSTRATED`** | Resolución bilateral tras bridge ad-hoc, métrica XOR monotónica decreciente. |
-| **$H\text{-CONSTRAINED-MTU}$ (Canal LoRa 180B)** | Paquete de 1280B en canal angosto con desorden. | **`DEMONSTRATED`** | Fragmentación en 8 trozos, reensamblado con 0 corrupción (SHA256 idéntico). |
-| **$H\text{-UNIFIED-E2E}$ (Convergencia Global)** | Pipeline completo: TUN $\to$ DHT $\to$ Onion $\to$ Off-Grid $\to$ TUN. | **`DEMONSTRATED`** | Entrega de extremo a extremo sin fugas, integridad bit a bit (100% PDR). |
+| Hipótesis / Propiedad Evaluada | Condición Hostil Provocada | Estado Epistémico | Entorno | Métrica / Evidencia |
+| :--- | :--- | :---: | :---: | :--- |
+| **$H\text{-MULTI-01}$ (Failover WAN $\to$ Malla)** | Corte intempestivo de sockets y fibra WAN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 100% PDR post-blackout, reconvergencia en 100.35 ms, DIDs idénticos. |
+| **$H\text{-L2-DOS}$ (Ataque de Balizas)** | Inundación de 10.000 balizas forjadas en 11 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 888.723 balizas/s, 96% PDR legítimo, memoria acotada a 256 peers ($O(1)$). |
+| **$H\text{-FLAPPING}$ (Inestabilidad WAN)** | 30 ciclos de corte y reconexión cada 8 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 60 transiciones sin deadlocks, convergencia determinista a cero bloqueos. |
+| **$H\text{-SPLIT-BRAIN}$ (Partición Física)** | 2 islas aisladas operando con DHT independiente. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Resolución bilateral tras bridge ad-hoc, métrica XOR monotónica decreciente. |
+| **$H\text{-CONSTRAINED-MTU}$ (Canal LoRa 180B)** | Paquete de 1280B en canal angosto con desorden. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Fragmentación en 8 trozos, reensamblado con 0 corrupción (SHA256 idéntico). |
+| **$H\text{-UNIFIED-E2E}$ (Convergencia Global)** | Pipeline completo: TUN $\to$ DHT $\to$ Onion $\to$ Off-Grid $\to$ TUN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Entrega de extremo a extremo sin fugas, integridad bit a bit (100% PDR). |
 
 ---
 

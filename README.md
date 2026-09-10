@@ -122,7 +122,25 @@ El Internet actual confunde identidad con ubicación, carece de cifrado por defe
 4. **🌐 Horizonte 4: Malla Física Fuera de Internet (Mesh Off-Grid / Wi-Fi Direct / LoRa)**:
    - Continuidad operativa en redes locales ad-hoc, Wi-Fi Direct y radioenlaces LoRa, garantizando comunicaciones seguras incluso ante cortes masivos de cables submarinos o apagones de infraestructura nacional.
 
-> **Regla de Gobernanza**: Todo avance en estos horizontes se rige por el protocolo de `docs/3.md`: Protocol Core Freeze, mediciones empíricas antes de fusionar, cero regresiones y validación tripartita (David, Antigravity, ChatGPT).
+---
+
+## 🔬 Auditoría de Reproducibilidad Independiente (Terceros e IA)
+
+> *"Trust, but verify with code & math"*. Ninguna afirmación en este repositorio debe aceptarse por fe ni por resumen generativo. Todo hecho técnico afirmado en **Horizonte 5** es reproducible directamente por cualquier máquina, proceso o IA externa mediante código determinista:
+
+| Hipótesis Auditada | Afirmación Técnica | Estado Epistémico | Entorno | Test Reproducible |
+| :--- | :--- | :---: | :---: | :--- |
+| **$H\text{-MULTI-01}$** | Failover WAN $\to$ Malla con DIDs y clave E2EE invariantes | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/multimedium_chaos_test.go`](tests/multimedium_chaos_test.go) |
+| **$H\text{-L2-DOS}$** | Resistencia a inundación de 10k balizas forjadas ($>800\text{k}$ balizas/s) | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/l2_dos_and_flapping_test.go`](tests/l2_dos_and_flapping_test.go) |
+| **$H\text{-FLAPPING}$** | 30 ciclos de corte y oscilación rápida WAN sin deadlocks | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/l2_dos_and_flapping_test.go`](tests/l2_dos_and_flapping_test.go) |
+| **$H\text{-SPLIT-BRAIN}$** | Fusión autónoma de 2 islas con resolución XOR bilateral | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/split_brain_healing_test.go`](tests/split_brain_healing_test.go) |
+| **$H\text{-CONSTRAINED-MTU}$** | Paquete 1280B en canal LoRa 180B con desorden y 0 corrupción | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/constrained_link_fragmentation_test.go`](tests/constrained_link_fragmentation_test.go) |
+| **$H\text{-UNIFIED-E2E}$** | Pipeline: TUN (ULA) $\to$ DHT $\to$ Onion (1280B) $\to$ Radio L2 $\to$ TUN | **`DEMONSTRATED`** | `LAB_SIMULATED` | [`tests/e2e_four_horizons_test.go`](tests/e2e_four_horizons_test.go) |
+
+- 📋 **Guía Completa de Verificación**: Consulte [`docs/engineering/REPRODUCIBILITY_AUDIT.md`](docs/engineering/REPRODUCIBILITY_AUDIT.md).
+- ⚙️ **Ejecutar Auditoría en un solo comando**:
+  - En Windows: `powershell -ExecutionPolicy Bypass -File .\scripts\audit_reproducibility.ps1`
+  - En Linux/WSL: `./scripts/audit_reproducibility.sh`
 
 ---
 
