@@ -266,6 +266,9 @@ func TestMultimediumTransportFailover_Chaos(t *testing.T) {
 
 	reconvergenceDuration := time.Since(reconvergenceStart)
 	t.Logf("Reconvergencia a Malla Off-Grid y descubrimiento completados en: %v", reconvergenceDuration)
+	if reconvergenceDuration > 250*time.Millisecond {
+		t.Fatalf("VIOLACIÓN CONTRACTUAL: Reconvergencia excedió la cota de 250ms: %v", reconvergenceDuration)
+	}
 
 	// -------------------------------------------------------------------------
 	// 5. FASE 3: TRANSMISIÓN POST-FAILOVER DIRECTA POR RADIO AD-HOC

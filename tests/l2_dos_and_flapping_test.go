@@ -109,14 +109,19 @@ func TestBeaconEngine_PoisonAndFloodResistance(t *testing.T) {
 	delivered := atomic.LoadUint64(&legitDeliveries)
 	t.Logf("Paquetes legítimos entregados durante el ataque DoS: %d / %d", delivered, legitPackets)
 
-	if delivered < uint64(legitPackets*0.80) {
-		t.Fatalf("VIOLACIÓN DE DISPONIBILIDAD: Ataque DoS de balizas degradó la entrega legítima por debajo del 80%%: recibido %d/%d",
+	if delivered < uint64(float64(legitPackets)*0.90) {
+		t.Fatalf("VIOLACIÓN DE DISPONIBILIDAD: Ataque DoS de balizas degradó la entrega legítima por debajo de la cota contractual del 90%%: recibido %d/%d",
 			delivered, legitPackets)
 	}
 
 	// Check table of victim
 	peers := beaconV.DiscoveredPeers()
 	t.Logf("Vecinos registrados en la tabla del nodo víctima: %d", len(peers))
+
+	if len(peers) > offgrid.MaxDiscoveredPeers {
+		t.Fatalf("VIOLACIÓN DE COTA L2: Tabla de vecinos excedió la cota contractual de %d peers: tiene %d",
+			offgrid.MaxDiscoveredPeers, len(peers))
+	}
 
 	// Verify legitimate peer L is in victim's table
 	foundLegit := false
@@ -136,6 +141,10 @@ func TestBeaconEngine_PoisonAndFloodResistance(t *testing.T) {
 	runtime.ReadMemStats(&mPost)
 	heapGrowthKB := int64(mPost.HeapAlloc-mPre.HeapAlloc) / 1024
 	t.Logf("Crecimiento neto de heap tras procesar 10.000 balizas forjadas: %d KB", heapGrowthKB)
+
+	if heapGrowthKB > 1024 {
+		t.Fatalf("VIOLACIÓN DE MEMORIA: Crecimiento de heap excedió la cota contractual de 1024 KB tras 10k balizas: %d KB", heapGrowthKB)
+	}
 
 	t.Log("==========================================================================================")
 	t.Log("RESULTADO FORMAL: HIPÓTESIS H-L2-DOS -> [DEMONSTRATED] EN LABORATORIO CONTROLADO")
@@ -165,6 +174,9 @@ func TestHybridSwitcher_FlappingResistance(t *testing.T) {
 		atomic.AddUint64(&transitionCount, 1)
 	})
 
+	// Record baseline goroutines to verify zero goroutine leaks under flapping
+	baselineGoroutines := runtime.NumGoroutine()
+
 	// Inject aggressive WAN flapping: 30 rapid toggle cycles (every 10 ms)
 	const flapCycles = 30
 	t.Logf("Iniciando tormenta de flapping de WAN: %d ciclos de conmutación rápida...", flapCycles)
@@ -186,8 +198,18 @@ func TestHybridSwitcher_FlappingResistance(t *testing.T) {
 	recordedTransitions := atomic.LoadUint64(&transitionCount)
 	t.Logf("Transiciones de modo capturadas: %d", recordedTransitions)
 
-	if recordedTransitions == 0 {
-		t.Fatalf("Expected mode transitions during flapping, recorded 0")
+	if recordedTransitions < uint64(flapCycles*2) {
+		t.Fatalf("VIOLACIÓN CONTRACTUAL DE FLAPPING: Transiciones capturadas insuficientes: %d < %d",
+			recordedTransitions, flapCycles*2)
+	}
+
+	// Verify zero goroutine leaks after flapping storm settles
+	time.Sleep(50 * time.Millisecond)
+	deltaGoroutines := runtime.NumGoroutine() - baselineGoroutines
+	t.Logf("Delta de goroutines tras tormenta de flapping: %+d", deltaGoroutines)
+	if deltaGoroutines > 4 {
+		t.Fatalf("VIOLACIÓN DE CONCURRENCIA: Fuga de goroutines detectada tras flapping: %+d goroutines residuales",
+			deltaGoroutines)
 	}
 
 	// Settle into pure Off-Grid
