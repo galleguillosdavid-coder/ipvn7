@@ -188,4 +188,4 @@ echo -e "${GRAY}--------------------+-------------------+--------------------+--
 echo -e "${YELLOW}  Entorno de certificación: LAB_SIMULATED (RAM / Virtual Links)${NC}"
 echo -e "${YELLOW}  Hardware Físico / Escala Global: NOT_PROVEN (Conforme a matriz y contrato de aserciones)${NC}"
 echo -e "${CYAN}=========================================================================================================${NC}"
-echo -e "${GREEN}CERTIFICACIÓN CONCLUIDA: Todas las afirmaciones son reproducibles y verificadas contractualmente al 100%.${NC}\n"
+echo -e "${GREEN}CERTIFICACIÓN CONCLUIDA: La cadena documentación → contrato → test → assertion → resultado es reproducible bajo el entorno y las condiciones de prueba declaradas.${NC}\n"

@@ -187,7 +187,10 @@ def main():
     final_output = ""
     if args.show_reasoning and reasoning:
         final_output += f"### Razonamiento Interno (DeepSeek):\n{reasoning}\n\n---\n\n"
-    final_output += content
+    if content:
+        final_output += content
+    elif reasoning:
+        final_output += reasoning
 
     if args.out:
         out_path = Path(args.out)

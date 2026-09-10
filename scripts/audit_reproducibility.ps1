@@ -172,6 +172,6 @@ Write-Host "  Tiempo total de verificacion: ${totalSecs}s" -ForegroundColor Gray
 Write-Host "  Entorno de certificacion: LAB_SIMULATED (RAM / Virtual Links)" -ForegroundColor Yellow
 Write-Host "  Hardware Fisico / Escala Global: NOT_PROVEN (Conforme a matriz y contrato de aserciones)" -ForegroundColor Yellow
 Write-Host "=========================================================================================================" -ForegroundColor Cyan
-Write-Host "CERTIFICACION CONCLUIDA: Todas las afirmaciones son reproducibles y verificadas contractualmente al 100%." -ForegroundColor Green
+Write-Host "CERTIFICACION CONCLUIDA: La cadena documentacion -> contrato -> test -> assertion -> resultado es reproducible bajo el entorno y las condiciones de prueba declaradas." -ForegroundColor Green
 Write-Host ""
 exit 0

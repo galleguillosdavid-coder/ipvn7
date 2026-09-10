@@ -55,3 +55,14 @@ Si un test permite un margen más permisivo que el afirmado en la documentación
 1. **Reconvergencia L2**: No se afirma que la reconvergencia física sea un valor absoluto de $100.35$ ms en hardware real; se afirma que en laboratorio controlado la topología ad-hoc converge en menos de $250$ ms.
 2. **Propagación Inter-Islas en Split-Brain**: La sanación demostrada corresponde al **intercambio explícito de tablas de enrutamiento a través del puente**. No se afirma la existencia de un protocolo de descubrimiento autónomo background `FIND_NODE` que opere sin conocimiento de la existencia del puente.
 3. **Canales Estrechos (MTU = 180B)**: El motor de fragmentación y reensamblaje maneja desorden y jitter, pero **carece de capa de retransmisión selectiva L2 (ARQ)**. La pérdida física de un fragmento causará descarte por timeout.
+4. **Crecimiento de Heap en DoS ($H\text{-L2-DOS}$)**: `DEMONSTRATED`: Bajo este test y entorno (`LAB_SIMULATED`), el crecimiento neto de `HeapAlloc` tras 10.000 balizas forjadas permanece $\le 512\text{ KB}$ (observado $\approx 293\text{ KB}$). No se afirma que $512\text{ KB}$ sea una propiedad universal e invariable de IPv7 ante cualquier carga o arquitectura en hardware físico, dado que `HeapAlloc` depende del runtime de Go y del entorno de ejecución.
+5. **Concurrencia en Flapping ($H\text{-FLAPPING}$)**: `DEMONSTRATED`: No se observó crecimiento residual de goroutines superior a 1 ($\Delta \le 1$, observado $\Delta = +0$) tras una tormenta de 30 oscilaciones de conmutador en laboratorio. `runtime.NumGoroutine()` actúa como alarma de regresión determinista en laboratorio; no constituye una prueba matemática absoluta de ausencia de fugas en cualquier condición arbitraria.
+
+---
+
+## 4. Dictamen Epistémico Vinculante
+
+> [!IMPORTANT]
+> **FÓRMULA CANÓNICA DE REPRODUCIBILIDAD (Aprobada por Auditoría)**:  
+> *"La cadena `documentación → contrato → test → assertion → resultado` es reproducible bajo el entorno y las condiciones de prueba declaradas."*
+
