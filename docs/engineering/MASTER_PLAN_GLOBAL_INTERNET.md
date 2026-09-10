@@ -226,3 +226,21 @@ Garantizar que IPv7 funcione de forma autónoma entre dispositivos físicamente 
 > [!IMPORTANT]
 > **RESTRICCIÓN ARQUITECTÓNICA INVIOLABLE**: Durante el diseño, desarrollo, pruebas y microbenchmarks de los Cuatro Horizontes Estratégicos, **el núcleo de protocolo (`core/`) se mantuvo 100% congelado (0 líneas modificadas)**. Todas las capacidades se desplegaron a través de adaptadores modulares de alto rendimiento y arquitectura desacoplada.
 
+---
+
+## HORIZONTE 5: VALIDACIÓN FÍSICA, CHAOS TESTING Y MULTIMEDIO
+
+> [!CAUTION]
+> **CONGELAMIENTO DE DESARROLLO DE NUEVAS CARACTERÍSTICAS**:  
+> No se añadirán nuevas tecnologías ni complejidades preventivas. La misión actual es someter la arquitectura a pruebas destructivas para responder la pregunta central:  
+> **¿Puede un mismo nodo IPv7 conservar su identidad (DID) y sesión de datos cuando cambia drásticamente el medio físico de transporte?**
+
+Documentación técnica y matriz de certeza epistémica:
+👉 Ver [`docs/engineering/HORIZONTE_5_VALIDACION_FISICA_Y_MULTIMEDIO.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/HORIZONTE_5_VALIDACION_FISICA_Y_MULTIMEDIO.md)
+
+### Principios de la Etapa de Validación
+1. **Separación Epistémica**: Clasificar rigurosamente cada afirmación en `DEMONSTRATED`, `OBSERVED`, `INFERRED`, `HYPOTHESIS` o `NOT_PROVEN`.
+2. **Confinamiento de Capa 2**: El broadcast `OG7!` pertenece única y exclusivamente al descubrimiento físico local y jamás debe propagarse al overlay global.
+3. **Auditoría de Descarte**: Medir con precisión las causas de paquetes no recibidos en soak tests y pruebas de estrés, evitando conclusiones absolutas prematuras.
+4. **Resiliencia de Tránsito Mixto**: Validar circuitos $A \xrightarrow{Internet} B \xrightarrow{Radio} C \xrightarrow{Radio} D$ y conmutación automática ante cortes WAN sin mutación de claves maestras.
+
