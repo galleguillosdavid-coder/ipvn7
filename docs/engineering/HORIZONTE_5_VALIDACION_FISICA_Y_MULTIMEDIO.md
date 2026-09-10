@@ -143,12 +143,25 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
   - **Preservación de Capacidad**: k-buckets acotados dentro de la cota teórica $k=20$.
 - **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
 
+#### 5. Enlaces Severamente Restringidos y Fragmentación L2 bajo Caos (`TestConstrainedLink_...`)
+- **Escenario ejecutado**: Canal de radio ad-hoc severamente constreñido con **MTU físico de 180 bytes** (emulando radio LoRa SX1262 o enlaces satelitales angostos).
+- **Invariantes verificadas**:
+  - **Rechazo Estricto de Paquetes Excedidos**: Todo paquete $> MTU$ sin fragmentar es rechazado deterministamente con `ErrPacketExceedsMTU`.
+  - **Fragmentación L2 Transparente**: Paquete canónico IPv7 Sphinx Onion de 1280 bytes dividido en 8 fragmentos de $\le 180$ bytes con encabezado compacto de 6 bytes (`F7`).
+  - **Inyección de Caos y Desorden**: Transmisión estocástica en orden desordenado (Fisher-Yates shuffle) simulando jitter de trayectos múltiples.
+  - **Reensamblado Criptográfico Íntegro**: El paquete reconstruido fue verificado byte a byte con hash SHA256 idéntico (**0 corrupción de datos**).
+- **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
+
 ---
 
 ## 6. Conclusión y Síntesis Operativa
 
-- **Core Freeze Preservado**: **0 líneas modificadas en `core/`**.
-- **Endurecimiento de Adaptadores**: La batería destructiva identificó y blindó el ciclo de vida de concurrencia en `adapters/offgrid` (`RadioMedium.deliver()` y `MaxDiscoveredPeers`).
-- **Rumbo**: Continuar con pruebas de latencias asimétricas, pérdida estocástica severa de paquetes y simulación física de enlaces restringidos (LoRa con MTU < 256B).
+- **Core Freeze Inviolado**: **0 líneas modificadas en `core/`**.
+- **Endurecimiento de Adaptadores**: La batería destructiva identificó, corrigió y blindó:
+  1. Concurrencia de canal cerrado en `RadioMedium.deliver()`.
+  2. Bounded memory a 256 peers en `BeaconEngine` ($O(1)$ amortizado).
+  3. Control estricto de MTU y motor de fragmentación/reensamblaje para canales estrechos (`adapters/offgrid/fragmentation.go`).
+- **Estado Epistémico General**: Las 5 hipótesis críticas de rotura de transporte y partición física han sido elevadas de `HYPOTHESIS` a **`DEMONSTRATED (Laboratorio Controlado)`**.
+
 
 

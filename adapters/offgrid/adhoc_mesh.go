@@ -116,6 +116,9 @@ func (l *VirtualRadioLink) Send(targetAddr string, packet []byte) error {
 	if closed {
 		return ErrLinkClosed
 	}
+	if l.mtu > 0 && len(packet) > l.mtu {
+		return ErrPacketExceedsMTU
+	}
 	if l.medium != nil {
 		l.medium.Broadcast(l.addr, packet)
 	}

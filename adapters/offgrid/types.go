@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrLinkClosed   = errors.New("physical link closed")
-	ErrLinkTimeout  = errors.New("physical link read timeout")
-	ErrBufferFull   = errors.New("physical link queue full")
+	ErrLinkClosed       = errors.New("physical link closed")
+	ErrLinkTimeout      = errors.New("physical link read timeout")
+	ErrBufferFull       = errors.New("physical link queue full")
+	ErrPacketExceedsMTU = errors.New("packet exceeds physical link MTU")
 )
 
 // LinkMode defines whether a node is operating in global internet mode, pure off-grid, or hybrid
