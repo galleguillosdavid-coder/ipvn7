@@ -43,4 +43,6 @@ __pycache__/
 *.rdp
 tools/test_psremoting.ps1
 tools/test_udp.py
+tools/deepseek/.env
+*.secret
 
