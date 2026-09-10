@@ -1,0 +1,73 @@
+name: Independent Reproducibility Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  audit-linux:
+    name: "Audit Linux (Ubuntu)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+
+      - name: Verify Protocol Core Freeze
+        run: |
+          echo "Checking for unexpected modifications in core/..."
+          if git diff --name-only HEAD~1 HEAD | grep "^core/"; then
+            echo "::error::Protocol Core Freeze violated! core/ was modified."
+            exit 1
+          fi
+          echo "Protocol Core Freeze respected: 0 unauthorized edits in core/."
+
+      - name: Run Bash Reproducibility Script
+        run: |
+          chmod +x ./scripts/audit_reproducibility.sh
+          ./scripts/audit_reproducibility.sh
+
+      - name: Run Global Test Suite
+        run: |
+          go test -v ./...
+
+  audit-windows:
+    name: "Audit Windows"
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+
+      - name: Verify Protocol Core Freeze
+        shell: pwsh
+        run: |
+          $changedCore = git diff --name-only HEAD~1 HEAD | Where-Object { $_ -like "core/*" }
+          if ($changedCore) {
+            Write-Error "Protocol Core Freeze violated! core/ was modified."
+            exit 1
+          }
+          Write-Host "Protocol Core Freeze respected: 0 unauthorized edits in core/."
+
+      - name: Run PowerShell Reproducibility Script
+        shell: pwsh
+        run: |
+          .\scripts\audit_reproducibility.ps1
+
+      - name: Run Global Test Suite
+        shell: pwsh
+        run: |
+          go test -v ./...

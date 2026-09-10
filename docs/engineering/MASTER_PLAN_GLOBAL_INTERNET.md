@@ -239,8 +239,29 @@ Documentación técnica y matriz de certeza epistémica:
 👉 Ver [`docs/engineering/HORIZONTE_5_VALIDACION_FISICA_Y_MULTIMEDIO.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/HORIZONTE_5_VALIDACION_FISICA_Y_MULTIMEDIO.md)
 
 ### Principios de la Etapa de Validación
-1. **Separación Epistémica**: Clasificar rigurosamente cada afirmación en `DEMONSTRATED`, `OBSERVED`, `INFERRED`, `HYPOTHESIS` o `NOT_PROVEN`.
+1. **Separación Epistémica en Dos Dimensiones**: Clasificar rigurosamente cada afirmación en `EPISTEMIC_STATUS` (`DEMONSTRATED`, `OBSERVED`, `INFERRED`, `HYPOTHESIS`, `NOT_PROVEN`) y `ENVIRONMENT` (`LAB_SIMULATED`, `LAB_REAL_NETWORK`, `REAL_HARDWARE`, `WAN`, `FIELD`).
 2. **Confinamiento de Capa 2**: El broadcast `OG7!` pertenece única y exclusivamente al descubrimiento físico local y jamás debe propagarse al overlay global.
 3. **Auditoría de Descarte**: Medir con precisión las causas de paquetes no recibidos en soak tests y pruebas de estrés, evitando conclusiones absolutas prematuras.
 4. **Resiliencia de Tránsito Mixto**: Validar circuitos $A \xrightarrow{Internet} B \xrightarrow{Radio} C \xrightarrow{Radio} D$ y conmutación automática ante cortes WAN sin mutación de claves maestras.
+
+### Batería Destructiva y Chaos Testing (100% Completada)
+
+| Hipótesis / Ensayo | Escenario Hostil | Estado Epistémico | Entorno | Resultado / Invariante |
+| :--- | :--- | :---: | :---: | :--- |
+| **$H\text{-MULTI-01}$** | Corte WAN instantáneo | **`DEMONSTRATED`** | `LAB_SIMULATED` | 100% PDR post-corte, conmutación en 100.35 ms, DIDs y E2EE idénticos |
+| **$H\text{-L2-DOS}$** | 10.000 balizas forjadas | **`DEMONSTRATED`** | `LAB_SIMULATED` | 888k balizas/s, 96% PDR legítimo, memoria acotada a 256 peers (LRU) |
+| **$H\text{-FLAPPING}$** | 30 ciclos de corte WAN | **`DEMONSTRATED`** | `LAB_SIMULATED` | 60 transiciones sin deadlocks ni fugas de goroutines |
+| **$H\text{-SPLIT-BRAIN}$** | 2 islas particionadas | **`DEMONSTRATED`** | `LAB_SIMULATED` | Resolución XOR bilateral tras puente ad-hoc, firmas Ed25519 íntegras |
+| **$H\text{-CONSTRAINED-MTU}$** | Enlace MTU = 180B | **`DEMONSTRATED`** | `LAB_SIMULATED` | Fragmentación en 8 trozos, desorden estocástico, SHA256 íntegro (0 corrupción) |
+| **$H\text{-UNIFIED-E2E}$** | Pipeline de 4 Horizontes | **`DEMONSTRATED`** | `LAB_SIMULATED` | TUN (ULA) $\to$ DHT $\to$ Onion (1280B) $\to$ Radio L2 $\to$ TUN (100% PDR) |
+
+### Protocolo de Auditoría y Verificación de Terceros
+- Guía formal: [`docs/engineering/REPRODUCIBILITY_AUDIT.md`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/docs/engineering/REPRODUCIBILITY_AUDIT.md).
+- Scripts automatizados de verificación canónica:
+  - Windows PowerShell: [`scripts/audit_reproducibility.ps1`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/audit_reproducibility.ps1).
+  - Linux / WSL / macOS: [`scripts/audit_reproducibility.sh`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/scripts/audit_reproducibility.sh).
+
+> [!NOTE]
+> **ESTADO DE CONGELAMIENTO EXPERIMENTAL**:  
+> No se añadirá Horizonte 6. El proyecto congela formalmente este estado como una versión experimental madura, sólida y reproducible por terceros. Todo el núcleo ([`core/`](file:///c:/Users/Frondabrick/Desktop/dvd/Ipv7/core)) permanece estrictamente intacto (**0 modificaciones**).
 

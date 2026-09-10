@@ -4,6 +4,7 @@
 [![Core Status](https://img.shields.io/badge/Protocol%20Core-CONGELADO%20(Core%20Freeze)-success.svg)](#-protocol-core-congelado)
 [![Canary Status](https://img.shields.io/badge/CANARY--01-100%25%20HEALTHY-brightgreen.svg)](#-despliegue-canario-controlado-canary-01)
 [![Telemetry Overhead](https://img.shields.io/badge/Telemetry%20Overhead-%3C28%20ns%20%2F%200%20allocs-blueviolet.svg)](#-telemetr%C3%ADa-desacoplada-y-living-network-v1)
+[![Independent Reproducibility Audit](https://github.com/galleguillosdavid-coder/Ipv7/actions/workflows/reproducibility_audit.yml/badge.svg)](https://github.com/galleguillosdavid-coder/Ipv7/actions/workflows/reproducibility_audit.yml)
 [![License](https://img.shields.io/badge/License-Source--Available%20Audit-orange.svg)](LICENSE.md)
 
 Implementación en **Go** del protocolo **IPv7**: una arquitectura de red overlay de alto rendimiento basada en **identidades criptográficas soberanas (DID Ed25519)**, transporte desacoplado de la dirección IP, enrutamiento en mundo pequeño, telemetría lock-free en tiempo real y gobernanza experimental asistida por IA.
