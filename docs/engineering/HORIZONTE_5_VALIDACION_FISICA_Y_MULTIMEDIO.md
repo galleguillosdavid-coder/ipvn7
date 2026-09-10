@@ -133,11 +133,22 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
 - **Convergencia**: Estabilización determinista en `ModeOffGridPhysical` ante corte definitivo y `ModeHybrid` ante recuperación WAN con interfaz de radio activa.
 - **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
 
+#### 4. Partición de Red (Split-Brain) y Fusión Autónoma (Self-Healing) (`TestSplitBrainAndHealing_MeshConvergence`)
+- **Escenario ejecutado**: Dos islas físicamente aisladas (Isla Alfa y Beta, 6 nodos en total) operando de forma independiente con tablas Kademlia puras de 256 bits y registros firmados Ed25519.
+- **Activación de puente**: Conexión de enlace ad-hoc entre nodos frontera ($A_3 \leftrightarrow B_3$) e inyección de rutas cruzadas.
+- **Invariantes verificadas**:
+  - **Resolución Transversal Bilateral**: Nodos de Isla Alfa ($A_1$) resuelven a nodos de Isla Beta ($B_1$) y viceversa.
+  - **Métrica XOR Monotónica**: Distancias decrecientes sin bucles de enrutamiento ni ciclos de reenvío.
+  - **Inviolabilidad Criptográfica**: Las firmas Ed25519 de los registros DHT de ambas islas permanecieron intactas y válidas tras la fusión.
+  - **Preservación de Capacidad**: k-buckets acotados dentro de la cota teórica $k=20$.
+- **Resultado Epistémico**: **`DEMONSTRATED (Laboratorio Controlado)`**.
+
 ---
 
 ## 6. Conclusión y Síntesis Operativa
 
 - **Core Freeze Preservado**: **0 líneas modificadas en `core/`**.
 - **Endurecimiento de Adaptadores**: La batería destructiva identificó y blindó el ciclo de vida de concurrencia en `adapters/offgrid` (`RadioMedium.deliver()` y `MaxDiscoveredPeers`).
-- **Rumbo**: Continuar con pruebas de partición profunda de DHT y simulación de latencias asimétricas sin agregar complejidad innecesaria.
+- **Rumbo**: Continuar con pruebas de latencias asimétricas, pérdida estocástica severa de paquetes y simulación física de enlaces restringidos (LoRa con MTU < 256B).
+
 
