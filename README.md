@@ -195,17 +195,57 @@ go run .\tools\ipv7-engineer request
 go run .\tools\ipv7-engineer bottlenecks
 ```
 
-### 4. Lanzar Nodo Local con Dashboard Web UI
+### 4. Compilación y Lanzamiento del Sistema Operativo de Red
+
+#### En Windows (Nativo):
 ```powershell
-.\ipv7-node.exe -port 7001 -ui 8080
+# Compilar binarios hacia bin/
+.\scripts\build_windows.ps1
+
+# Lanzar nodo con DID persistente y mapeo UPnP automático
+.\scripts\run_node.bat
 ```
-Abre tu navegador en `http://localhost:8080` para acceder a la visualización de topología de malla con física de partículas, radar de 12 anillos, chat E2EE y métricas.
+
+#### En Linux / Ubuntu WSL2:
+```bash
+# Compilar binarios para Linux (cross-compilation)
+.\scripts\build_linux.ps1
+
+# Lanzar supervisor del nodo en WSL2
+.\scripts\run_wsl.ps1 -Port 7002 -UIPort 8082
+# O directamente dentro de WSL2:
+./scripts/wsl_node.sh -port 7002 -ui 8082
+```
+
+#### Prueba de Malla Dual (Windows Host <-> WSL2 Ubuntu):
+```powershell
+.\scripts\dual_node_test.ps1
+```
+Abre tu navegador en `http://localhost:8080` (Nodo Windows) o `http://localhost:8082` (Nodo WSL2) para acceder a la visualización de topología de malla con física de partículas, radar de 12 anillos, chat E2EE y métricas en vivo.
+
+### 5. Consultas de Grafo Topológico con Kùzu CLI (openCypher)
+```powershell
+# Actualizar indexación del código y topología en la BD de grafo
+python .\tools\indexer\index_project.py
+
+# Iniciar consola interactiva Kùzu openCypher
+.\tools\kuzu\kuzu.exe .kuzu_index/ipv7.db
+```
+
+### 6. Delegación Cognitiva a DeepSeek Worker (Ahorro de Tokens)
+```powershell
+# Análisis de código sin gastar tokens de la sesión principal
+python tools/deepseek/deepseek_worker.py -f core/node.go core/smallworld.go -t code_review -o scratch/review.md
+```
 
 ---
 
 ## 📚 Estructura de Documentación Técnica ([`docs/`](docs/))
 
 Toda la documentación técnica está centralizada y clasificada por área:
+- [**Plan Maestro y Checklist del NOS (`docs/PLAN_MAESTRO_NOS_IPVN7.md`)**](docs/PLAN_MAESTRO_NOS_IPVN7.md): Fuente Única de Verdad (SSOT) con checklist de 12 dimensiones de innovación (ZTNA, dDNS, QoS, DAG, Wazero, WoT, Multipath).
+- [**Especificación Canónica del Sistema Operativo de Red (`docs/arquitectura/SISTEMA_OPERATIVO_RED_IPVN7.md`)**](docs/arquitectura/SISTEMA_OPERATIVO_RED_IPVN7.md): Arquitectura formal del NOS, separación L0-L4, ciudadela criptográfica y substrato TUN/TAP.
+- [**Guía de Contribución y Código Limpio (`CONTRIBUTING.md`)**](CONTRIBUTING.md): Política estricta de raíz limpia, flujo multiplataforma y directrices de ingeniería.
 - [**Centro de Documentación Maestro (`docs/README.md`)**](docs/README.md): Hub principal con índice a todos los módulos.
 - [**Ingeniería Experimental y Laboratorio Vivo (`docs/engineering/`)**](docs/engineering/README.md): Metodología de experimentos, baselines inmutables, cuellos de botella, consultas Cypher en Kùzu, puente ChatGPT, reporte de roaming y reglas estrictas de optimización.
 - [**Arquitectura de Telemetría (`docs/telemetry/`)**](docs/telemetry/README.md): Esquemas de eventos, métricas Prometheus, modelo de grafos Kùzu, benchmarks de latencia y operaciones.

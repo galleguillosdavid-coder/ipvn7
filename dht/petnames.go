@@ -1,0 +1,276 @@
+package dht
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"net"
+	"os"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+)
+
+var validPetnameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9\-_]{1,62}[a-z0-9]?$`)
+
+// PetnameEntry represents a human-friendly alias mapped to a sovereign DID.
+type PetnameEntry struct {
+	Name      string    `json:"name"`       // e.g. "alice", "laptop-david", "nas-casa"
+	DID       string    `json:"did"`        // canonical "did:ipv7:<pubkey>"
+	Notes     string    `json:"notes,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// PetnameStore manages local human-readable names mapped to sovereign DIDs,
+// solving the human-usability aspect of Zooko's Triangle.
+type PetnameStore struct {
+	mu           sync.RWMutex
+	nameToEntry  map[string]PetnameEntry
+	didToName    map[string]string
+	storagePath  string
+	autoPersist  bool
+}
+
+// NewPetnameStore initializes a memory or file-backed Petname address book.
+func NewPetnameStore(storagePath string, autoPersist bool) *PetnameStore {
+	store := &PetnameStore{
+		nameToEntry: make(map[string]PetnameEntry),
+		didToName:   make(map[string]string),
+		storagePath: storagePath,
+		autoPersist: autoPersist,
+	}
+
+	if storagePath != "" {
+		_ = store.LoadFromFile(storagePath)
+	}
+	return store
+}
+
+// ValidateName ensures the petname conforms to clean DNS-compatible labeling standards.
+func ValidateName(name string) error {
+	trimmed := strings.ToLower(strings.TrimSpace(name))
+	trimmed = strings.TrimSuffix(trimmed, ".ipv7")
+	if len(trimmed) < 2 || len(trimmed) > 63 {
+		return fmt.Errorf("petname must be between 2 and 63 characters long")
+	}
+	if !validPetnameRegex.MatchString(trimmed) {
+		return fmt.Errorf("petname '%s' contains invalid characters; use alphanumeric, hyphens or underscores", trimmed)
+	}
+	return nil
+}
+
+// NormalizeName strips optional .ipv7 suffix and returns lowercase name.
+func NormalizeName(name string) string {
+	trimmed := strings.ToLower(strings.TrimSpace(name))
+	return strings.TrimSuffix(trimmed, ".ipv7")
+}
+
+// Set associates a human-readable petname with a sovereign DID.
+func (s *PetnameStore) Set(name string, did string, notes string) error {
+	if err := ValidateName(name); err != nil {
+		return err
+	}
+	normName := NormalizeName(name)
+	normDID := strings.TrimSpace(did)
+	if !strings.HasPrefix(normDID, "did:ipv7:") || len(normDID) < 16 {
+		return fmt.Errorf("invalid DID format; must start with 'did:ipv7:' and have valid key")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	entry, exists := s.nameToEntry[normName]
+	if exists {
+		entry.DID = normDID
+		entry.Notes = notes
+		entry.UpdatedAt = now
+	} else {
+		entry = PetnameEntry{
+			Name:      normName,
+			DID:       normDID,
+			Notes:     notes,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+	}
+
+	s.nameToEntry[normName] = entry
+	s.didToName[normDID] = normName
+
+	if s.autoPersist && s.storagePath != "" {
+		_ = s.saveLocked()
+	}
+	return nil
+}
+
+// Resolve looks up the sovereign DID associated with a human-readable petname.
+func (s *PetnameStore) Resolve(name string) (string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	norm := NormalizeName(name)
+	entry, ok := s.nameToEntry[norm]
+	if !ok {
+		return "", false
+	}
+	return entry.DID, true
+}
+
+// ReverseLookup returns the local petname for a given sovereign DID, if known.
+func (s *PetnameStore) ReverseLookup(did string) (string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	norm := strings.TrimSpace(did)
+	name, ok := s.didToName[norm]
+	return name, ok
+}
+
+// Delete removes an alias from the petname store.
+func (s *PetnameStore) Delete(name string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	norm := NormalizeName(name)
+	entry, ok := s.nameToEntry[norm]
+	if !ok {
+		return false
+	}
+
+	delete(s.nameToEntry, norm)
+	delete(s.didToName, entry.DID)
+
+	if s.autoPersist && s.storagePath != "" {
+		_ = s.saveLocked()
+	}
+	return true
+}
+
+// List returns a snapshot of all registered petnames.
+func (s *PetnameStore) List() []PetnameEntry {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	res := make([]PetnameEntry, 0, len(s.nameToEntry))
+	for _, e := range s.nameToEntry {
+		res = append(res, e)
+	}
+	return res
+}
+
+// DeriveVirtualIPv4 calculates a deterministic 10.7.x.x virtual address for a DID.
+func DeriveVirtualIPv4(did string) string {
+	h := sha256.Sum256([]byte(did))
+	return fmt.Sprintf("10.7.%d.%d", h[0], h[1])
+}
+
+// DeriveVirtualIPv6 calculates a deterministic fd07::/64 virtual address for a DID.
+func DeriveVirtualIPv6(did string) string {
+	h := sha256.Sum256([]byte(did))
+	return fmt.Sprintf("fd07::%02x%02x:%02x%02x", h[0], h[1], h[2], h[3])
+}
+
+// ExportHostsFile produces /etc/hosts compatible syntax mapping petnames to virtual IPs.
+func (s *PetnameStore) ExportHostsFile(ipv6 bool) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var sb strings.Builder
+	sb.WriteString("# Generated by ipvn7 Network Operating System — dDNS Petnames\n")
+	sb.WriteString("# Format: <Virtual-IP> <name>.ipv7 <name>\n\n")
+
+	for name, entry := range s.nameToEntry {
+		var ipStr string
+		if ipv6 {
+			ipStr = DeriveVirtualIPv6(entry.DID)
+		} else {
+			ipStr = DeriveVirtualIPv4(entry.DID)
+		}
+		// Validate derived IP
+		if parsed := net.ParseIP(ipStr); parsed != nil {
+			sb.WriteString(fmt.Sprintf("%-20s %s.ipv7 %s\n", ipStr, name, name))
+		}
+	}
+	return sb.String()
+}
+
+// SaveToFile writes the petname store to a JSON file.
+func (s *PetnameStore) SaveToFile(path string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.storagePath = path
+	return s.saveLocked()
+}
+
+func (s *PetnameStore) saveLocked() error {
+	if s.storagePath == "" {
+		return fmt.Errorf("no storage path set")
+	}
+
+	data, err := json.MarshalIndent(s.nameToEntry, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(s.storagePath, data, 0600)
+}
+
+// LoadFromFile imports petnames from a JSON file.
+func (s *PetnameStore) LoadFromFile(path string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	var raw map[string]PetnameEntry
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	s.nameToEntry = make(map[string]PetnameEntry)
+	s.didToName = make(map[string]string)
+
+	for k, v := range raw {
+		norm := NormalizeName(k)
+		s.nameToEntry[norm] = v
+		s.didToName[v.DID] = norm
+	}
+	s.storagePath = path
+	return nil
+}
+
+// CalculateNamePoW generates a cryptographic proof of work for dDNS global claiming.
+func CalculateNamePoW(name string, ownerDID string, targetZeros int) (uint64, string) {
+	norm := NormalizeName(name)
+	prefix := strings.Repeat("0", targetZeros)
+	var nonce uint64
+
+	for {
+		data := fmt.Sprintf("%s:%s:%d", norm, ownerDID, nonce)
+		h := sha256.Sum256([]byte(data))
+		hashHex := hex.EncodeToString(h[:])
+		if strings.HasPrefix(hashHex, prefix) {
+			return nonce, hashHex
+		}
+		nonce++
+	}
+}
+
+// VerifyNamePoW verifies that a given nonce meets the difficulty requirement.
+func VerifyNamePoW(name string, ownerDID string, nonce uint64, targetZeros int) bool {
+	norm := NormalizeName(name)
+	data := fmt.Sprintf("%s:%s:%d", norm, ownerDID, nonce)
+	h := sha256.Sum256([]byte(data))
+	hashHex := hex.EncodeToString(h[:])
+	prefix := strings.Repeat("0", targetZeros)
+	return strings.HasPrefix(hashHex, prefix)
+}
