@@ -3,7 +3,6 @@ package adapters
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -140,6 +139,7 @@ func (p *FilterPipeline) Execute(hook HookPoint, peerDID string, c *core.Contain
 			continue
 		}
 
+		switch action {
 		case ActionModify:
 			p.mu.Lock()
 			p.stats.TotalModified++
@@ -242,7 +242,7 @@ func (f *DLPFilter) Process(ctx *FilterContext, c *core.Container) (PacketAction
 
 	for _, pattern := range f.BlockedPatterns {
 		if bytes.Contains(c.Payload, pattern) {
-			return ActionDrop, nil, errors.New("DLP signature detected: payload blocked")
+			return ActionDrop, nil, nil
 		}
 	}
 	return ActionPass, c, nil
