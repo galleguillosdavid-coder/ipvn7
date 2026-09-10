@@ -6,10 +6,10 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 
 | Paquete | Archivos | Líneas de Código (LoC) | Propósito Principal |
 |---|---|---|---|
-| [`adapters`](#paquete-adapters) | 20 | 2764 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
+| [`adapters`](#paquete-adapters) | 29 | 4495 | Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC. |
 | [`core`](#paquete-core) | 41 | 6081 | Núcleo de protocolo: Identidad Ed25519, Contenedores CBOR, Cifrado E2EE, Mundo Pequeño (12 Grados), Streaming en Cascada y Orquestador de Nodos. |
-| [`dht`](#paquete-dht) | 9 | 1375 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
-| [`main`](#paquete-main) | 4 | 848 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
+| [`dht`](#paquete-dht) | 11 | 1796 | Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity -> Endpoints con firmas digitales. |
+| [`main`](#paquete-main) | 4 | 1083 | Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`). |
 | [`offgrid`](#paquete-offgrid) | 5 | 961 | Módulo de soporte del sistema. |
 | [`onion`](#paquete-onion) | 4 | 561 | Módulo de soporte del sistema. |
 | [`telemetry`](#paquete-telemetry) | 9 | 1221 | Módulo de soporte del sistema. |
@@ -23,6 +23,26 @@ Este documento cataloga de forma exhaustiva todos los componentes, archivos, tip
 ## Paquete `adapters`
 
 Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT Traversal con STUN, Relay seguro tipo DERP y WebRTC.
+
+### 📄 [accounting.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/accounting.go) (199 LoC)
+**Tipos y Estructuras:**
+- `struct TransitAccount`
+- `struct AccountingEngine`
+**Funciones Clave:**
+- `FormatTraffic()`
+- `GetAccount()`
+- `GetTier()`
+- `ListAccounts()`
+- `LoadFromFile()`
+- `NewAccountingEngine()`
+- `RecordTransit()`
+- `SaveToFile()`
+
+### 📄 [accounting_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/accounting_test.go) (83 LoC)
+**Funciones Clave:**
+- `TestAccountingEnginePersistence()`
+- `TestAccountingEngineTitForTat()`
+- `TestFormatTraffic()`
 
 ### 📄 [firewall.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/firewall.go) (276 LoC)
 **Tipos y Estructuras:**
@@ -49,6 +69,70 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 - `TestZTNAFirewallTokenBucketRateLimit()`
 - `TestZTNAFirewallWildcardAndExpiry()`
 
+### 📄 [interceptor.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/interceptor.go) (269 LoC)
+**Tipos y Estructuras:**
+- `struct FilterContext`
+- `interface SmartFilter`
+- `struct PipelineStats`
+- `struct FilterPipeline`
+- `struct DLPFilter`
+- `struct MirrorFilter`
+**Funciones Clave:**
+- `Execute()`
+- `GetStats()`
+- `Name()`
+- `NewDLPFilter()`
+- `NewFilterPipeline()`
+- `NewMirrorFilter()`
+- `Priority()`
+- `Process()`
+- `Register()`
+- `TapChannel()`
+- `Unregister()`
+
+### 📄 [multipath.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/multipath.go) (297 LoC)
+**Tipos y Estructuras:**
+- `struct NetworkPath`
+- `struct MultipathOverlay`
+**Funciones Clave:**
+- `FailoverCheck()`
+- `ListPaths()`
+- `NewMultipathOverlay()`
+- `RecordDelivery()`
+- `RegisterPath()`
+- `SelectPaths()`
+- `SendPacket()`
+- `SetPolicy()`
+- `UnregisterPath()`
+- `UpdateRTT()`
+
+### 📄 [multipath_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/multipath_test.go) (146 LoC)
+**Funciones Clave:**
+- `TestMultipath_ActiveStandbyFailover()`
+- `TestMultipath_LowestRTT()`
+- `TestMultipath_PacketDuplication()`
+
+### 📄 [pairing.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/pairing.go) (286 LoC)
+**Tipos y Estructuras:**
+- `struct PairingPayload`
+- `struct SASResult`
+- `struct URReassembler`
+**Funciones Clave:**
+- `CanonicalBytes()`
+- `ComputeSAS()`
+- `EncodeMultiFrame()`
+- `Feed()`
+- `NewPairingPayload()`
+- `NewURReassembler()`
+- `Sign()`
+- `Verify()`
+
+### 📄 [pairing_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/pairing_test.go) (128 LoC)
+**Funciones Clave:**
+- `TestPairingPayload_SignAndVerify()`
+- `TestPairing_ComputeSAS_SymmetryAndFormat()`
+- `TestPairing_URMultiFrameReassembly()`
+
 ### 📄 [pmtu.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/pmtu.go) (215 LoC)
 **Tipos y Estructuras:**
 - `struct PMTUState`
@@ -68,6 +152,25 @@ Adaptadores de transporte desacoplados: UDP best-effort, QUIC sobre TLS 1.3, NAT
 - `TestPMTUConfirmProbeSize()`
 - `TestPMTUDiscoverySequence()`
 - `TestPMTUInitialDefaults()`
+
+### 📄 [qos.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/qos.go) (238 LoC)
+**Tipos y Estructuras:**
+- `struct TokenBucket`
+- `struct PoWChallenge`
+- `struct HierarchicalQoS`
+**Funciones Clave:**
+- `Allow()`
+- `IngressCheck()`
+- `NewHierarchicalQoS()`
+- `NewTokenBucket()`
+- `SolveChallenge()`
+- `VerifyAndCredit()`
+
+### 📄 [qos_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/qos_test.go) (85 LoC)
+**Funciones Clave:**
+- `TestHierarchicalQoS_IngressAndBurst()`
+- `TestHierarchicalQoS_PoWChallengeResolution()`
+- `TestHierarchicalQoS_ReplenishOverTime()`
 
 ### 📄 [quic_adapter.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/adapters/quic_adapter.go) (209 LoC)
 **Tipos y Estructuras:**
@@ -618,6 +721,30 @@ Tabla Hash Distribuida Kademlia segura para resolución descentralizada Identity
 - `Unmarshal()`
 - `Verify()`
 
+### 📄 [wot.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/dht/wot.go) (277 LoC)
+**Tipos y Estructuras:**
+- `struct TrustVouch`
+- `struct WebOfTrust`
+**Funciones Clave:**
+- `AddVouch()`
+- `CalculateTrust()`
+- `ExportKuzuCypher()`
+- `ListVouchesFor()`
+- `ListVouchesFrom()`
+- `LoadFromFile()`
+- `NewWebOfTrust()`
+- `PayloadToSign()`
+- `SaveToFile()`
+- `Sign()`
+- `Verify()`
+
+### 📄 [wot_test.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/dht/wot_test.go) (144 LoC)
+**Funciones Clave:**
+- `TestWebOfTrustKuzuExportAndPersistence()`
+- `TestWebOfTrustSelfVouchRejection()`
+- `TestWebOfTrustSignatureAndVerification()`
+- `TestWebOfTrustTransitiveCalculation()`
+
 ## Paquete `main`
 
 Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd/chat`).
@@ -626,7 +753,7 @@ Puntos de entrada ejecutables: nodo P2P (`cmd/node`) y cliente de chat CLI (`cmd
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/chat/main.go) (193 LoC)
 
-### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/ipvn7-cli/main.go) (261 LoC)
+### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/ipvn7-cli/main.go) (496 LoC)
 
 ### 📄 [main.go](file:///C:/Users/Frondabrick/Desktop/dvd/ipvn7/cmd/node/main.go) (279 LoC)
 

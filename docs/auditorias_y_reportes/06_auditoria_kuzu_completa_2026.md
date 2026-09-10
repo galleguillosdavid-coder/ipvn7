@@ -1,6 +1,6 @@
 # 🔍 Reporte de Auditoría de Arquitectura con Kùzu Graph Engine
 
-> **Fecha de Ejecución**: 2026-09-10 15:11:17  
+> **Fecha de Ejecución**: 2026-09-10 15:24:18  
 > **Motor de Grafo**: Kùzu Graph Database CLI (Embedded Engine)  
 > **Ubicación Base de Datos**: `.kuzu_index/ipv7.db`  
 > **Estado General**: **SALUDABLE / CERO CICLOS DE DEPENDENCIA**  
@@ -32,7 +32,7 @@ MATCH (p:Package)-[:CONTAINS]->(f:File) RETURN p.name, count(f), sum(f.loc) ORDE
 │ STRING    │ INT64        │ INT128     │
 ├───────────┼──────────────┼────────────┤
 │ core      │ 41           │ 6081       │
-│ adapters  │ 20           │ 2764       │
+│ adapters  │ 29           │ 4495       │
 │ ui        │ 4            │ 1728       │
 │ dht       │ 9            │ 1375       │
 │ telemetry │ 9            │ 1221       │
@@ -45,7 +45,7 @@ MATCH (p:Package)-[:CONTAINS]->(f:File) RETURN p.name, count(f), sum(f.loc) ORDE
 └───────────┴──────────────┴────────────┘
 (11 tuples)
 (3 columns)
-Time: 50.60ms (compiling), 28.06ms (executing)
+Time: 39.40ms (compiling), 14.35ms (executing)
 ```
 
 ---
@@ -82,7 +82,7 @@ MATCH (p1:Package)-[r:DEPENDS_ON]->(p2:Package) RETURN p1.name, p2.name ORDER BY
 └──────────┴───────────┘
 (16 tuples)
 (2 columns)
-Time: 53.91ms (compiling), 5.34ms (executing)
+Time: 43.46ms (compiling), 3.78ms (executing)
 ```
 
 ---
@@ -108,14 +108,14 @@ MATCH (f:File) RETURN f.path, f.loc ORDER BY f.loc DESC LIMIT 12;
 │ core/noise.go                   │ 365   │
 │ tests/multimedium_chaos_test.go │ 355   │
 │ core/discovery_firebase.go      │ 306   │
+│ adapters/multipath.go           │ 297   │
 │ adapters/offgrid/adhoc_mesh.go  │ 289   │
 │ core/tunnel.go                  │ 289   │
-│ core/remotedesktop_windows.go   │ 284   │
-│ adapters/relay_adapter.go       │ 280   │
+│ adapters/pairing.go             │ 286   │
 └─────────────────────────────────┴───────┘
 (12 tuples)
 (2 columns)
-Time: 41.58ms (compiling), 4.87ms (executing)
+Time: 32.12ms (compiling), 3.27ms (executing)
 ```
 
 ---
@@ -133,13 +133,13 @@ MATCH (s:Symbol) RETURN s.kind, count(s) ORDER BY count(s) DESC;
 │ s.kind    │ COUNT(s._ID) │
 │ STRING    │ INT64        │
 ├───────────┼──────────────┤
-│ func      │ 440          │
-│ struct    │ 97           │
-│ interface │ 7            │
+│ func      │ 495          │
+│ struct    │ 112          │
+│ interface │ 8            │
 └───────────┴──────────────┘
 (3 tuples)
 (2 columns)
-Time: 35.80ms (compiling), 7.31ms (executing)
+Time: 53.92ms (compiling), 7.14ms (executing)
 ```
 
 ---
@@ -180,7 +180,7 @@ MATCH (p:Package {name: 'core'})-[:CONTAINS]->(f:File)-[:DEFINES]->(s:Symbol) RE
 └──────────────────────────────┴────────┴──────────────────────────────────────┘
 (20 tuples)
 (3 columns)
-Time: 50.72ms (compiling), 18.36ms (executing)
+Time: 45.95ms (compiling), 18.63ms (executing)
 ```
 
 ---
@@ -200,10 +200,11 @@ MATCH (p:Peer) RETURN p.id, p.endpoint, p.is_local;
 ├────────────────────────────────────────────────┼────────────────┼────────────┤
 │ de7b129846acea1fd6aa1eb57e6f226de1a96b202473...│  127.0.0.1:8080│  True      │
 │ a6c144f6cfa6cbdfda8b3401af2f2fa7ac2151f08a95...│  127.0.0.1:8080│  True      │
+│ dbf633f3c17c083a681e7181776eb415016a932bcc9a...│  127.0.0.1:8080│  True      │
 └────────────────────────────────────────────────┴────────────────┴────────────┘
-(2 tuples)
+(3 tuples)
 (3 columns)
-Time: 38.51ms (compiling), 1.78ms (executing)
+Time: 21.93ms (compiling), 1.68ms (executing)
 ```
 
 ---

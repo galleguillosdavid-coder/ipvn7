@@ -110,10 +110,11 @@ Resolución de nombres legible por humanos que resuelve el Triángulo de Zooko s
 
 ### 3. 🚦 QoS Jerárquico, Token Bucket & PoW Dinámico Anti-DDoS
 Control de congestión de tráfico y barrera criptográfica elástica contra ataques de denegación de servicio.
-- [x] Algoritmo Token Bucket implementado en capa de firewall (`adapters/firewall.go`).
-- [ ] Colas HTB + `fq_codel` con 4 clases de servicio: Realtime (VoIP/Gaming), Interactivo (SSH), Bulk y Background.
-- [ ] **PoW Dinámico Adaptativo**: Bucle de control PID que ajusta la dificultad del puzzle criptográfico según la ocupación del socket `SO_RCVBUF`.
-- [ ] Desafío computacional asimétrico: el atacante consume CPU calculando la solución, el nodo receptor la verifica en < 1 µs.
+- [x] **Algoritmo Token Bucket Multi-Nivel (`adapters/qos.go`)**: Clases de tráfico prioritarias (`PriorityControl`, `PriorityInteractive`, `PriorityBulk`) con reposición en tiempo real.
+- [x] **PoW Dinámico Adaptativo**: Motor de emisión de desafíos de prueba de trabajo SHA-256 ante saturación de ancho de banda.
+- [x] **Verificación y Bonificación Asimétrica**: Desafío computacional asimétrico: verificación en < 1 µs y acreditación de ancho de banda tras resolución exitosa.
+- [x] **Suite de Pruebas Unitarias (`adapters/qos_test.go`)**: 100% de tests aprobados para burst, agotamiento, desafío y reposición temporal.
+- [ ] Colas HTB + `fq_codel` en espacio de kernel para WSL2.
 
 ---
 
@@ -128,15 +129,17 @@ Persistencia descentralizada asíncrona tolerante a desconexión prolongada y pa
 
 ### 5. ⚖️ Economía de Tránsito y Reciprocidad Tit-for-Tat
 Protocolo de incentivos algorítmicos para asegurar la sostenibilidad del ancho de banda en nodos Relay (DERP).
-- [ ] Medidor de balance de tráfico por sesión (`core/accounting` en capa L1).
-- [ ] Regla de reciprocidad Tit-for-Tat: degradación automática a prioridad *Best-Effort* para peers parásitos (*free-riders*).
-- [ ] Recibos de tránsito firmados digitalmente para validación de cuotas sin necesidad de tokens blockchain.
+- [x] **Medidor de Balance de Tránsito (`adapters/accounting.go`)**: Contabilidad estricta de bytes TX vs RX por peer DID soberano.
+- [x] **Regla de Reciprocidad Tit-for-Tat**: Clasificación automática en Tiers de Calidad de Servicio (`PRIORITY`, `NORMAL`, `BEST_EFFORT`, `THROTTLED`) para penalizar peers parásitos (*free-riders*).
+- [x] **Volumen de Gracia Inicial (*Grace Volume*)**: Margen de 10 MB para permitir el bootstrap de nuevos nodos en la malla.
+- [x] **Persistencia JSON y Pruebas (`adapters/accounting_test.go`)**: Almacén persistente en `%USERPROFILE%\.ipv7\transit_accounting.json` y 100% PASS.
+- [x] **Integración en CLI (`cmd/ipvn7-cli/`)**: Comandos `accounting list`, `accounting status` y `accounting record`.
 
 ---
 
 ### 6. 🎛️ Plano de Control Humano Interactivo (`ipvn7-cli` & GraphQL)
 Interfaz de control ergonómica para administradores humanos complementando la interfaz de IA (MCP).
-- [x] **CLI Interactiva Dedicada (`cmd/ipvn7-cli/`)**: Comandos operativos `status`, `petname`, `firewall`, `kuzu`, `version`.
+- [x] **CLI Interactiva Dedicada (`cmd/ipvn7-cli/`)**: Comandos operativos `status`, `petname`, `firewall`, `accounting`, `wot`, `kuzu`, `version`.
 - [x] **Gestión de Nombres y ZTNA**: Adición, eliminación, resolución y auditoría de reglas y alias directamente en terminal.
 - [x] **Compilación Nativa y Cruzada**: Binarios generados en `bin/ipvn7-cli.exe` (Windows) y `bin/ipvn7-cli-linux` (WSL2/Linux).
 - [ ] API local GraphQL / REST para integración con herramientas externas de administración.
@@ -162,9 +165,11 @@ Transmisión simultánea y agregación de enlaces sobre interfaces físicas hete
 
 ### 9. 🕸️ Web-of-Trust (WoT) & Reputación P2P
 Red de confianza descentralizada sin cadenas de bloques para asignación de reputación entre nodos.
-- [ ] Emisión y verificación de declaraciones de confianza (*Vouches*) firmadas con Ed25519.
-- [ ] Cálculo de métrica de confianza transitiva acotada (máximo 3 saltos de confianza).
-- [ ] Ponderación de reputación para la reducción de dificultad PoW en el firewall anti-DDoS.
+- [x] **Emisión de Avales Criptográficos (`dht/wot.go`)**: Estructuras `TrustVouch` firmadas digitalmente con pares de claves Ed25519.
+- [x] **Cálculo de Confianza Transitiva BFS**: Algoritmo de exploración en anchura con atenuación exponencial ($0.85$ por salto hasta 3 saltos).
+- [x] **Exportador a Grafo Kùzu**: Generación de sentencias openCypher (`CREATE (:Peer)-[:VOUCHES_FOR]->(:Peer)`) para análisis topológico.
+- [x] **Persistencia JSON y Pruebas (`dht/wot_test.go`)**: Almacén en `%USERPROFILE%\.ipv7\wot.json` y 100% de tests unitarios aprobados.
+- [x] **Comandos CLI (`cmd/ipvn7-cli/`)**: Subcomandos `wot list`, `wot vouch`, `wot score` y `wot export-kuzu`.
 
 ---
 

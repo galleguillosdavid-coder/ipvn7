@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"ipv7/adapters"
 	"ipv7/core"
@@ -50,6 +51,15 @@ func printHelp() {
 	fmt.Println("  firewall list                  Muestra las reglas de micro-segmentación ZTNA")
 	fmt.Println("  firewall add <did> <puerto> <action>  Agrega una regla ZTNA (action: ALLOW|DENY)")
 	fmt.Println("  firewall check <did> <puerto>  Evalúa si un paquete sería admitido o descartado")
+	fmt.Println("  accounting list                Muestra el balance Tit-for-Tat y tiers de los peers")
+	fmt.Println("  accounting status <did>        Muestra el consumo y reciprocidad de un peer")
+	fmt.Println("  wot list                       Lista los avales emitidos en la red de confianza")
+	fmt.Println("  wot vouch <did> <score> [tag]  Emite y firma digitalmente un aval de confianza")
+	fmt.Println("  wot score <target_did>         Calcula la confianza transitiva hacia un nodo")
+	fmt.Println("  wot export-kuzu                Exporta el grafo de confianza a sentencias Cypher")
+	fmt.Println("  qos check <did> <bytes>        Evalúa si un paquete es admitido por el Token Bucket")
+	fmt.Println("  qos challenge <did>            Genera un desafío Proof-of-Work anti-DDoS")
+	fmt.Println("  qos demo                       Demuestra la resolución automática de PoW y crédito")
 	fmt.Println("  kuzu <cypher>                  Ejecuta una consulta Cypher en el grafo local")
 	fmt.Println("  version                        Muestra la versión de ingeniería de ipvn7 NOS")
 	fmt.Println()
@@ -240,6 +250,231 @@ func main() {
 			fmt.Printf("  Puerto Dest: %d\n", portNum)
 			fmt.Printf("  Decisión   : %s (Permitido: %v)\n", action, allowed)
 			fmt.Printf("  Motivo     : %s\n", reason)
+		}
+
+	case "accounting":
+		acctPath := filepath.Join(ipv7Dir, "transit_accounting.json")
+		acctEngine := adapters.NewAccountingEngine(acctPath, 10*1024*1024)
+
+		if len(os.Args) < 3 {
+			fmt.Println("Uso: ipvn7-cli accounting [list|record|status]")
+			return
+		}
+		sub := os.Args[2]
+		switch sub {
+		case "list":
+			accounts := acctEngine.ListAccounts()
+			if len(accounts) == 0 {
+				fmt.Println("No hay cuentas de tránsito registradas. Se crearán automáticamente durante el enrutamiento.")
+				return
+			}
+			fmt.Println("\n--- Reciprocidad de Tránsito Tit-for-Tat ---")
+			fmt.Printf("%-24s %-12s %-12s %-12s %-10s %s\n", "SOVEREIGN DID", "RELAYED FOR", "RELAYED BY", "BALANCE", "RATIO", "TIER")
+			fmt.Println(strings.Repeat("-", 85))
+			for _, a := range accounts {
+				shortDID := a.DID
+				if len(shortDID) > 22 {
+					shortDID = shortDID[:22] + "..."
+				}
+				fmt.Printf("%-24s %-12s %-12s %-12d %-10.2f %s\n",
+					shortDID,
+					adapters.FormatTraffic(a.BytesRelayedFor),
+					adapters.FormatTraffic(a.BytesRelayedBy),
+					a.CreditBalance,
+					a.ReciprocityRatio,
+					a.Tier,
+				)
+			}
+			fmt.Println()
+
+		case "record":
+			if len(os.Args) < 6 {
+				fmt.Println("Uso: ipvn7-cli accounting record <peer_did> <bytes_relayed_for> <bytes_relayed_by>")
+				return
+			}
+			peerDID := os.Args[3]
+			bytesFor, err1 := strconv.ParseUint(os.Args[4], 10, 64)
+			bytesBy, err2 := strconv.ParseUint(os.Args[5], 10, 64)
+			if err1 != nil || err2 != nil {
+				fmt.Println("[ERROR] Valores numéricos de bytes inválidos.")
+				return
+			}
+			tier := acctEngine.RecordTransit(peerDID, bytesFor, bytesBy)
+			_ = acctEngine.SaveToFile(acctPath)
+			fmt.Printf("[OK] Tránsito registrado para %s. Nuevo Tier: %s\n", peerDID, tier)
+
+		case "status":
+			if len(os.Args) < 4 {
+				fmt.Println("Uso: ipvn7-cli accounting status <peer_did>")
+				return
+			}
+			peerDID := os.Args[3]
+			acc, found := acctEngine.GetAccount(peerDID)
+			if !found {
+				fmt.Printf("[!] Peer %s no encontrado en el registro contable.\n", peerDID)
+				return
+			}
+			fmt.Println("\n--- Estado Contable del Peer ---")
+			fmt.Printf("  DID          : %s\n", acc.DID)
+			fmt.Printf("  Relayed For  : %s\n", adapters.FormatTraffic(acc.BytesRelayedFor))
+			fmt.Printf("  Relayed By   : %s\n", adapters.FormatTraffic(acc.BytesRelayedBy))
+			fmt.Printf("  Credit Balance: %d\n", acc.CreditBalance)
+			fmt.Printf("  Ratio Tit-Tat: %.2f\n", acc.ReciprocityRatio)
+			fmt.Printf("  QoS Tier     : %s\n\n", acc.Tier)
+		}
+
+	case "wot":
+		keyPath := filepath.Join(ipv7Dir, "identity.key")
+		id, priv, err := core.LoadOrCreatePersistentIdentity(keyPath)
+		if err != nil {
+			fmt.Printf("[ERROR] No se pudo cargar la identidad local: %v\n", err)
+			return
+		}
+		localDID := "did:ipv7:" + id.String()
+		wotPath := filepath.Join(ipv7Dir, "wot.json")
+		wotEngine := dht.NewWebOfTrust(localDID, wotPath)
+
+		if len(os.Args) < 3 {
+			fmt.Println("Uso: ipvn7-cli wot [list|vouch|score|export-kuzu]")
+			return
+		}
+		sub := os.Args[2]
+		switch sub {
+		case "list":
+			vouches := wotEngine.ListVouchesFrom(localDID)
+			if len(vouches) == 0 {
+				fmt.Println("No has emitido avales de confianza. Usa: ipvn7-cli wot vouch <subject_did> <score> [tag]")
+				return
+			}
+			fmt.Println("\n--- Avales de Confianza Emitidos (Web of Trust) ---")
+			fmt.Printf("%-24s %-8s %-16s %s\n", "SUBJECT DID", "SCORE", "TAG", "FECHA")
+			fmt.Println(strings.Repeat("-", 70))
+			for _, v := range vouches {
+				shortDID := v.SubjectDID
+				if len(shortDID) > 22 {
+					shortDID = shortDID[:22] + "..."
+				}
+				fmt.Printf("%-24s %-8.2f %-16s %s\n", shortDID, v.Score, v.Tag, v.Timestamp.Format("2006-01-02 15:04"))
+			}
+			fmt.Println()
+
+		case "vouch":
+			if len(os.Args) < 5 {
+				fmt.Println("Uso: ipvn7-cli wot vouch <subject_did> <score: 0.0 a 1.0> [tag] [comment]")
+				return
+			}
+			subjectDID := os.Args[3]
+			score, err := strconv.ParseFloat(os.Args[4], 64)
+			if err != nil || score < 0.0 || score > 1.0 {
+				fmt.Println("[ERROR] El score de confianza debe ser un número entre 0.0 y 1.0")
+				return
+			}
+			tag := "endorsed-peer"
+			if len(os.Args) >= 6 {
+				tag = os.Args[5]
+			}
+			comment := ""
+			if len(os.Args) >= 7 {
+				comment = strings.Join(os.Args[6:], " ")
+			}
+
+			vouch := dht.TrustVouch{
+				IssuerDID:  localDID,
+				SubjectDID: subjectDID,
+				Score:      score,
+				Tag:        tag,
+				Comment:    comment,
+				Timestamp:  time.Now(),
+			}
+			vouch.Sign(priv)
+			if err := wotEngine.AddVouch(vouch, true); err != nil {
+				fmt.Printf("[ERROR] %v\n", err)
+				return
+			}
+			_ = wotEngine.SaveToFile(wotPath)
+			fmt.Printf("[OK] Aval firmado digitalmente (Ed25519) registrado para %s con score %.2f (%s)\n", subjectDID, score, tag)
+
+		case "score":
+			if len(os.Args) < 4 {
+				fmt.Println("Uso: ipvn7-cli wot score <target_did>")
+				return
+			}
+			targetDID := os.Args[3]
+			score := wotEngine.CalculateTrust(localDID, targetDID, 3)
+			fmt.Println("\n--- Cálculo de Confianza P2P (Web-of-Trust) ---")
+			fmt.Printf("  Nodo Origen (Tú)  : %s\n", localDID)
+			fmt.Printf("  Nodo Destino      : %s\n", targetDID)
+			fmt.Printf("  Score Transitivo  : %.4f (Escala 0.0 a 1.0)\n\n", score)
+
+		case "export-kuzu":
+			stmts := wotEngine.ExportKuzuCypher()
+			if len(stmts) == 0 {
+				fmt.Println("// No hay relaciones de confianza para exportar")
+				return
+			}
+			fmt.Println("// Sentencias Cypher para Kùzu Graph Engine:")
+			for _, s := range stmts {
+				fmt.Println(s)
+			}
+		}
+
+	case "qos":
+		qos := adapters.NewHierarchicalQoS()
+		if len(os.Args) < 3 {
+			fmt.Println("Uso: ipvn7-cli qos [check|challenge|demo]")
+			return
+		}
+		sub := os.Args[2]
+		switch sub {
+		case "check":
+			if len(os.Args) < 5 {
+				fmt.Println("Uso: ipvn7-cli qos check <did> <bytes>")
+				return
+			}
+			did := os.Args[3]
+			bytes, _ := strconv.Atoi(os.Args[4])
+			admitted, ch := qos.IngressCheck(did, adapters.PriorityInteractive, bytes)
+			fmt.Println("\n--- Evaluación de Caudal QoS Token Bucket ---")
+			fmt.Printf("  Target DID  : %s\n", did)
+			fmt.Printf("  Packet Size : %d bytes\n", bytes)
+			fmt.Printf("  Admitido    : %v\n", admitted)
+			if !admitted && ch != nil {
+				fmt.Printf("  [!] Tasa excedida. Desafío PoW emitido: ID=%s (Dificultad: %d bits)\n", ch.ChallengeID, ch.Difficulty)
+			}
+			fmt.Println()
+
+		case "challenge":
+			if len(os.Args) < 4 {
+				fmt.Println("Uso: ipvn7-cli qos challenge <did>")
+				return
+			}
+			did := os.Args[3]
+			_, ch := qos.IngressCheck(did, adapters.PriorityInteractive, 1000*1024)
+			if ch != nil {
+				fmt.Println("\n--- Desafío Anti-DDoS Proof-of-Work (PoW) ---")
+				fmt.Printf("  Challenge ID: %s\n", ch.ChallengeID)
+				fmt.Printf("  Target DID  : %s\n", ch.TargetDID)
+				fmt.Printf("  Dificultad  : %d bits de ceros requeridos\n", ch.Difficulty)
+				fmt.Printf("  Expira en   : %s\n\n", ch.ExpiresAt.Format("15:04:05"))
+			}
+
+		case "demo":
+			did := "did:ipv7:test_peer_anti_ddos"
+			fmt.Println("\n--- Demostración Dinámica Anti-DDoS PoW ---")
+			fmt.Printf("[1] Agotando bucket interactivo (250 KB) para %s...\n", did)
+			qos.IngressCheck(did, adapters.PriorityInteractive, 250*1024)
+			admitted, ch := qos.IngressCheck(did, adapters.PriorityInteractive, 1024)
+			if !admitted && ch != nil {
+				fmt.Printf("[2] Desafío emitido: ID=%s (Dificultad %d bits)\n", ch.ChallengeID, ch.Difficulty)
+				start := time.Now()
+				nonce := adapters.SolveChallenge(ch)
+				elapsed := time.Since(start)
+				fmt.Printf("[3] Desafío resuelto por CPU en %v! Nonce ganador: %d\n", elapsed, nonce)
+				ok := qos.VerifyAndCredit(ch.ChallengeID, nonce)
+				fmt.Printf("[4] Verificación criptográfica en nodo: %v (Tokens acreditados)\n", ok)
+				admitted, _ := qos.IngressCheck(did, adapters.PriorityInteractive, 1024)
+				fmt.Printf("[5] Nuevo paquete tras resolver PoW: Admitido=%v\n\n", admitted)
+			}
 		}
 
 	case "kuzu":
