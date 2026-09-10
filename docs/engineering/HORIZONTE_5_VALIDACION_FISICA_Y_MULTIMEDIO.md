@@ -36,6 +36,18 @@ Para evitar la complacencia técnica y separar tajantemente el grado de prueba f
 └──────────────────┴───────────────────────────────────────────────────────────────────────┘
 ```
 
+### Dimensión 3: Cobertura de Aserción (`ASSERTION_COVERAGE`)
+```text
+┌──────────────────┬───────────────────────────────────────────────────────────────────────┐
+│ COBERTURA        │ DEFINICIÓN OPERATIVA                                                  │
+├──────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ COMPLETE         │ La afirmación está estrictamente protegida por aserciones formales   │
+│                  │ (t.Fatalf/t.Errorf). Si la cota o propiedad falla, el test fracasa.   │
+│ PARTIAL          │ La propiedad cualitativa está probada, pero existen métricas finas o  │
+│                  │ cotas cuantitativas secundarias registradas como log sin assert fatal.│
+└──────────────────┴───────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 2. Matriz de Estado Epistémico de los Cuatro Horizontes
@@ -180,14 +192,14 @@ En el ciclo continuo del daemon canario (`task-2137`), de 160.300 paquetes envia
 
 ## 6. Matriz Final de Certificación de Horizonte 5
 
-| Hipótesis / Propiedad Evaluada | Condición Hostil Provocada | Estado Epistémico | Entorno | Métrica / Evidencia |
-| :--- | :--- | :---: | :---: | :--- |
-| **$H\text{-MULTI-01}$ (Failover WAN $\to$ Malla)** | Corte intempestivo de sockets y fibra WAN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 100% PDR post-blackout, reconvergencia en 100.35 ms, DIDs idénticos. |
-| **$H\text{-L2-DOS}$ (Ataque de Balizas)** | Inundación de 10.000 balizas forjadas en 11 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 888.723 balizas/s, 96% PDR legítimo, memoria acotada a 256 peers ($O(1)$). |
-| **$H\text{-FLAPPING}$ (Inestabilidad WAN)** | 30 ciclos de corte y reconexión cada 8 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | 60 transiciones sin deadlocks, convergencia determinista a cero bloqueos. |
-| **$H\text{-SPLIT-BRAIN}$ (Partición Física)** | 2 islas aisladas operando con DHT independiente. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Resolución bilateral tras bridge ad-hoc, métrica XOR monotónica decreciente. |
-| **$H\text{-CONSTRAINED-MTU}$ (Canal LoRa 180B)** | Paquete de 1280B en canal angosto con desorden. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Fragmentación en 8 trozos, reensamblado con 0 corrupción (SHA256 idéntico). |
-| **$H\text{-UNIFIED-E2E}$ (Convergencia Global)** | Pipeline completo: TUN $\to$ DHT $\to$ Onion $\to$ Off-Grid $\to$ TUN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | Entrega de extremo a extremo sin fugas, integridad bit a bit (100% PDR). |
+| Hipótesis / Propiedad Evaluada | Condición Hostil Provocada | Estado Epistémico | Entorno | Cobertura Aserción | Evidencia Assertada vs. Observada |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **$H\text{-MULTI-01}$ (Failover WAN $\to$ Malla)** | Corte intempestivo de sockets y fibra WAN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`PARTIAL`** | **Assertado**: 100% PDR (30/30), DIDs invariantes y claves E2EE intactas (`t.Fatalf`).<br>**Observado**: Reconvergencia $\approx 100$ ms es artefacto de `Sleep(100ms)` de espera. |
+| **$H\text{-L2-DOS}$ (Ataque de Balizas)** | Inundación de 10.000 balizas forjadas en 11 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`PARTIAL`** | **Assertado**: Nodo no colapsa y entrega legítima $\ge 80\%$ (`t.Fatalf`).<br>**Observado**: PDR real 96%, throughput 888k b/s y cota 256 peers en logs sin assert fatal. |
+| **$H\text{-FLAPPING}$ (Inestabilidad WAN)** | 30 ciclos de corte y reconexión cada 8 ms. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`PARTIAL`** | **Assertado**: 60 transiciones y estabilización en `OffGrid` y `Hybrid` (`t.Fatalf`).<br>**Observado**: Cero fugas de goroutines inferido empíricamente, no assertado en test. |
+| **$H\text{-SPLIT-BRAIN}$ (Partición Física)** | 2 islas aisladas operando con DHT independiente. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`PARTIAL`** | **Assertado**: Resolución XOR bilateral tras puente y firmas Ed25519 intactas (`t.Fatalf`).<br>**Observado**: Sanación vía inyección explícita de rutas en puente, no `FIND_NODE` autónomo. |
+| **$H\text{-CONSTRAINED-MTU}$ (Canal LoRa 180B)** | Paquete de 1280B en canal angosto con desorden. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`COMPLETE`** | **Assertado**: MTU 180B, división en 8 fragmentos, reorden estocástico y SHA256 (`t.Fatalf`).<br>**Limitación**: Sin retransmisión L2 (ARQ); si se pierde 1 trozo aborta por timeout. |
+| **$H\text{-UNIFIED-E2E}$ (Convergencia Global)** | Pipeline: TUN $\to$ DHT $\to$ Onion $\to$ Radio $\to$ TUN. | **`DEMONSTRATED`** | `LAB_SIMULATED` | **`COMPLETE`** | **Assertado**: Integración de 4 capas y verificación SHA256 bit a bit al 100% PDR (`t.Fatalf`).<br>**Limitación**: Verificado en memoria virtual sobre datagrama individual IPv6 sintético. |
 
 ---
 
