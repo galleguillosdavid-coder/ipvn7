@@ -187,3 +187,20 @@ func extractDestinationIP(packet []byte) net.IP {
 	copy(ip, key[:])
 	return ip
 }
+
+// HandlePeerRoamed preserves the virtual IP while updating physical network endpoints
+func (a *TunAdapter) HandlePeerRoamed(did core.Identity, newEndpoints []string) {
+	// Virtual IP mapping remains strictly invariant
+	// Underlying physical endpoint updated in core Node
+	a.node.AddPeer(did, newEndpoints)
+}
+
+// ResolveAndRegister ensures a DID is mapped to an IPv6 ULA deterministically
+func (a *TunAdapter) ResolveAndRegister(did core.Identity) net.IP {
+	if ip, found := a.routes.LookupIP(did); found {
+		return ip
+	}
+	ipv6 := DeriveIPv6FromDID(did)
+	a.routes.Register(ipv6, did)
+	return ipv6
+}
